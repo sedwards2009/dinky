@@ -24,6 +24,9 @@ func main() {
 	app := tview.NewApplication()
 	app.EnableMouse(true)
 
+	flex := tview.NewFlex()
+	flex.SetDirection(tview.FlexRow)
+
 	menuBar := menu.NewMenuBar()
 
 	menuBar.SetMenus([]*menu.Menu{
@@ -44,11 +47,17 @@ func main() {
 			{Title: "", Shortcut: "", Callback: nil}, // Separator
 			{Title: "Select All", Shortcut: "Ctrl+A", Callback: func() { log.Println("Select All") }},
 		}},
-		{Title: "Help", Items: []*menu.MenuItem{}},
+		{Title: "Help", Items: []*menu.MenuItem{
+			{Title: "About", Shortcut: "F1", Callback: func() { log.Println("About") }},
+		}},
 	})
 
+	flex.AddItem(menuBar, 1, 0, false)
+	flex.AddItem(tview.NewBox().SetBorder(true).SetTitle("Text area"), 0, 1, false)
+
 	log.Println("Starting")
-	app.SetRoot(menuBar, true)
+
+	app.SetRoot(flex, true)
 	app.SetAfterDrawFunc(menuBar.AfterDraw())
 
 	menuBar.Focus(nil)

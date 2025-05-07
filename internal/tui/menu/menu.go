@@ -188,7 +188,7 @@ func (menuBar *MenuBar) InputHandler() func(event *tcell.EventKey, setFocus func
 
 		case tcell.KeyRight:
 			selectedMenuIndex++
-			if selectedMenuIndex >= len(menuBar.menus) {
+			if selectedMenuIndex == len(menuBar.menus) {
 				selectedMenuIndex = len(menuBar.menus) - 1
 			}
 			menuBar.selectMenuBarItem(selectedMenuIndex)
@@ -231,60 +231,64 @@ func nextMenuItem(items []*MenuItem, selectedIndex int, direction int) int {
 
 func (menuBar *MenuBar) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
 	return menuBar.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
-		if !menuBar.InRect(event.Position()) {
-			return false, nil
-		}
+		return menuBar.processMouse(action, event), nil
+	})
+}
 
-		rx, ry, _, _ := menuBar.GetRect()
-		x, y := event.Position()
+func (menuBar *MenuBar) processMouse(action tview.MouseAction, event *tcell.EventMouse) bool {
+	// if !menuBar.InRect(event.Position()) {
+	// 	return false
+	// }
 
-		if action == tview.MouseLeftDown {
-			if y == ry {
-				// Clicked on the menu bar itself
-				index, _ := menuBar.menuItemIndexAtX(x - rx)
-				if index != -1 {
-					menuBar.selectMenuBarItem(index)
-					return true, nil
-				}
+	rx, ry, _, _ := menuBar.GetRect()
+	x, y := event.Position()
+
+	if action == tview.MouseLeftDown || action == tview.MouseLeftUp {
+		if y == ry {
+			// Clicked on the menu bar itself
+			index, _ := menuBar.menuItemIndexAtX(x - rx)
+			if index != -1 {
+				menuBar.selectMenuBarItem(index)
+				return true
 			}
 		}
+	}
 
-		if action == tview.MouseLeftUp || action == tview.MouseLeftDown {
-			if menuBar.selectedPath[0] != -1 {
-				selectedIndex := menuBar.selectedPath[0]
-				// left := menuBar.menuIndexLeft(selectedIndex)
-				items := menuBar.menus[selectedIndex].Items
-				index := y - ry - 2
-				if index >= 0 && index < len(items) {
+	if action == tview.MouseLeftUp || action == tview.MouseLeftDown {
+		if menuBar.selectedPath[0] != -1 {
+			selectedIndex := menuBar.selectedPath[0]
+			items := menuBar.menus[selectedIndex].Items
+			index := y - ry - 2
 
-					if action == tview.MouseLeftUp {
-						if items[index].Title != "" {
-							if items[index].Callback != nil {
-								items[index].Callback()
-							}
-							menuBar.selectMenuBarItem(-1)
+			menuLeft := menuBar.menuIndexLeft(selectedIndex)
+			width := menuWidthInCells(items)
+			if x >= menuLeft && x < (menuLeft+width) && index >= 0 && index < len(items) {
+				if action == tview.MouseLeftUp {
+					if items[index].Title != "" {
+						if items[index].Callback != nil {
+							items[index].Callback()
 						}
+						menuBar.selectMenuBarItem(-1)
 					}
-
-					return true, nil
-
-				} else {
-					return false, nil
 				}
-			}
-		}
 
-		if action == tview.MouseLeftDown {
+				return true
+			}
+
 			menuBar.selectMenuBarItem(-1)
 		}
+	}
 
-		return true, nil
-	})
+	if action == tview.MouseLeftDown {
+		menuBar.selectMenuBarItem(-1)
+	}
+
+	return true
 }
 
 func (menuBar *MenuBar) selectMenuBarItem(index int) {
 	if index == -1 {
-		menuBar.selectedPath = []int{index}
+		menuBar.selectedPath = []int{-1}
 	} else {
 		menuBar.selectedPath = []int{index, 0}
 	}
