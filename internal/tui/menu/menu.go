@@ -1,8 +1,6 @@
 package menu
 
 import (
-	"log"
-
 	"github.com/gdamore/tcell/v2"
 	"github.com/mattn/go-runewidth"
 	"github.com/rivo/tview"
@@ -13,17 +11,20 @@ type MenuBar struct {
 	MenuBarStyle tcell.Style
 	menus        []*Menu
 	selectedPath []int
+	onClose      func()
 }
 
 type Menu struct {
+	ID    string
 	Title string
 	Items []*MenuItem
 }
 
 type MenuItem struct {
+	ID       string
 	Title    string
 	Shortcut string
-	Callback func()
+	Callback func(ID string)
 }
 
 const (
@@ -165,7 +166,6 @@ func measureWidths(items []*MenuItem) (int, int) {
 
 func (menuBar *MenuBar) InputHandler() func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
 	return menuBar.WrapInputHandler(func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
-		log.Printf("InputHandler %v", event)
 		if menuBar.selectedPath[0] == -1 {
 			return
 		}
@@ -177,7 +177,7 @@ func (menuBar *MenuBar) InputHandler() func(event *tcell.EventKey, setFocus func
 
 		switch event.Key() {
 		case tcell.KeyEscape:
-			menuBar.selectMenuBarItem(-1)
+			menuBar.Close()
 
 		case tcell.KeyLeft:
 			selectedMenuIndex--
@@ -202,9 +202,9 @@ func (menuBar *MenuBar) InputHandler() func(event *tcell.EventKey, setFocus func
 		case tcell.KeyEnter:
 			if item.Title != "" {
 				if item.Callback != nil {
-					item.Callback()
+					item.Callback(item.ID)
 				}
-				menuBar.selectMenuBarItem(-1)
+				menuBar.Close()
 			}
 		}
 	})
@@ -231,59 +231,63 @@ func nextMenuItem(items []*MenuItem, selectedIndex int, direction int) int {
 
 func (menuBar *MenuBar) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
 	return menuBar.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
-		return menuBar.processMouse(action, event), nil
-	})
-}
+		rx, ry, _, _ := menuBar.GetRect()
+		x, y := event.Position()
 
-func (menuBar *MenuBar) processMouse(action tview.MouseAction, event *tcell.EventMouse) bool {
-	// if !menuBar.InRect(event.Position()) {
-	// 	return false
-	// }
-
-	rx, ry, _, _ := menuBar.GetRect()
-	x, y := event.Position()
-
-	if action == tview.MouseLeftDown || action == tview.MouseLeftUp {
 		if y == ry {
-			// Clicked on the menu bar itself
-			index, _ := menuBar.menuItemIndexAtX(x - rx)
-			if index != -1 {
-				menuBar.selectMenuBarItem(index)
-				return true
-			}
-		}
-	}
-
-	if action == tview.MouseLeftUp || action == tview.MouseLeftDown {
-		if menuBar.selectedPath[0] != -1 {
-			selectedIndex := menuBar.selectedPath[0]
-			items := menuBar.menus[selectedIndex].Items
-			index := y - ry - 2
-
-			menuLeft := menuBar.menuIndexLeft(selectedIndex)
-			width := menuWidthInCells(items)
-			if x >= menuLeft && x < (menuLeft+width) && index >= 0 && index < len(items) {
-				if action == tview.MouseLeftUp {
-					if items[index].Title != "" {
-						if items[index].Callback != nil {
-							items[index].Callback()
-						}
-						menuBar.selectMenuBarItem(-1)
+			if action == tview.MouseLeftDown {
+				// Clicked on the menu bar itself
+				index, _ := menuBar.menuItemIndexAtX(x - rx)
+				if index != -1 {
+					selectedIndex := menuBar.selectedPath[0]
+					if selectedIndex != index {
+						menuBar.selectMenuBarItem(index)
+						setFocus(menuBar)
+						return true, nil
+					} else {
+						menuBar.Close()
+						return true, nil
 					}
 				}
-
-				return true
 			}
-
-			menuBar.selectMenuBarItem(-1)
+			return true, nil
 		}
-	}
 
-	if action == tview.MouseLeftDown {
-		menuBar.selectMenuBarItem(-1)
-	}
+		if menuBar.selectedPath[0] == -1 {
+			return false, nil
+		}
 
-	return true
+		if action == tview.MouseLeftUp || action == tview.MouseLeftDown {
+			if menuBar.selectedPath[0] != -1 {
+				selectedIndex := menuBar.selectedPath[0]
+				items := menuBar.menus[selectedIndex].Items
+				index := y - ry - 2
+
+				menuLeft := menuBar.menuIndexLeft(selectedIndex)
+				width := menuWidthInCells(items)
+				if x >= menuLeft && x < (menuLeft+width) && index >= 0 && index < len(items) {
+					if action == tview.MouseLeftUp {
+						if items[index].Title != "" {
+							if items[index].Callback != nil {
+								items[index].Callback(items[index].ID)
+							}
+							menuBar.Close()
+						}
+					}
+
+					return true, nil
+				}
+
+				menuBar.Close()
+			}
+		}
+
+		if action == tview.MouseLeftDown {
+			menuBar.Close()
+		}
+
+		return true, nil
+	})
 }
 
 func (menuBar *MenuBar) selectMenuBarItem(index int) {
@@ -327,4 +331,15 @@ func (m *MenuBar) menuIndexLeft(index int) int {
 		x += MENU_BAR_SPACING
 	}
 	return -1
+}
+
+func (menuBar *MenuBar) Close() {
+	menuBar.selectMenuBarItem(-1)
+	if menuBar.onClose != nil {
+		menuBar.onClose()
+	}
+}
+
+func (menuBar *MenuBar) SetOnClose(callback func()) {
+	menuBar.onClose = callback
 }
