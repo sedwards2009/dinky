@@ -1,9 +1,9 @@
 package main
 
 import (
+	"dinky/internal/tui/menu"
 	"log"
 	"os"
-	"smoe/internal/tui/menu"
 
 	"github.com/pgavlin/femto"
 	"github.com/pgavlin/femto/runtime"

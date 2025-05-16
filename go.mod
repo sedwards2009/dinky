@@ -1,4 +1,4 @@
-module smoe
+module dinky
 
 go 1.24.1
 
