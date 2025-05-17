@@ -13,6 +13,7 @@ replace github.com/pgavlin/femto => /home/sbe/devel/femto
 require (
 	github.com/atotto/clipboard v0.1.2 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/pgavlin/femto v0.0.0-20201224065653-0c9d20f9cac4 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
