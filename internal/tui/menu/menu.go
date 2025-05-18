@@ -1,6 +1,8 @@
 package menu
 
 import (
+	"dinky/internal/tui/utils"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/mattn/go-runewidth"
 	"github.com/rivo/tview"
@@ -61,38 +63,21 @@ func (menuBar *MenuBar) Draw(screen tcell.Screen) {
 	}
 
 	reverse := menuBar.MenuBarStyle.Reverse(true)
-	dx := MENU_BAR_SPACING
+	dx := 0
 	for i, menu := range menuBar.menus {
 		title := menu.Title
 		style := menuBar.MenuBarStyle
 		if i == menuBar.selectedPath[0] {
 			style = reverse
 		}
-		drawText(screen, dx, y, padding, style)
+		utils.DrawText(screen, dx, y, padding, style)
 		dx += MENU_BAR_PADDING
-		drawText(screen, dx, y, title, style)
+		utils.DrawText(screen, dx, y, title, style)
 		dx += len(title)
-		drawText(screen, dx, y, padding, style)
+		utils.DrawText(screen, dx, y, padding, style)
 		dx += MENU_BAR_PADDING
 		dx += MENU_BAR_SPACING
 	}
-}
-
-func drawText(screen tcell.Screen, x int, y int, text string, style tcell.Style) {
-	for _, r := range text {
-		screen.SetContent(x, y, r, nil, style)
-		x++
-	}
-}
-
-func drawHorizontalLine(screen tcell.Screen, x int, y int, width int, borderStyle tcell.Style, middleStyle tcell.Style, left rune,
-	middle rune, right rune) {
-
-	screen.SetContent(x, y, left, nil, borderStyle)
-	for i := 1; i < width-1; i++ {
-		screen.SetContent(x+i, y, middle, nil, middleStyle)
-	}
-	screen.SetContent(x+width-1, y, right, nil, borderStyle)
 }
 
 func (menuBar *MenuBar) AfterDraw() func(tcell.Screen) {
@@ -117,25 +102,25 @@ func (menuBar *MenuBar) drawMenuItems(screen tcell.Screen, menuX int, menuY int,
 
 	borderStyle := menuBar.MenuBarStyle
 
-	drawHorizontalLine(screen, menuX, y, menuWidth, borderStyle, borderStyle, '┌', '─', '┐')
+	utils.DrawCappedHorizontalLine(screen, menuX, y, menuWidth, borderStyle, borderStyle, '┌', '─', '┐')
 	y++
 
 	for i, item := range items {
 		if item.Title == "" {
-			drawHorizontalLine(screen, menuX, y, menuWidth, borderStyle, borderStyle, '├', '─', '┤')
+			utils.DrawCappedHorizontalLine(screen, menuX, y, menuWidth, borderStyle, borderStyle, '├', '─', '┤')
 		} else {
 			textStyle := borderStyle
 			if i == selectedIndex {
 				textStyle = textStyle.Reverse(true)
 			}
-			drawHorizontalLine(screen, menuX, y, menuWidth, borderStyle, textStyle, '│', ' ', '│')
-			drawText(screen, menuX+2, y, item.Title, textStyle)
-			drawText(screen, menuX+2+titleWidth+2, y, item.Shortcut, textStyle)
+			utils.DrawCappedHorizontalLine(screen, menuX, y, menuWidth, borderStyle, textStyle, '│', ' ', '│')
+			utils.DrawText(screen, menuX+2, y, item.Title, textStyle)
+			utils.DrawText(screen, menuX+2+titleWidth+2, y, item.Shortcut, textStyle)
 		}
 		y++
 	}
 
-	drawHorizontalLine(screen, menuX, y, menuWidth, borderStyle, borderStyle, '└', '─', '┘')
+	utils.DrawCappedHorizontalLine(screen, menuX, y, menuWidth, borderStyle, borderStyle, '└', '─', '┘')
 
 	// Draw the drop shadow
 	// drawDimVerticalLine(d.X+menuWidth, d.Y+1, len(*d.MenuDefinition)+1)
@@ -299,7 +284,7 @@ func (menuBar *MenuBar) selectMenuBarItem(index int) {
 }
 
 func (m *MenuBar) menuItemIndexAtX(posX int) (index int, leftX int) {
-	x := MENU_BAR_SPACING
+	x := 0
 	for i, menu := range m.menus {
 		if posX < x {
 			return -1, -1
@@ -319,7 +304,7 @@ func (m *MenuBar) menuItemIndexAtX(posX int) (index int, leftX int) {
 }
 
 func (m *MenuBar) menuIndexLeft(index int) int {
-	x := MENU_BAR_SPACING
+	x := 0
 	for i, menu := range m.menus {
 		if i == index {
 			return x

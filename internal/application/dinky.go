@@ -2,6 +2,7 @@ package application
 
 import (
 	"dinky/internal/tui/menu"
+	"dinky/internal/tui/tabbar"
 	"log"
 	"os"
 
@@ -15,6 +16,7 @@ import (
 var app *tview.Application
 var menus []*menu.Menu
 var buffer *femto.Buffer
+var tabBarLine *tabbar.TabBar
 var editor *femto.View
 var pages *tview.Pages
 
@@ -52,6 +54,7 @@ func newFile(contents string, filename string) {
 
 	fileBuffers = append(fileBuffers, fileBuffer)
 	pages.AddPage(fileBuffer.uuid, editor, true, true)
+	tabBarLine.AddTab(fileBuffer.filename, fileBuffer.uuid)
 	if buffer == nil {
 		buffer = fileBuffer.buffer
 		editor = fileBuffer.editor
@@ -65,6 +68,23 @@ func loadFile(filename string) {
 		log.Fatalf("Failed to read file: %v", err)
 	}
 	newFile(string(contents), filename)
+}
+
+func getFileBufferByID(id string) *FileBuffer {
+	for _, fileBuffer := range fileBuffers {
+		if fileBuffer.uuid == id {
+			return fileBuffer
+		}
+	}
+	return nil
+}
+
+func selectTab(id string) {
+	fileBuffer := getFileBufferByID(id)
+	pages.SwitchToPage(id)
+	buffer = fileBuffer.buffer
+	editor = fileBuffer.editor
+	syncMenuFromBuffer(buffer)
 }
 
 func Main() {
@@ -100,6 +120,12 @@ func Main() {
 	// 	return event
 	// })
 
+	tabBarLine = tabbar.NewTabBar()
+	tabBarLine.OnActive = func(id string, index int) {
+		selectTab(id)
+	}
+	flex.AddItem(tabBarLine, 1, 0, false)
+
 	pages = tview.NewPages()
 	flex.AddItem(pages, 0, 1, true)
 
@@ -116,7 +142,7 @@ func Main() {
 	if len(fileBuffers) == 0 {
 		newFile("Hello Dinky\nSome words to click on\n", "")
 	}
-	syncMenuFromBuffer(buffer)
+	selectTab(fileBuffers[0].uuid)
 
 	if err := app.Run(); err != nil {
 		log.Fatalf("Application error: %v", err)
