@@ -47,7 +47,7 @@ func newFile(contents string, filename string) {
 	editor = femto.NewView(buffer)
 	editor.SetRuntimeFiles(runtime.Files)
 	editor.SetColorscheme(colorscheme)
-	editor.SetKeybindings(defaultKeyBindings)
+	editor.SetKeybindings(femtoDefaultKeyBindings)
 
 	fileBuffer := &FileBuffer{
 		buffer:   buffer,
@@ -106,6 +106,7 @@ func Main() {
 	defer logFile.Close()
 
 	initEditorColorScheme()
+	initKeyBindings()
 
 	app = tview.NewApplication()
 	app.EnableMouse(true)
