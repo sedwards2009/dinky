@@ -24,3 +24,29 @@ func DrawHorizontalLine(screen tcell.Screen, x int, y int, width int, style tcel
 		screen.SetContent(x+i, y, char, nil, style)
 	}
 }
+
+func DimCell(screen tcell.Screen, x int, y int) {
+	cellRune, cellRunes, style, _ := screen.GetContent(x, y)
+	fg, bg, _ := style.Decompose()
+
+	fgR, fgG, fgB := fg.TrueColor().RGB()
+	fg = tcell.NewRGBColor(fgR/2, fgG/2, fgB/2)
+
+	bgR, bgG, bgB := bg.TrueColor().RGB()
+	bg = tcell.NewRGBColor(bgR/2, bgG/2, bgB/2)
+
+	style = style.Foreground(fg).Background(bg)
+	screen.SetContent(x, y, cellRune, cellRunes, style)
+}
+
+func DrawDimHorizontalLine(screen tcell.Screen, x int, y int, length int) {
+	for i := 0; i < length; i++ {
+		DimCell(screen, x+i, y)
+	}
+}
+
+func DrawDimVerticalLine(screen tcell.Screen, x int, y int, length int) {
+	for i := 0; i < length; i++ {
+		DimCell(screen, x, y+i)
+	}
+}

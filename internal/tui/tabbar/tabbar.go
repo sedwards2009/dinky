@@ -39,6 +39,14 @@ func NewTabBar() *TabBar {
 	}
 }
 
+func (tabBar *TabBar) SetTabBackgroundColor(color tcell.Color) {
+	tabBar.ActiveTabStyle = tabBar.ActiveTabStyle.Background(color)
+}
+
+func (tabBar *TabBar) SetTabInactiveBackgroundColor(color tcell.Color) {
+	tabBar.InactiveTabStyle = tabBar.InactiveTabStyle.Background(color)
+}
+
 func (tabBar *TabBar) Active() (int, string) {
 	if len(tabBar.tabs) == 0 {
 		return -1, ""

@@ -2,6 +2,7 @@ package application
 
 import (
 	"dinky/internal/tui/menu"
+	"dinky/internal/tui/statusbar"
 	"dinky/internal/tui/tabbar"
 	"log"
 	"os"
@@ -19,6 +20,9 @@ var buffer *femto.Buffer
 var tabBarLine *tabbar.TabBar
 var editor *femto.View
 var pages *tview.Pages
+var statusBar *statusbar.StatusBar
+
+var colorscheme femto.Colorscheme
 
 type FileBuffer struct {
 	buffer   *femto.Buffer
@@ -29,21 +33,21 @@ type FileBuffer struct {
 
 var fileBuffers []*FileBuffer
 
-//-----------------------------------------------------------------
-
-func newFile(contents string, filename string) {
-	buffer = femto.NewBufferFromString(contents, "")
-	editor = femto.NewView(buffer)
-	editor.SetRuntimeFiles(runtime.Files)
-
-	var colorscheme femto.Colorscheme
+// -----------------------------------------------------------------
+func initEditorColorScheme() {
 	if monokai := runtime.Files.FindFile(femto.RTColorscheme, "monokai"); monokai != nil {
 		if data, err := monokai.Data(); err == nil {
 			colorscheme = femto.ParseColorscheme(string(data))
 		}
 	}
+}
 
+func newFile(contents string, filename string) {
+	buffer = femto.NewBufferFromString(contents, "")
+	editor = femto.NewView(buffer)
+	editor.SetRuntimeFiles(runtime.Files)
 	editor.SetColorscheme(colorscheme)
+	editor.SetKeybindings(defaultKeyBindings)
 
 	fileBuffer := &FileBuffer{
 		buffer:   buffer,
@@ -85,11 +89,23 @@ func selectTab(id string) {
 	buffer = fileBuffer.buffer
 	editor = fileBuffer.editor
 	syncMenuFromBuffer(buffer)
+	syncStatusBarFromFileBuffer(fileBuffer)
+}
+
+func syncStatusBarFromFileBuffer(fileBuffer *FileBuffer) {
+	statusBar.Filename = fileBuffer.filename
+	// statusbar.SetLineCount(fileBuffer.buffer.LineCount())
+	// statusbar.SetColumnCount(fileBuffer.buffer.ColumnCount())
+	// statusbar.SetCursorPosition(fileBuffer.buffer.CursorX(), fileBuffer.buffer.CursorY())
+	// statusbar.SetReadOnly(fileBuffer.buffer.ReadOnly())
+	// statusbar.SetModified(fileBuffer.buffer.Modified())
 }
 
 func Main() {
 	logFile := setupLogging()
 	defer logFile.Close()
+
+	initEditorColorScheme()
 
 	app = tview.NewApplication()
 	app.EnableMouse(true)
@@ -124,10 +140,19 @@ func Main() {
 	tabBarLine.OnActive = func(id string, index int) {
 		selectTab(id)
 	}
+
+	defaultStyle := colorscheme.GetColor("default")
+	_, bg, _ := defaultStyle.Decompose()
+	tabBarLine.SetTabBackgroundColor(bg)
+	// tabBarLine.SetTabInactiveBackgroundColor(bg)
+
 	flex.AddItem(tabBarLine, 1, 0, false)
 
 	pages = tview.NewPages()
 	flex.AddItem(pages, 0, 1, true)
+
+	statusBar = statusbar.NewStatusBar()
+	flex.AddItem(statusBar, 1, 0, false)
 
 	app.SetRoot(flex, true)
 	app.SetAfterDrawFunc(menuBar.AfterDraw())

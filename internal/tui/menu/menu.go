@@ -97,7 +97,8 @@ func (menuBar *MenuBar) AfterDraw() func(tcell.Screen) {
 
 func (menuBar *MenuBar) drawMenuItems(screen tcell.Screen, menuX int, menuY int, items []*MenuItem, selectedIndex int) {
 	titleWidth, _ := measureWidths(items)
-	y := menuY + 1
+	topY := menuY + 1
+	y := topY
 	menuWidth := menuWidthInCells(items)
 
 	borderStyle := menuBar.MenuBarStyle
@@ -123,9 +124,9 @@ func (menuBar *MenuBar) drawMenuItems(screen tcell.Screen, menuX int, menuY int,
 	utils.DrawCappedHorizontalLine(screen, menuX, y, menuWidth, borderStyle, borderStyle, '└', '─', '┘')
 
 	// Draw the drop shadow
-	// drawDimVerticalLine(d.X+menuWidth, d.Y+1, len(*d.MenuDefinition)+1)
-	// drawDimVerticalLine(d.X+menuWidth+1, d.Y+1, len(*d.MenuDefinition)+1)
-	// drawDimHorizontalLine(d.X+2, y+1, menuWidth)
+	utils.DrawDimVerticalLine(screen, menuX+menuWidth, topY+1, len(items)+1)
+	utils.DrawDimVerticalLine(screen, menuX+menuWidth+1, topY+1, len(items)+1)
+	utils.DrawDimHorizontalLine(screen, menuX+2, y+1, menuWidth)
 }
 
 func menuWidthInCells(items []*MenuItem) int {
