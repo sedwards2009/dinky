@@ -117,6 +117,7 @@ func Main() {
 	menuBar := menu.NewMenuBar()
 
 	menus = createMenus()
+	syncMenuKeyBindings(menus, femtoDefaultKeyBindings)
 	menuBar.SetMenus(menus)
 
 	flex.AddItem(menuBar, 1, 0, false)

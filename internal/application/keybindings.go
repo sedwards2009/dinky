@@ -4,8 +4,11 @@ import "github.com/pgavlin/femto"
 
 var femtoDefaultKeyBindings femto.KeyBindings
 
+var keyToActionMapping map[string]string
+var actionToKeyMapping map[string]string
+
 func initKeyBindings() {
-	femtoDefaultKeyBindings = femto.NewKeyBindings(map[string]string{
+	keyToActionMapping = map[string]string{
 		"Up":    femto.ActionCursorUp,
 		"Down":  femto.ActionCursorDown,
 		"Right": femto.ActionCursorRight,
@@ -54,8 +57,8 @@ func initKeyBindings() {
 		"Ctrl-y": femto.ActionRedo,
 		"Ctrl-c": femto.ActionCopy,
 		"Ctrl-x": femto.ActionCut,
-		// "Ctrl-k":         femto.ActionCutLine,
-		// "Ctrl-d":         "Duplicate|DuplicateLine,
+		"Ctrl-k": femto.ActionCutLine,
+		"Ctrl-d": femto.ActionDuplicateLine,
 		"Ctrl-v": femto.ActionPaste,
 		"Ctrl-a": femto.ActionSelectAll,
 		// "Ctrl-t": femto.ActionAddTab,
@@ -92,30 +95,27 @@ func initKeyBindings() {
 		// "Alt-p": femto.ActionCursorUp,
 		// "Alt-n": femto.ActionCursorDown,
 
-		// Integration with file managers
-		// "F2":  femto.ActionSave,
-		// "F3":  femto.ActionFind,
-		// "F4":  femto.ActionQuit,
-		// "F7":  femto.ActionFind,
-		// "F10": femto.ActionQuit,
-		// "F12": femto.ActionOpenMenu,
-		// "Esc": "Escape,Deselect,ClearInfo,RemoveAllMultiCursorsfemto.ActionUnhighlightSearch,
+		"Esc": femto.ActionEscape + "," + femto.ActionRemoveAllMultiCursors,
 
-		// Mouse bindings
-		// "MouseWheelUp":     femto.ActionScrollUp,
-		// "MouseWheelDown":   femto.ActionScrollDown,
-		// "MouseLeft":        femto.ActionMousePress,
-		// "MouseLeftDrag":    femto.ActionMouseDrag,
-		// "MouseLeftRelease": femto.ActionMouseRelease,
 		// "MouseMiddle":      femto.ActionPastePrimary,
 		// "Ctrl-MouseLeft":   femto.ActionMouseMultiCursor,
 
 		"Alt-n": femto.ActionSpawnMultiCursor,
 		"Alt-m": femto.ActionSpawnMultiCursorSelect,
-		// "AltShiftUp":   femto.ActionSpawnMultiCursorUp,
+		//"AltShiftUp":   femto.ActionSpawnMultiCursorUp,
 		// "AltShiftDown": femto.ActionSpawnMultiCursorDown,
 		"Alt-p": femto.ActionRemoveMultiCursor,
 		"Alt-c": femto.ActionRemoveAllMultiCursors,
 		"Alt-x": femto.ActionSkipMultiCursor,
-	})
+	}
+
+	actionToKeyMapping = make(map[string]string)
+	for key, action := range keyToActionMapping {
+		if action == "" {
+			continue
+		}
+		actionToKeyMapping[action] = key
+	}
+
+	femtoDefaultKeyBindings = femto.NewKeyBindings(keyToActionMapping)
 }

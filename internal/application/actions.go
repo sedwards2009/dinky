@@ -1,8 +1,12 @@
 package application
 
-func handleSelectAll(_ string) {
-	editor.SelectAll()
-}
+import "github.com/pgavlin/femto"
+
+const (
+	ACTION_OPEN_MENU           = "OpenMenu"
+	ACTION_TOGGLE_SOFT_WRAP    = "ToggleSoftWrap"
+	ACTION_TOGGLE_LINE_NUMBERS = "ToggleLineNumbers"
+)
 
 func handleLineNumbers(_ string) {
 	on := buffer.Settings["ruler"].(bool)
@@ -16,12 +20,10 @@ func handleSoftWrap(_ string) {
 	syncSoftWrap(menus, !on)
 }
 
-func handleUndo(_ string) {
-	editor.Undo()
-}
-
-func handleRedo(_ string) {
-	editor.Redo()
+func handleFemtoAction(id string) {
+	if f, ok := femto.BindingActionsMapping[id]; ok {
+		f(editor)
+	}
 }
 
 func handleQuit(_ string) {
