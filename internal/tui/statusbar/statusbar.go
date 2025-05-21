@@ -2,6 +2,7 @@ package statusbar
 
 import (
 	"dinky/internal/tui/utils"
+	"fmt"
 
 	runewidth "github.com/mattn/go-runewidth"
 
@@ -11,8 +12,12 @@ import (
 
 type StatusBar struct {
 	*tview.Box
-	Style    tcell.Style
-	Filename string
+	Style       tcell.Style
+	Filename    string
+	Line        int
+	Col         int
+	LineEndings string
+	TabSize     int
 }
 
 func NewStatusBar() *StatusBar {
@@ -32,7 +37,12 @@ func (statusBar *StatusBar) Draw(screen tcell.Screen) {
 
 	utils.DrawText(screen, x+1, y, statusBar.Filename, statusBar.Style)
 
-	rightMessage := "F12: Menu"
-	rx := width - runewidth.StringWidth(rightMessage)
+	cursorMessage := fmt.Sprintf("Ln %d, Col %d", statusBar.Line, statusBar.Col)
+	padding := 19 - runewidth.StringWidth(cursorMessage)
+	for i := 0; i < padding; i++ {
+		cursorMessage += " "
+	}
+	rightMessage := fmt.Sprintf("%s  Tab Size: %d  %s  F12: Menu", cursorMessage, statusBar.TabSize, statusBar.LineEndings)
+	rx := width - runewidth.StringWidth(rightMessage) - 1
 	utils.DrawText(screen, rx, y, rightMessage, statusBar.Style)
 }

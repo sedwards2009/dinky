@@ -17,6 +17,7 @@ import (
 // -----------------------------------------------------------------
 var app *tview.Application
 var menus []*menu.Menu
+var fileBufferID string
 var buffer *femto.Buffer
 var tabBarLine *tabbar.TabBar
 var menuBar *menu.MenuBar
@@ -88,6 +89,7 @@ func getFileBufferByID(id string) *FileBuffer {
 
 func selectTab(id string) {
 	fileBuffer := getFileBufferByID(id)
+	fileBufferID = id
 	pages.SwitchToPage(id)
 	buffer = fileBuffer.buffer
 	editor = fileBuffer.editor
@@ -97,11 +99,20 @@ func selectTab(id string) {
 
 func syncStatusBarFromFileBuffer(fileBuffer *FileBuffer) {
 	statusBar.Filename = fileBuffer.filename
-	// statusbar.SetLineCount(fileBuffer.buffer.LineCount())
-	// statusbar.SetColumnCount(fileBuffer.buffer.ColumnCount())
-	// statusbar.SetCursorPosition(fileBuffer.buffer.CursorX(), fileBuffer.buffer.CursorY())
-	// statusbar.SetReadOnly(fileBuffer.buffer.ReadOnly())
-	// statusbar.SetModified(fileBuffer.buffer.Modified())
+	statusBar.Line = fileBuffer.editor.Cursor.Y + 1
+	statusBar.Col = fileBuffer.editor.Cursor.X + 1
+
+	tabSize := int(fileBuffer.buffer.Settings["tabsize"].(float64))
+	statusBar.TabSize = tabSize
+
+	lineEndings := "LF"
+	switch fileBuffer.buffer.Settings["fileformat"].(string) {
+	case "unix":
+		lineEndings = "LF"
+	case "dos":
+		lineEndings = "CRLF"
+	}
+	statusBar.LineEndings = lineEndings
 }
 
 func editorInputCapture(event *tcell.EventKey) *tcell.EventKey {
@@ -120,6 +131,12 @@ func editorInputCapture(event *tcell.EventKey) *tcell.EventKey {
 	return event
 }
 
+func updateStatusBar(screen tcell.Screen) bool {
+	fileBuffer := getFileBufferByID(fileBufferID)
+	syncStatusBarFromFileBuffer(fileBuffer)
+	return false
+}
+
 func Main() {
 	logFile := setupLogging()
 	defer logFile.Close()
@@ -129,6 +146,7 @@ func Main() {
 
 	app = tview.NewApplication()
 	app.EnableMouse(true)
+	app.SetBeforeDrawFunc(updateStatusBar)
 
 	flex := tview.NewFlex()
 	flex.SetDirection(tview.FlexRow)
