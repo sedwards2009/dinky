@@ -1,14 +1,19 @@
 package application
 
-import "github.com/pgavlin/femto"
+import (
+	"github.com/pgavlin/femto"
+)
 
 var femtoDefaultKeyBindings femto.KeyBindings
+var femtoKeyToActionMapping map[string]string
+var femtoActionToKeyMapping map[string]string
 
-var keyToActionMapping map[string]string
-var actionToKeyMapping map[string]string
+var dinkyKeyBindings map[femto.KeyDesc]string
+var dinkyKeyToActionMapping map[string]string
+var dinkyActionToKeyMapping map[string]string
 
 func initKeyBindings() {
-	keyToActionMapping = map[string]string{
+	femtoKeyToActionMapping = map[string]string{
 		"Up":    femto.ActionCursorUp,
 		"Down":  femto.ActionCursorDown,
 		"Right": femto.ActionCursorRight,
@@ -109,13 +114,33 @@ func initKeyBindings() {
 		"Alt-x": femto.ActionSkipMultiCursor,
 	}
 
-	actionToKeyMapping = make(map[string]string)
-	for key, action := range keyToActionMapping {
+	dinkyKeyToActionMapping = map[string]string{
+		"F12": ACTION_OPEN_MENU,
+	}
+
+	femtoActionToKeyMapping = make(map[string]string)
+	for key, action := range femtoKeyToActionMapping {
 		if action == "" {
 			continue
 		}
-		actionToKeyMapping[action] = key
+		femtoActionToKeyMapping[action] = key
 	}
 
-	femtoDefaultKeyBindings = femto.NewKeyBindings(keyToActionMapping)
+	femtoDefaultKeyBindings = femto.NewKeyBindings(femtoKeyToActionMapping)
+
+	dinkyActionToKeyMapping = make(map[string]string)
+	for key, action := range dinkyKeyToActionMapping {
+		if action == "" {
+			continue
+		}
+		dinkyActionToKeyMapping[action] = key
+	}
+
+	dinkyKeyBindings = make(map[femto.KeyDesc]string)
+	for key, action := range dinkyKeyToActionMapping {
+		if desc, ok := femto.NewKeyDesc(key); ok {
+			dinkyKeyBindings[desc] = action
+		}
+	}
+
 }

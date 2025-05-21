@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/google/uuid"
 	"github.com/pgavlin/femto"
 	"github.com/pgavlin/femto/runtime"
@@ -18,6 +19,7 @@ var app *tview.Application
 var menus []*menu.Menu
 var buffer *femto.Buffer
 var tabBarLine *tabbar.TabBar
+var menuBar *menu.MenuBar
 var editor *femto.View
 var pages *tview.Pages
 var statusBar *statusbar.StatusBar
@@ -48,6 +50,7 @@ func newFile(contents string, filename string) {
 	editor.SetRuntimeFiles(runtime.Files)
 	editor.SetColorscheme(colorscheme)
 	editor.SetKeybindings(femtoDefaultKeyBindings)
+	editor.SetInputCapture(editorInputCapture)
 
 	fileBuffer := &FileBuffer{
 		buffer:   buffer,
@@ -101,6 +104,22 @@ func syncStatusBarFromFileBuffer(fileBuffer *FileBuffer) {
 	// statusbar.SetModified(fileBuffer.buffer.Modified())
 }
 
+func editorInputCapture(event *tcell.EventKey) *tcell.EventKey {
+	for keyDesc, action := range dinkyKeyBindings {
+		if event.Key() == keyDesc.KeyCode {
+			if event.Key() == tcell.KeyRune {
+				continue
+			}
+
+			if keyDesc.Modifiers == event.Modifiers() {
+				dinkyActionMapping[action]()
+				return nil
+			}
+		}
+	}
+	return event
+}
+
 func Main() {
 	logFile := setupLogging()
 	defer logFile.Close()
@@ -114,8 +133,7 @@ func Main() {
 	flex := tview.NewFlex()
 	flex.SetDirection(tview.FlexRow)
 
-	menuBar := menu.NewMenuBar()
-
+	menuBar = menu.NewMenuBar()
 	menus = createMenus()
 	syncMenuKeyBindings(menus, femtoDefaultKeyBindings)
 	menuBar.SetMenus(menus)
@@ -127,16 +145,7 @@ func Main() {
 
 	// editor.SetRuntimeFiles(runtime.Files)
 	// editor.SetColorscheme(colorscheme)
-	// editor.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-	// 	switch event.Key() {
-	// 	case tcell.KeyCtrlS:
-	// 		return nil
-	// 	case tcell.KeyCtrlQ:
-	// 		app.Stop()
-	// 		return nil
-	// 	}
-	// 	return event
-	// })
+	// editor.SetInputCapture(editorInputCapture)
 
 	tabBarLine = tabbar.NewTabBar()
 	tabBarLine.OnActive = func(id string, index int) {

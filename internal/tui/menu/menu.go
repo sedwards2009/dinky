@@ -49,6 +49,10 @@ func (menuBar *MenuBar) SetMenus(menus []*Menu) {
 	menuBar.menus = menus
 }
 
+func (menuBar *MenuBar) Open() {
+	menuBar.selectMenuBarItem(0)
+}
+
 func (menuBar *MenuBar) Draw(screen tcell.Screen) {
 	menuBar.Box.DrawForSubclass(screen, menuBar)
 	x, y, width, _ := menuBar.GetInnerRect()

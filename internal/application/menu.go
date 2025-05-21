@@ -14,7 +14,7 @@ func createMenus() []*menu.Menu {
 			{Title: "Open", Callback: func(id string) { log.Println("Open file") }},
 			{Title: "Save", Callback: func(id string) { log.Println("Save file") }},
 			{Title: "", Callback: nil}, // Separator
-			{Title: "Quit", Callback: handleQuit},
+			{Title: "Quit", Callback: handleDinkyAction},
 		}},
 		{Title: "Edit", Items: []*menu.MenuItem{
 			{ID: femto.ActionUndo, Title: "Undo", Callback: handleFemtoAction},
@@ -27,8 +27,8 @@ func createMenus() []*menu.Menu {
 			{ID: femto.ActionSelectAll, Title: "Select All", Callback: handleFemtoAction},
 		}},
 		{Title: "View", Items: []*menu.MenuItem{
-			{ID: ACTION_TOGGLE_LINE_NUMBERS, Title: "Line Numbers", Callback: handleLineNumbers},
-			{ID: ACTION_TOGGLE_SOFT_WRAP, Title: "Soft Wrap", Callback: handleSoftWrap},
+			{ID: ACTION_TOGGLE_LINE_NUMBERS, Title: "Line Numbers", Callback: handleDinkyAction},
+			{ID: ACTION_TOGGLE_SOFT_WRAP, Title: "Soft Wrap", Callback: handleDinkyAction},
 		}},
 		{Title: "Help", Items: []*menu.MenuItem{
 			{Title: "About", Callback: func(id string) { log.Println("About") }},
@@ -39,7 +39,7 @@ func createMenus() []*menu.Menu {
 func syncMenuKeyBindings(menu []*menu.Menu, keyBindings femto.KeyBindings) {
 	for _, menu := range menus {
 		for _, menuItem := range menu.Items {
-			if key, ok := actionToKeyMapping[menuItem.ID]; ok {
+			if key, ok := femtoActionToKeyMapping[menuItem.ID]; ok {
 				menuItem.Shortcut = key
 			} else {
 				menuItem.Shortcut = ""
