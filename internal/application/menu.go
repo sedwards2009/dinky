@@ -14,7 +14,7 @@ func createMenus() []*menu.Menu {
 			{Title: "Open", Callback: func(id string) { log.Println("Open file") }},
 			{Title: "Save", Callback: func(id string) { log.Println("Save file") }},
 			{Title: "", Callback: nil}, // Separator
-			{Title: "Quit", Callback: handleDinkyAction},
+			{ID: ACTION_QUIT, Title: "Quit", Callback: handleDinkyAction},
 		}},
 		{Title: "Edit", Items: []*menu.MenuItem{
 			{ID: femto.ActionUndo, Title: "Undo", Callback: handleFemtoAction},
