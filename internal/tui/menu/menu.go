@@ -40,7 +40,7 @@ func NewMenuBar() *MenuBar {
 	return &MenuBar{
 		Box: tview.NewBox(),
 
-		MenuBarStyle: tcell.StyleDefault.Foreground(fg).Background(bg).Bold(true),
+		MenuBarStyle: tcell.StyleDefault.Foreground(fg).Background(bg),
 		selectedPath: []int{-1},
 	}
 }

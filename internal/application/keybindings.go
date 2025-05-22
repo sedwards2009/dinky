@@ -6,11 +6,9 @@ import (
 
 var femtoDefaultKeyBindings femto.KeyBindings
 var femtoKeyToActionMapping map[string]string
-var femtoActionToKeyMapping map[string]string
-
+var actionToKeyMapping map[string]string
 var dinkyKeyBindings map[femto.KeyDesc]string
 var dinkyKeyToActionMapping map[string]string
-var dinkyActionToKeyMapping map[string]string
 
 func initKeyBindings() {
 	femtoKeyToActionMapping = map[string]string{
@@ -115,25 +113,28 @@ func initKeyBindings() {
 	}
 
 	dinkyKeyToActionMapping = map[string]string{
-		"F12": ACTION_OPEN_MENU,
+		"Ctrl-n": ACTION_NEW,
+		"Ctrl-o": ACTION_OPEN_FILE,
+		"Ctrl-s": ACTION_SAVE_FILE,
+		"F12":    ACTION_OPEN_MENU,
+		"Ctrl-q": ACTION_QUIT,
 	}
 
-	femtoActionToKeyMapping = make(map[string]string)
+	actionToKeyMapping = make(map[string]string)
 	for key, action := range femtoKeyToActionMapping {
 		if action == "" {
 			continue
 		}
-		femtoActionToKeyMapping[action] = key
+		actionToKeyMapping[action] = key
 	}
 
 	femtoDefaultKeyBindings = femto.NewKeyBindings(femtoKeyToActionMapping)
 
-	dinkyActionToKeyMapping = make(map[string]string)
 	for key, action := range dinkyKeyToActionMapping {
 		if action == "" {
 			continue
 		}
-		dinkyActionToKeyMapping[action] = key
+		actionToKeyMapping[action] = key
 	}
 
 	dinkyKeyBindings = make(map[femto.KeyDesc]string)
@@ -142,5 +143,4 @@ func initKeyBindings() {
 			dinkyKeyBindings[desc] = action
 		}
 	}
-
 }

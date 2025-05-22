@@ -10,9 +10,10 @@ import (
 func createMenus() []*menu.Menu {
 	return []*menu.Menu{
 		{Title: "File", Items: []*menu.MenuItem{
-			{Title: "New", Callback: func(id string) { log.Println("New file") }},
-			{Title: "Open", Callback: func(id string) { log.Println("Open file") }},
-			{Title: "Save", Callback: func(id string) { log.Println("Save file") }},
+			{ID: ACTION_NEW, Title: "New", Callback: handleDinkyAction},
+			{ID: ACTION_OPEN_FILE, Title: "Open", Callback: handleDinkyAction},
+			{ID: ACTION_SAVE_FILE, Title: "Save", Callback: handleDinkyAction},
+			{ID: ACTION_SAVE_FILE_AS, Title: "Save As…", Callback: handleDinkyAction},
 			{Title: "", Callback: nil}, // Separator
 			{ID: ACTION_QUIT, Title: "Quit", Callback: handleDinkyAction},
 		}},
@@ -36,7 +37,7 @@ func createMenus() []*menu.Menu {
 	}
 }
 
-func syncMenuKeyBindings(menu []*menu.Menu, keyBindings femto.KeyBindings) {
+func syncMenuKeyBindings(menus []*menu.Menu, femtoActionToKeyMapping map[string]string) {
 	for _, menu := range menus {
 		for _, menuItem := range menu.Items {
 			if key, ok := femtoActionToKeyMapping[menuItem.ID]; ok {
@@ -72,7 +73,7 @@ func syncLineNumbers(menus []*menu.Menu, on bool) {
 				} else {
 					menuItem.Title = "  "
 				}
-				menuItem.Title += "Line numbers"
+				menuItem.Title += "Line Numbers"
 			}
 		}
 	}

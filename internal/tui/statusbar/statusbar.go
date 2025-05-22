@@ -25,7 +25,7 @@ func NewStatusBar() *StatusBar {
 	bg := tcell.NewHexColor(0x007ace)
 	return &StatusBar{
 		Box:   tview.NewBox(),
-		Style: tcell.StyleDefault.Foreground(fg).Background(bg).Bold(true),
+		Style: tcell.StyleDefault.Foreground(fg).Background(bg),
 	}
 }
 
