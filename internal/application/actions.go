@@ -46,20 +46,27 @@ func handleOpenFile() {
 }
 
 func bufferToBytes(buffer *femto.Buffer) []byte {
-
+	str := buffer.LineArray.SaveString(isBufferCRLF(buffer))
+	return []byte(str)
 }
 
-func writeFile(filename string, buffer *femto.Buffer) string {
+func writeFile(filename string, buffer *femto.Buffer) (ok bool, message string) {
 	contents := bufferToBytes(buffer)
 	err := renameio.WriteFile(filename, contents, 0644)
 	if err != nil {
-
+		return false, "Error writing file: " + err.Error()
 	}
-	return "Wrote file " + filename
+	return true, "Wrote file " + filename
 }
 
 func handleSaveFile() {
-
+	fileBuffer := getFileBufferByID(fileBufferID)
+	ok, message := writeFile(fileBuffer.filename, fileBuffer.buffer)
+	if ok {
+		statusBar.ShowMessage(message)
+	} else {
+		statusBar.ShowError(message)
+	}
 }
 
 func handleSaveFileAs() {

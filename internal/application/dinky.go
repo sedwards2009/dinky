@@ -106,13 +106,14 @@ func syncStatusBarFromFileBuffer(fileBuffer *FileBuffer) {
 	statusBar.TabSize = tabSize
 
 	lineEndings := "LF"
-	switch fileBuffer.buffer.Settings["fileformat"].(string) {
-	case "unix":
-		lineEndings = "LF"
-	case "dos":
+	if isBufferCRLF(fileBuffer.buffer) {
 		lineEndings = "CRLF"
 	}
 	statusBar.LineEndings = lineEndings
+}
+
+func isBufferCRLF(buffer *femto.Buffer) bool {
+	return buffer.Settings["fileformat"].(string) == "dos"
 }
 
 func editorInputCapture(event *tcell.EventKey) *tcell.EventKey {
@@ -180,7 +181,7 @@ func Main() {
 	pages = tview.NewPages()
 	flex.AddItem(pages, 0, 1, true)
 
-	statusBar = statusbar.NewStatusBar()
+	statusBar = statusbar.NewStatusBar(app)
 	flex.AddItem(statusBar, 1, 0, false)
 
 	app.SetRoot(flex, true)

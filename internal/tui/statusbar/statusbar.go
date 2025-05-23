@@ -3,6 +3,7 @@ package statusbar
 import (
 	"dinky/internal/tui/utils"
 	"fmt"
+	"time"
 
 	runewidth "github.com/mattn/go-runewidth"
 
@@ -10,32 +11,76 @@ import (
 	"github.com/rivo/tview"
 )
 
+const (
+	MESSAGE_TIMEOUT = 5 * time.Second
+	ERROR_TIMEOUT   = 15 * time.Second
+)
+
 type StatusBar struct {
 	*tview.Box
-	Style       tcell.Style
-	Filename    string
-	Line        int
-	Col         int
-	LineEndings string
-	TabSize     int
+	app          *tview.Application
+	Style        tcell.Style
+	MessageStyle tcell.Style
+	ErrorStyle   tcell.Style
+	Filename     string
+	Line         int
+	Col          int
+	LineEndings  string
+	TabSize      int
+	message      string
+	errorMessage string
 }
 
-func NewStatusBar() *StatusBar {
+func NewStatusBar(app *tview.Application) *StatusBar {
 	fg := tcell.NewHexColor(0xf3f3f3)
 	bg := tcell.NewHexColor(0x007ace)
+	messageBg := tcell.NewHexColor(0x0b835c)
+	errorBg := tcell.NewHexColor(0xa4090c)
 	return &StatusBar{
-		Box:   tview.NewBox(),
-		Style: tcell.StyleDefault.Foreground(fg).Background(bg),
+		Box:          tview.NewBox(),
+		app:          app,
+		Style:        tcell.StyleDefault.Foreground(fg).Background(bg),
+		MessageStyle: tcell.StyleDefault.Foreground(fg).Background(messageBg),
+		ErrorStyle:   tcell.StyleDefault.Foreground(fg).Background(errorBg),
 	}
+}
+
+func (statusBar *StatusBar) ShowMessage(message string) {
+	statusBar.message = message
+	statusBar.scheduleMessageReset(MESSAGE_TIMEOUT)
+}
+
+func (statusBar *StatusBar) ShowError(errorMessage string) {
+	statusBar.errorMessage = errorMessage
+	statusBar.scheduleMessageReset(ERROR_TIMEOUT)
+}
+
+func (statusBar *StatusBar) scheduleMessageReset(timeOut time.Duration) {
+	time.AfterFunc(timeOut, func() {
+		statusBar.app.QueueUpdateDraw(func() {
+			statusBar.message = ""
+		})
+	})
 }
 
 func (statusBar *StatusBar) Draw(screen tcell.Screen) {
 	statusBar.Box.DrawForSubclass(screen, statusBar)
 	x, y, width, _ := statusBar.GetInnerRect()
 
-	utils.DrawHorizontalLine(screen, x, y, width, statusBar.Style, ' ')
+	style := statusBar.Style
+	leftMessage := statusBar.Filename
+	if statusBar.message != "" {
+		leftMessage = statusBar.message
+		style = statusBar.MessageStyle
+	}
+	if statusBar.errorMessage != "" {
+		leftMessage = statusBar.errorMessage
+		style = statusBar.ErrorStyle
+	}
 
-	utils.DrawText(screen, x+1, y, statusBar.Filename, statusBar.Style)
+	utils.DrawHorizontalLine(screen, x, y, width, style, ' ')
+
+	utils.DrawText(screen, x+1, y, leftMessage, style)
 
 	cursorMessage := fmt.Sprintf("Ln %d, Col %d", statusBar.Line, statusBar.Col)
 	padding := 19 - runewidth.StringWidth(cursorMessage)
@@ -44,5 +89,5 @@ func (statusBar *StatusBar) Draw(screen tcell.Screen) {
 	}
 	rightMessage := fmt.Sprintf("%s  Tab Size: %d  %s  F12: Menu", cursorMessage, statusBar.TabSize, statusBar.LineEndings)
 	rx := width - runewidth.StringWidth(rightMessage) - 1
-	utils.DrawText(screen, rx, y, rightMessage, statusBar.Style)
+	utils.DrawText(screen, rx, y, rightMessage, style)
 }
