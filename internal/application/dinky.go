@@ -148,6 +148,12 @@ func Main() {
 	app = tview.NewApplication()
 	app.EnableMouse(true)
 	app.SetBeforeDrawFunc(updateStatusBar)
+	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyCtrlC {
+			return tcell.NewEventKey(tcell.KeyCtrlC, 0, tcell.ModCtrl)
+		}
+		return event
+	})
 
 	flex := tview.NewFlex()
 	flex.SetDirection(tview.FlexRow)
