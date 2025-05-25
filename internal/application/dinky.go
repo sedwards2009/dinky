@@ -22,7 +22,8 @@ var buffer *femto.Buffer
 var tabBarLine *tabbar.TabBar
 var menuBar *menu.MenuBar
 var editor *femto.View
-var pages *tview.Pages
+var modalPages *tview.Pages
+var editorPages *tview.Pages
 var statusBar *statusbar.StatusBar
 
 var colorscheme femto.Colorscheme
@@ -61,7 +62,7 @@ func newFile(contents string, filename string) {
 	}
 
 	fileBuffers = append(fileBuffers, fileBuffer)
-	pages.AddPage(fileBuffer.uuid, editor, true, true)
+	editorPages.AddPage(fileBuffer.uuid, editor, true, false)
 	tabBarLine.AddTab(fileBuffer.filename, fileBuffer.uuid)
 	if buffer == nil {
 		buffer = fileBuffer.buffer
@@ -90,7 +91,7 @@ func getFileBufferByID(id string) *FileBuffer {
 func selectTab(id string) {
 	fileBuffer := getFileBufferByID(id)
 	fileBufferID = id
-	pages.SwitchToPage(id)
+	editorPages.SwitchToPage(id)
 	buffer = fileBuffer.buffer
 	editor = fileBuffer.editor
 	syncMenuFromBuffer(buffer)
@@ -184,13 +185,16 @@ func Main() {
 
 	flex.AddItem(tabBarLine, 1, 0, false)
 
-	pages = tview.NewPages()
-	flex.AddItem(pages, 0, 1, true)
+	editorPages = tview.NewPages()
+	flex.AddItem(editorPages, 0, 1, true)
 
 	statusBar = statusbar.NewStatusBar(app)
 	flex.AddItem(statusBar, 1, 0, false)
 
-	app.SetRoot(flex, true)
+	modalPages = tview.NewPages()
+	modalPages.AddPage("workspace", flex, true, true)
+
+	app.SetRoot(modalPages, true)
 	app.SetAfterDrawFunc(menuBar.AfterDraw())
 
 	menuBar.SetOnClose(func() {

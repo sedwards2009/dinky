@@ -1,0 +1,44 @@
+package main
+
+import (
+	"dinky/internal/tui/filedialog"
+	"dinky/internal/tui/style"
+	"log"
+	"os"
+
+	"github.com/rivo/tview"
+)
+
+func main() {
+	logFile := setupLogging()
+	defer logFile.Close()
+
+	style.Init()
+
+	app := tview.NewApplication()
+	app.EnableMouse(true)
+
+	workspace := tview.NewBox()
+
+	modalPages := tview.NewPages()
+	modalPages.AddPage("workspace", workspace, true, true)
+
+	fileDialog := filedialog.NewFileDialog(app)
+	fileDialog.SetPath("/home/sbe")
+	modalPages.AddPage("fileDialog", fileDialog, true, true)
+
+	app.SetRoot(modalPages, true)
+
+	if err := app.Run(); err != nil {
+		log.Fatalf("Application error: %v", err)
+	}
+}
+
+func setupLogging() *os.File {
+	logFile, err := os.OpenFile("app.log", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+	if err != nil {
+		panic("Failed to open log file: " + err.Error())
+	}
+	log.SetOutput(logFile)
+	return logFile
+}
