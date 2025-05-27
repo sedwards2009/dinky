@@ -31,12 +31,12 @@ func NewScrollbar() *Scrollbar {
 	}
 
 	upButton.SetSelectedFunc(func() {
-		pos := scrollbar.Track.Position() - scrollbar.Track.ThumbSize()
+		pos := scrollbar.Track.Position() - max(scrollbar.Track.ThumbSize()/2, 1)
 		scrollbar.Track.SetPosition(pos)
 	})
 
 	downButton.SetSelectedFunc(func() {
-		pos := scrollbar.Track.Position() + scrollbar.Track.ThumbSize()
+		pos := scrollbar.Track.Position() + max(scrollbar.Track.ThumbSize()/2, 1)
 		scrollbar.Track.SetPosition(pos)
 	})
 

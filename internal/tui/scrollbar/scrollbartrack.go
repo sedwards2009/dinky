@@ -1,8 +1,6 @@
 package scrollbar
 
 import (
-	"log"
-
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -41,8 +39,6 @@ func NewScrollbarTrack() *ScrollbarTrack {
 }
 
 func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
-	// scrollbar.Box.DrawForSubclass(screen, scrollbar)
-
 	x, y, width, height := scrollbarTrack.GetInnerRect()
 	if width < 1 || height < 1 {
 		return
@@ -51,7 +47,7 @@ func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
 	// Draw the track
 	trackStyle := tcell.StyleDefault.Background(scrollbarTrack.trackColor)
 	for i := 0; i < height; i++ {
-		screen.SetContent(x, y+i, 'X', nil, trackStyle)
+		screen.SetContent(x, y+i, ' ', nil, trackStyle)
 	}
 
 	// Calculate the position and size of the scrollbar thumb.
@@ -61,7 +57,6 @@ func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
 	}
 
 	thumbY := y + height*(scrollbarTrack.position-scrollbarTrack.min)/(scrollbarTrack.max-scrollbarTrack.min)
-	log.Printf("Scrollbar thumb position: %d, height: %d", thumbY, thumbHeight)
 	thumbStyle := tcell.StyleDefault.Background(scrollbarTrack.thumbColor)
 
 	// Draw the scrollbar thumb.
@@ -95,21 +90,18 @@ func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action tview.MouseActi
 			return true, nil // Consumed the event
 		}
 
-		// if action == tview.MouseScrollUp || action == tview.MouseScrollDown {
-		// 	// Handle scroll events
-		// 	if action == tview.MouseScrollUp {
-		// 		scrollbar.Position -= 1
-		// 	} else if action == tview.MouseScrollDown {
-		// 		scrollbar.Position += 1
-		// 	}
-		// 	// Clamp the position to the valid range
-		// 	if scrollbar.Position < scrollbar.Min {
-		// 		scrollbar.Position = scrollbar.Min
-		// 	} else if scrollbar.Position > scrollbar.Max {
-		// 		scrollbar.Position = scrollbar.Max
-		// 	}
-		// 	return true, nil // Consumed the event
-		// }
+		if action == tview.MouseScrollUp || action == tview.MouseScrollDown {
+			// Handle scroll events
+			if action == tview.MouseScrollUp {
+				pos := scrollbarTrack.Position() - max(scrollbarTrack.ThumbSize()/2, 1)
+				scrollbarTrack.SetPosition(pos)
+
+			} else if action == tview.MouseScrollDown {
+				pos := scrollbarTrack.Position() + max(scrollbarTrack.ThumbSize()/2, 1)
+				scrollbarTrack.SetPosition(pos)
+			}
+			return true, nil // Consumed the event
+		}
 		return false, nil // Not consumed
 	})
 }
