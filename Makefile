@@ -1,4 +1,4 @@
-.PHONY: all build test filedialogdemo
+.PHONY: all build test filedialogdemo scrollbardemo
 
 build:
 	go build -v dinky.go
@@ -8,3 +8,6 @@ test:
 
 filedialogdemo:
 	go build -v -o filedialogdemo ./cmd/filedialogdemo
+
+scrollbardemo:
+	go build -v -o scrollbardemo ./cmd/scrollbardemo
