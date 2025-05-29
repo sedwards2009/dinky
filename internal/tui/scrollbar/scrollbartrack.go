@@ -75,7 +75,7 @@ func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action tview.MouseActi
 			return false, nil // Click outside the scrollbar
 		}
 
-		if action == tview.MouseLeftDown {
+		if action == tview.MouseLeftDown || (action == tview.MouseMove && event.Buttons() == tcell.Button1) {
 			// Calculate the new position based on the click
 			// Assuming the scrollbar is vertical, we calculate the position based on the y coordinate
 			newPosition := (absEventY-ry)*(scrollbarTrack.max-scrollbarTrack.min)/height + scrollbarTrack.min - scrollbarTrack.thumbSize/2
