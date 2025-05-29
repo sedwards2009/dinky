@@ -50,15 +50,36 @@ func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
 		screen.SetContent(x, y+i, ' ', nil, trackStyle)
 	}
 
+	doubleHeight := height * 2
 	// Calculate the position and size of the scrollbar thumb.
-	thumbHeightFloat := float64(height) * float64(scrollbarTrack.thumbSize) / float64(scrollbarTrack.max-scrollbarTrack.min+1)
-	thumbHeight := int(thumbHeightFloat + 0.5) // Round to nearest integer
+	doubleThumbHeightFloat := float64(doubleHeight) * float64(scrollbarTrack.thumbSize) / float64(scrollbarTrack.max-scrollbarTrack.min+1)
+	doubleThumbHeight := int(doubleThumbHeightFloat + 0.5) // Round to nearest integer
 
-	thumbY := y + height*(scrollbarTrack.position-scrollbarTrack.min)/(scrollbarTrack.max-scrollbarTrack.min)
+	doubleThumbY := y + doubleHeight*(scrollbarTrack.position-scrollbarTrack.min)/(scrollbarTrack.max-scrollbarTrack.min)
 	thumbStyle := tcell.StyleDefault.Background(scrollbarTrack.thumbColor)
+	thumbReverseStyle := thumbStyle.Reverse(true)
+
+	if scrollbarTrack.position == scrollbarTrack.max-scrollbarTrack.min-scrollbarTrack.thumbSize {
+		// Special case for when the thumb is at the bottom and we don't want to show a gap due to rounding
+		doubleThumbHeight += 2
+	}
+
+	if doubleThumbY&1 == 1 {
+		// Draw the top of the thumb in the bottom half of the cell
+		screen.SetContent(x, doubleThumbY>>1, '\u2584', nil, thumbReverseStyle)
+		doubleThumbY++
+		doubleThumbHeight--
+	}
+
+	if doubleThumbHeight&1 == 1 {
+		// Draw the bottom part of the thumb in the top half of the cell
+		screen.SetContent(x, doubleThumbY>>1+doubleThumbHeight>>1, '\u2580', nil, thumbReverseStyle)
+		doubleThumbHeight--
+	}
 
 	// Draw the scrollbar thumb.
-	for i := 0; i < thumbHeight; i++ {
+	thumbY := doubleThumbY >> 1 // Convert back to single height
+	for i := 0; i < doubleThumbHeight>>1; i++ {
 		if thumbY+i < height {
 			screen.SetContent(x, thumbY+i, ' ', nil, thumbStyle)
 		}
