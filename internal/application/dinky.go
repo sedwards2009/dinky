@@ -148,7 +148,10 @@ func Main() {
 
 	app = tview.NewApplication()
 	app.EnableMouse(true)
-	app.SetBeforeDrawFunc(updateStatusBar)
+	app.SetBeforeDrawFunc(func(screen tcell.Screen) bool {
+		updateStatusBar(screen)
+		return false
+	})
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyCtrlC {
 			return tcell.NewEventKey(tcell.KeyCtrlC, 0, tcell.ModCtrl)

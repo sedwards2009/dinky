@@ -23,6 +23,9 @@ type ScrollbarTrack struct {
 
 	trackColor tcell.Color
 	thumbColor tcell.Color
+
+	beforeDrawFunc func(screen tcell.Screen)
+	changedFunc    func(position int)
 }
 
 func NewScrollbarTrack() *ScrollbarTrack {
@@ -38,7 +41,15 @@ func NewScrollbarTrack() *ScrollbarTrack {
 	}
 }
 
+func (scrollbarTrack *ScrollbarTrack) SetBeforeDrawFunc(beforeDrawFunc func(screen tcell.Screen)) {
+	scrollbarTrack.beforeDrawFunc = beforeDrawFunc
+}
+
 func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
+	if scrollbarTrack.beforeDrawFunc != nil {
+		scrollbarTrack.beforeDrawFunc(screen)
+	}
+
 	x, y, width, height := scrollbarTrack.GetInnerRect()
 	if width < 1 || height < 1 {
 		return
@@ -106,6 +117,9 @@ func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action tview.MouseActi
 				newPosition = scrollbarTrack.max
 			}
 			scrollbarTrack.position = newPosition
+			if scrollbarTrack.changedFunc != nil {
+				scrollbarTrack.changedFunc(newPosition)
+			}
 			return true, nil // Consumed the event
 		}
 
@@ -114,10 +128,15 @@ func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action tview.MouseActi
 			if action == tview.MouseScrollUp {
 				pos := scrollbarTrack.Position() - max(scrollbarTrack.ThumbSize()/2, 1)
 				scrollbarTrack.SetPosition(pos)
-
+				if scrollbarTrack.changedFunc != nil {
+					scrollbarTrack.changedFunc(pos)
+				}
 			} else if action == tview.MouseScrollDown {
 				pos := scrollbarTrack.Position() + max(scrollbarTrack.ThumbSize()/2, 1)
 				scrollbarTrack.SetPosition(pos)
+				if scrollbarTrack.changedFunc != nil {
+					scrollbarTrack.changedFunc(pos)
+				}
 			}
 			return true, nil // Consumed the event
 		}
@@ -216,4 +235,8 @@ func (scrollbarTrack *ScrollbarTrack) SetThumbColor(color tcell.Color) *Scrollba
 // GetThumbColor returns the color of the scrollbar thumb.
 func (scrollbarTrack *ScrollbarTrack) ThumbColor() tcell.Color {
 	return scrollbarTrack.thumbColor
+}
+
+func (scrollbarTrack *ScrollbarTrack) SetChangedFunc(changedFunc func(position int)) {
+	scrollbarTrack.changedFunc = changedFunc
 }

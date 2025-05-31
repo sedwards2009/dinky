@@ -5,6 +5,7 @@ import (
 	"os"
 	"slices"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
@@ -115,6 +116,18 @@ func NewFileList(app *tview.Application) *FileList {
 		sortColumn:        0,
 		sortDirection:     1,
 	}
+
+	fileListScrollbar.Track.SetBeforeDrawFunc(func(_ tcell.Screen) {
+		row, _ := table.GetOffset()
+		fileListScrollbar.Track.SetMax(table.GetRowCount() - 1)
+		_, _, _, height := fileList.table.GetInnerRect()
+		fileListScrollbar.Track.SetThumbSize(height)
+		fileListScrollbar.Track.SetPosition(row)
+	})
+	fileListScrollbar.SetChangedFunc(func(position int) {
+		_, column := fileList.table.GetOffset()
+		fileList.table.SetOffset(position, column)
+	})
 
 	for i, desc := range columnDescriptors {
 		cell := &tview.TableCell{

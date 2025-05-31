@@ -7,9 +7,10 @@ import (
 
 type Scrollbar struct {
 	*tview.Flex
-	Track      *ScrollbarTrack
-	upButton   *tview.Button
-	downButton *tview.Button
+	Track       *ScrollbarTrack
+	upButton    *tview.Button
+	downButton  *tview.Button
+	changedFunc func(position int)
 }
 
 func NewScrollbar() *Scrollbar {
@@ -33,11 +34,17 @@ func NewScrollbar() *Scrollbar {
 	upButton.SetSelectedFunc(func() {
 		pos := scrollbar.Track.Position() - max(scrollbar.Track.ThumbSize()/2, 1)
 		scrollbar.Track.SetPosition(pos)
+		if scrollbar.changedFunc != nil {
+			scrollbar.changedFunc(pos)
+		}
 	})
 
 	downButton.SetSelectedFunc(func() {
 		pos := scrollbar.Track.Position() + max(scrollbar.Track.ThumbSize()/2, 1)
 		scrollbar.Track.SetPosition(pos)
+		if scrollbar.changedFunc != nil {
+			scrollbar.changedFunc(pos)
+		}
 	})
 
 	return scrollbar
@@ -46,4 +53,9 @@ func NewScrollbar() *Scrollbar {
 func (scrollbar *Scrollbar) SetButtonStyle(style tcell.Style) {
 	scrollbar.upButton.SetStyle(style)
 	scrollbar.downButton.SetStyle(style)
+}
+
+func (scrollbar *Scrollbar) SetChangedFunc(changedFunc func(position int)) {
+	scrollbar.changedFunc = changedFunc
+	scrollbar.Track.SetChangedFunc(changedFunc)
 }
