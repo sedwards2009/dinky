@@ -55,7 +55,7 @@ func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
 	doubleThumbHeightFloat := float64(doubleHeight) * float64(scrollbarTrack.thumbSize) / float64(scrollbarTrack.max-scrollbarTrack.min+1)
 	doubleThumbHeight := int(doubleThumbHeightFloat + 0.5) // Round to nearest integer
 
-	doubleThumbY := y + doubleHeight*(scrollbarTrack.position-scrollbarTrack.min)/(scrollbarTrack.max-scrollbarTrack.min)
+	doubleThumbY := doubleHeight * (scrollbarTrack.position - scrollbarTrack.min) / (scrollbarTrack.max - scrollbarTrack.min)
 	thumbStyle := tcell.StyleDefault.Background(scrollbarTrack.thumbColor)
 	thumbReverseStyle := thumbStyle.Reverse(true)
 
@@ -66,14 +66,14 @@ func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
 
 	if doubleThumbY&1 == 1 {
 		// Draw the top of the thumb in the bottom half of the cell
-		screen.SetContent(x, doubleThumbY>>1, '\u2584', nil, thumbReverseStyle)
+		screen.SetContent(x, y+doubleThumbY>>1, '\u2584', nil, thumbReverseStyle)
 		doubleThumbY++
 		doubleThumbHeight--
 	}
 
 	if doubleThumbHeight&1 == 1 {
 		// Draw the bottom part of the thumb in the top half of the cell
-		screen.SetContent(x, doubleThumbY>>1+doubleThumbHeight>>1, '\u2580', nil, thumbReverseStyle)
+		screen.SetContent(x, y+doubleThumbY>>1+doubleThumbHeight>>1, '\u2580', nil, thumbReverseStyle)
 		doubleThumbHeight--
 	}
 
@@ -81,7 +81,7 @@ func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
 	thumbY := doubleThumbY >> 1 // Convert back to single height
 	for i := 0; i < doubleThumbHeight>>1; i++ {
 		if thumbY+i < height {
-			screen.SetContent(x, thumbY+i, ' ', nil, thumbStyle)
+			screen.SetContent(x, y+thumbY+i, ' ', nil, thumbStyle)
 		}
 	}
 }

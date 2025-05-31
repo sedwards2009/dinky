@@ -22,9 +22,14 @@ func main() {
 
 	layout := tview.NewFlex().
 		AddItem(nil, 0, 1, false).
-		AddItem(scrollbarWidget, 1, 0, true).
+		AddItem(tview.NewFlex().
+			AddItem(nil, 0, 1, false).
+			AddItem(scrollbarWidget, 80, 0, true).
+			AddItem(nil, 0, 1, false).
+			SetDirection(tview.FlexColumn),
+			20, 0, true).
 		AddItem(nil, 0, 1, false).
-		SetDirection(tview.FlexColumn)
+		SetDirection(tview.FlexRow)
 
 	app.SetRoot(layout, true)
 
