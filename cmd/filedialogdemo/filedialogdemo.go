@@ -25,6 +25,14 @@ func main() {
 
 	fileDialog := filedialog.NewFileDialog(app)
 	fileDialog.SetPath("/home/sbe")
+	fileDialog.SetCompletedFunc(func(accepted bool, path string) {
+		if accepted {
+			log.Printf("File selected: %s\n", path)
+		} else {
+			log.Println("File selection cancelled.")
+		}
+		app.Stop()
+	})
 	modalPages.AddPage("fileDialog", fileDialog, true, true)
 
 	app.SetRoot(modalPages, true)

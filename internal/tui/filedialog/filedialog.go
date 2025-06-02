@@ -1,10 +1,11 @@
 package filedialog
 
 import (
+	"dinky/internal/tui/filelist"
 	"dinky/internal/tui/style"
+	"log"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/rivo/tview"
@@ -14,11 +15,11 @@ type FileDialog struct {
 	*tview.Flex
 	app       *tview.Application
 	pathField *tview.InputField
-	fileList  *tview.List
+	fileList  *filelist.FileList
 
 	dirRequestsChan  chan string
 	currentDirectory string
-	directoryEntries []os.DirEntry
+	completedFunc    func(accepted bool, path string)
 }
 
 func NewFileDialog(app *tview.Application) *FileDialog {
@@ -30,35 +31,38 @@ func NewFileDialog(app *tview.Application) *FileDialog {
 
 	vertContentsFlex.AddItem(nil, 1, 0, false)
 
-	pathField := tview.NewInputField().
-		SetLabel("Path: ")
+	pathFlex := tview.NewFlex()
+	pathFlex.SetDirection(tview.FlexColumn)
+	pathFlex.SetBorder(false)
+
+	parentButton := tview.NewButton("\u2ba4")
+	pathFlex.AddItem(parentButton, 3, 0, false)
+	pathFlex.AddItem(nil, 1, 0, false)
+
+	pathField := tview.NewInputField()
+	style.StyleInputField(pathField)
+	pathFlex.AddItem(pathField, 0, 1, false)
+
 	// SetAcceptanceFunc(tview.InputFieldInteger).
 	// SetDoneFunc(func(key tcell.Key) {
 	// 	app.Stop()
 	// })
-	style.StyleInputField(pathField)
-	vertContentsFlex.AddItem(pathField, 1, 0, false)
-
+	vertContentsFlex.AddItem(pathFlex, 1, 0, false)
 	vertContentsFlex.AddItem(nil, 1, 0, false)
 
-	fileList := tview.NewList().
-		SetUseStyleTags(false, false).
-		ShowSecondaryText(false).
-		SetHighlightFullLine(true)
-	style.StyleList(fileList)
+	fileList := filelist.NewFileList(app)
 
 	vertContentsFlex.AddItem(fileList, 0, 1, false)
-	// fileList.AddItem("..", "", 0, nil)
-	// fileList.AddItem("dir/", "", 0, nil)
-	// fileList.AddItem("file1.txt", "", 0, nil)
-
 	vertContentsFlex.AddItem(nil, 1, 0, false)
 
 	buttonFlex := tview.NewFlex().
 		SetDirection(tview.FlexColumn)
-	buttonFlex.AddItem(tview.NewButton("Open"), 10, 1, false)
 	buttonFlex.AddItem(nil, 0, 1, false)
-	buttonFlex.AddItem(tview.NewButton("Cancel"), 10, 1, false)
+	openButton := tview.NewButton("Open")
+	buttonFlex.AddItem(openButton, 10, 1, false)
+	buttonFlex.AddItem(nil, 1, 0, false)
+	cancelButton := tview.NewButton("Cancel")
+	buttonFlex.AddItem(cancelButton, 10, 1, false)
 
 	vertContentsFlex.AddItem(buttonFlex, 1, 0, false)
 	vertContentsFlex.AddItem(nil, 1, 0, false)
@@ -83,130 +87,62 @@ func NewFileDialog(app *tview.Application) *FileDialog {
 	}
 
 	fileList.SetChangedFunc(fileDialog.handleListChanged)
-	fileList.SetDoneFunc(func() {
-
-	})
 	fileList.SetSelectedFunc(fileDialog.handleListSelected)
 
-	go fileDialog.runDirectoryLister(dirRequestsChan)
+	parentButton.SetSelectedFunc(func() {
+		currentPath := fileDialog.fileList.Path()
+		if currentPath == "" || currentPath == "/" {
+			return
+		}
 
+		newPath := filepath.Dir(filepath.Clean(currentPath))
+		fileDialog.fileList.SetPath(newPath)
+		fileDialog.pathField.SetText(newPath)
+	})
+
+	openButton.SetSelectedFunc(func() {
+		if fileDialog.completedFunc != nil {
+			fileDialog.completedFunc(true, fileDialog.pathField.GetText())
+		}
+	})
+	cancelButton.SetSelectedFunc(func() {
+		if fileDialog.completedFunc != nil {
+			fileDialog.completedFunc(false, "")
+		}
+	})
 	return fileDialog
 }
 
-func (fileDialog *FileDialog) runDirectoryLister(dirRequests chan string) {
-	for {
-		dirPath, ok := <-dirRequests
-		if !ok || dirPath == "" {
-			return
-		}
-		entries, err := os.ReadDir(dirPath)
-		if err != nil {
+func (fileDialog *FileDialog) SetCompletedFunc(completedFunc func(accepted bool, path string)) {
+	fileDialog.completedFunc = completedFunc
+}
 
-		} else {
-			fileDialog.app.QueueUpdateDraw(func() {
-				fileDialog.loadDirectoryEntries(entries, dirPath)
-			})
-		}
+func (fileDialog *FileDialog) handleListChanged(path string, entry os.DirEntry) {
+	if entry.IsDir() {
+		fileDialog.pathField.SetText(path + "/")
+	} else {
+		fileDialog.pathField.SetText(path)
 	}
 }
 
-func (fileDialog *FileDialog) loadDirectoryEntries(entries []os.DirEntry, dirPath string) {
-	fileDialog.currentDirectory = dirPath
-	fileDialog.directoryEntries = entries
-
-	fileList := fileDialog.fileList
-	fileList.Clear()
-
-	// Sort the entries by directory first, then by name, case-insensitive
-	entries = sortEntries(entries)
-
-	// Add ".." for parent directory
-	fileList.AddItem("\u2ba4 ../", "", 0, nil)
-
-	for _, entry := range entries {
-		if entry.IsDir() {
-			fileList.AddItem("📁"+entry.Name()+"/", "", 0, nil)
-		} else {
-			fileList.AddItem("\U0001f4c4"+entry.Name(), "", 0, nil)
-		}
+func (fileDialog *FileDialog) handleListSelected(path string, entry os.DirEntry) {
+	log.Printf("FileDialog handleListSelected: %s, isDir: %v", path, entry.IsDir())
+	if entry.IsDir() {
+		fileDialog.fileList.SetPath(path)
+	} else {
+		// // Handle file selection
+		// fileDialog.pathField.SetText(path)
 	}
 }
-
-func sortEntries(entries []os.DirEntry) []os.DirEntry {
-	// Separate directories and files
-	var dirs, files []os.DirEntry
-	for _, entry := range entries {
-		if entry.IsDir() {
-			dirs = append(dirs, entry)
-		} else {
-			files = append(files, entry)
-		}
-	}
-	// Sort directories and files by name, case-insensitive
-	sort.Slice(dirs, func(i, j int) bool {
-		return strings.ToLower(filepath.Clean(dirs[i].Name())) < strings.ToLower(filepath.Clean(dirs[j].Name()))
-	})
-	sort.Slice(files, func(i, j int) bool {
-		return strings.ToLower(filepath.Clean(files[i].Name())) < strings.ToLower(filepath.Clean(files[j].Name()))
-	})
-
-	// Combine directories and files
-	return append(dirs, files...)
-}
-
-func (fileDialog *FileDialog) handleListChanged(index int, mainText string, secondaryText string, shortcut rune) {
-	offset := 1 // Offset for the ".." entry
-	if fileDialog.currentDirectory == "/" {
-		offset = 0 // No parent directory for root
-	}
-	entryIndex := index - offset
-	if entryIndex < 0 {
-		return
-	}
-
-	dirEntry := fileDialog.directoryEntries[entryIndex]
-	if !dirEntry.IsDir() {
-		selectedPath := filepath.Join(fileDialog.currentDirectory, dirEntry.Name())
-		fileDialog.pathField.SetText(selectedPath)
-	}
-}
-
-func (fileDialog *FileDialog) handleListSelected(index int, mainText string, secondaryText string, shortcut rune) {
-	if fileDialog.currentDirectory != "/" && index == 0 {
-		// Handle ".." entry to go up one directory
-		parentDir := filepath.Dir(filepath.Clean(fileDialog.currentDirectory)) + "/"
-		fileDialog.dirRequestsChan <- parentDir
-		fileDialog.pathField.SetText(parentDir)
-		return
-	}
-
-	offset := 1 // Offset for the ".." entry
-	if fileDialog.currentDirectory == "/" {
-		offset = 0 // No parent directory for root
-	}
-	entryIndex := index - offset
-	dirEntry := fileDialog.directoryEntries[entryIndex]
-	if dirEntry.IsDir() {
-		// Handle entering a directory
-		selectedDir := filepath.Join(fileDialog.currentDirectory, dirEntry.Name()) + "/"
-		fileDialog.dirRequestsChan <- selectedDir
-		fileDialog.pathField.SetText(selectedDir)
-	}
-}
-
-// func (fileDialog *FileDialog) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
-// 	return fileDialog.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
-// 		return true, nil
-// 	})
-// }
 
 func (fileDialog *FileDialog) SetPath(path string) {
-	fileDialog.pathField.SetText(path)
-	if fileInfo, err := os.Stat(path); err == nil {
-		dir := path
-		if !fileInfo.IsDir() {
-			dir, _ = filepath.Split(path)
+	if info, err := os.Stat(path); err == nil {
+		if info.IsDir() && !strings.HasSuffix(path, "/") {
+			path += "/"
 		}
-		fileDialog.dirRequestsChan <- dir
+	} else {
+		return
 	}
+	fileDialog.fileList.SetPath(path)
+	fileDialog.pathField.SetText(path)
 }
