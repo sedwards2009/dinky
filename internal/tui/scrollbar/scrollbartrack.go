@@ -15,9 +15,6 @@ type ScrollbarTrack struct {
 	// Maximum value of the scrollbar.
 	max int
 
-	// Minimum value of the scrollbar.
-	min int
-
 	// width of the scrollbar.
 	width int
 
@@ -34,7 +31,6 @@ func NewScrollbarTrack() *ScrollbarTrack {
 		position:   0,
 		thumbSize:  10,
 		max:        100,
-		min:        0,
 		width:      1, // Default width of the scrollbar
 		trackColor: tcell.ColorDarkGray,
 		thumbColor: tcell.ColorWhite,
@@ -61,16 +57,23 @@ func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
 		screen.SetContent(x, y+i, ' ', nil, trackStyle)
 	}
 
+	position := scrollbarTrack.position
+	thumbSize := scrollbarTrack.thumbSize
+	if thumbSize > scrollbarTrack.max {
+		thumbSize = scrollbarTrack.max
+		position = 0
+	}
+
 	doubleHeight := height * 2
 	// Calculate the position and size of the scrollbar thumb.
-	doubleThumbHeightFloat := float64(doubleHeight) * float64(scrollbarTrack.thumbSize) / float64(scrollbarTrack.max-scrollbarTrack.min+1)
+	doubleThumbHeightFloat := float64(doubleHeight) * float64(thumbSize) / float64(scrollbarTrack.max+1)
 	doubleThumbHeight := int(doubleThumbHeightFloat + 0.5) // Round to nearest integer
 
-	doubleThumbY := doubleHeight * (scrollbarTrack.position - scrollbarTrack.min) / (scrollbarTrack.max - scrollbarTrack.min)
+	doubleThumbY := doubleHeight * position / scrollbarTrack.max
 	thumbStyle := tcell.StyleDefault.Background(scrollbarTrack.thumbColor)
 	thumbReverseStyle := thumbStyle.Reverse(true)
 
-	if scrollbarTrack.position == scrollbarTrack.max-scrollbarTrack.min-scrollbarTrack.thumbSize {
+	if position == scrollbarTrack.max-thumbSize {
 		// Special case for when the thumb is at the bottom and we don't want to show a gap due to rounding
 		doubleThumbHeight += 2
 	}
@@ -110,9 +113,9 @@ func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action tview.MouseActi
 		if action == tview.MouseLeftDown || (action == tview.MouseMove && event.Buttons() == tcell.Button1) {
 			// Calculate the new position based on the click
 			// Assuming the scrollbar is vertical, we calculate the position based on the y coordinate
-			newPosition := (absEventY-ry)*(scrollbarTrack.max-scrollbarTrack.min)/height + scrollbarTrack.min - scrollbarTrack.thumbSize/2
-			if newPosition < scrollbarTrack.min {
-				newPosition = scrollbarTrack.min
+			newPosition := (absEventY-ry)*scrollbarTrack.max/height - scrollbarTrack.thumbSize/2
+			if newPosition < 0 {
+				newPosition = 0
 			} else if newPosition > scrollbarTrack.max {
 				newPosition = scrollbarTrack.max
 			}
@@ -146,8 +149,8 @@ func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action tview.MouseActi
 
 // SetPosition sets the position of the scrollbar thumb.
 func (scrollbarTrack *ScrollbarTrack) SetPosition(position int) *ScrollbarTrack {
-	if position < scrollbarTrack.min {
-		scrollbarTrack.position = scrollbarTrack.min
+	if position < 0 {
+		scrollbarTrack.position = 0
 	} else if position > scrollbarTrack.max-scrollbarTrack.thumbSize {
 		scrollbarTrack.position = scrollbarTrack.max - scrollbarTrack.thumbSize
 	} else {
@@ -178,7 +181,7 @@ func (scrollbarTrack *ScrollbarTrack) ThumbSize() int {
 
 // SetMax sets the maximum value of the scrollbar.
 func (scrollbarTrack *ScrollbarTrack) SetMax(max int) *ScrollbarTrack {
-	if max > scrollbarTrack.min {
+	if max > 0 {
 		scrollbarTrack.max = max
 	}
 	return scrollbarTrack
@@ -187,19 +190,6 @@ func (scrollbarTrack *ScrollbarTrack) SetMax(max int) *ScrollbarTrack {
 // GetMax returns the maximum value of the scrollbar.
 func (scrollbarTrack *ScrollbarTrack) Max() int {
 	return scrollbarTrack.max
-}
-
-// SetMin sets the minimum value of the scrollbar.
-func (scrollbarTrack *ScrollbarTrack) SetMin(min int) *ScrollbarTrack {
-	if min < scrollbarTrack.max {
-		scrollbarTrack.min = min
-	}
-	return scrollbarTrack
-}
-
-// GetMin returns the minimum value of the scrollbar.
-func (scrollbarTrack *ScrollbarTrack) Min() int {
-	return scrollbarTrack.min
 }
 
 // SetWidth sets the width of the scrollbar.
