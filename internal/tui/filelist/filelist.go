@@ -262,6 +262,7 @@ func (fileList *FileList) loadEntries(entries []os.DirEntry) {
 	if len(entries) > 0 {
 		fileList.table.Select(1, 0)
 	}
+	fileList.table.SetOffset(0, 0)
 }
 
 func (fileList *FileList) SetChangedFunc(changedFunc func(path string, entry os.DirEntry)) {
