@@ -114,6 +114,10 @@ func NewFileDialog(app *tview.Application) *FileDialog {
 		fileDialog.directoryField.SetText(newPath)
 	})
 
+	showHiddenCheckbox.SetChangedFunc(func(checked bool) {
+		fileList.SetShowHidden(checked)
+	})
+
 	openButton.SetSelectedFunc(fileDialog.doOpen)
 	cancelButton.SetSelectedFunc(fileDialog.doCancel)
 	return fileDialog

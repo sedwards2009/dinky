@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -13,13 +14,17 @@ import (
 
 type FileList struct {
 	*tview.Flex
-	app               *tview.Application
-	table             *tview.Table
-	scrollbar         *scrollbar.Scrollbar
-	path              string
-	entries           []os.DirEntry
+	app       *tview.Application
+	table     *tview.Table
+	scrollbar *scrollbar.Scrollbar
+	path      string
+
+	allEntries     []os.DirEntry
+	visibleEntries []os.DirEntry
+
 	dirRequestsChan   chan string
 	columnDescriptors []columnDescriptor
+	showHidden        bool
 
 	sortColumn    int // Index of the currently sorted column
 	sortDirection int // 1 for ascending, -1 for descending
@@ -136,8 +141,8 @@ func NewFileList(app *tview.Application) *FileList {
 
 	notifyFunc := func(consumerFunc func(path string, entry os.DirEntry), row int) {
 		if consumerFunc != nil && row > 0 {
-			entryPath := filepath.Join(fileList.path, fileList.entries[row-1].Name())
-			consumerFunc(entryPath, fileList.entries[row-1])
+			entryPath := filepath.Join(fileList.path, fileList.visibleEntries[row-1].Name())
+			consumerFunc(entryPath, fileList.visibleEntries[row-1])
 		}
 	}
 	table.SetSelectionChangedFunc(func(row int, _ int) {
@@ -199,17 +204,33 @@ func (fileList *FileList) runDirectoryLister(dirRequests chan string) {
 }
 
 func (fileList *FileList) setEntries(entries []os.DirEntry, dirPath string) {
-	fileList.entries = entries
 	fileList.path = dirPath
-	fileList.sortEntries(entries, fileList.sortColumn, fileList.sortDirection)
-	fileList.loadEntries(entries)
+	fileList.allEntries = entries
+	fileList.visibleEntries = entries
+
+	if !fileList.showHidden {
+		fileList.visibleEntries = fileList.filterVisible(entries)
+	}
+
+	fileList.sortEntries(fileList.visibleEntries, fileList.sortColumn, fileList.sortDirection)
+	fileList.loadEntries(fileList.visibleEntries)
+}
+
+func (fileList *FileList) filterVisible(entries []os.DirEntry) []os.DirEntry {
+	var visibleEntries []os.DirEntry
+	for _, entry := range entries {
+		if !strings.HasPrefix(entry.Name(), ".") {
+			visibleEntries = append(visibleEntries, entry)
+		}
+	}
+	return visibleEntries
 }
 
 func (fileList *FileList) SetSortColumn(sortColumn int, sortDirection int) {
 	fileList.sortColumn = sortColumn
 	fileList.sortDirection = sortDirection
-	fileList.sortEntries(fileList.entries, sortColumn, sortDirection)
-	fileList.loadEntries(fileList.entries)
+	fileList.sortEntries(fileList.visibleEntries, sortColumn, sortDirection)
+	fileList.loadEntries(fileList.visibleEntries)
 	fileList.updateColumnHeaders()
 }
 
@@ -271,4 +292,13 @@ func (fileList *FileList) SetChangedFunc(changedFunc func(path string, entry os.
 
 func (fileList *FileList) SetSelectedFunc(selectedFunc func(path string, entry os.DirEntry)) {
 	fileList.selectedFunc = selectedFunc
+}
+
+func (fileList *FileList) SetShowHidden(showHidden bool) {
+	if fileList.showHidden == showHidden {
+		return
+	}
+
+	fileList.showHidden = showHidden
+	fileList.setEntries(fileList.allEntries, fileList.path)
 }
