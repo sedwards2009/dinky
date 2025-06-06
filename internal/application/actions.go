@@ -2,6 +2,7 @@ package application
 
 import (
 	"dinky/internal/tui/filedialog"
+	"os"
 
 	"github.com/google/renameio/v2"
 	"github.com/pgavlin/femto"
@@ -43,9 +44,22 @@ func handleNewFile() {
 	newFile("", "")
 }
 
+var openFileDialog *filedialog.FileDialog
+
 func handleOpenFile() {
-	openFileDialog := filedialog.NewFileDialog(app)
-	modalPages.AddPage("openFileDialog", openFileDialog, true, true)
+	if openFileDialog == nil {
+		openFileDialog = filedialog.NewFileDialog(app)
+		cwd, err := os.Getwd()
+		if err != nil {
+			cwd = "/"
+		}
+		openFileDialog.SetPath(cwd)
+	}
+	openFileDialogName := "openFileDialog"
+	openFileDialog.SetCompletedFunc(func(accepted bool, path string) {
+		modalPages.RemovePage(openFileDialogName)
+	})
+	modalPages.AddPage(openFileDialogName, openFileDialog, true, true)
 }
 
 func bufferToBytes(buffer *femto.Buffer) []byte {

@@ -159,22 +159,17 @@ func Main() {
 		return event
 	})
 
-	flex := tview.NewFlex()
-	flex.SetDirection(tview.FlexRow)
+	modalPages = tview.NewPages()
+
+	mainUiFlex := tview.NewFlex()
+	mainUiFlex.SetDirection(tview.FlexColumnCSS)
 
 	menuBar = menu.NewMenuBar()
 	menus = createMenus()
 	syncMenuKeyBindings(menus, actionToKeyMapping)
 	menuBar.SetMenus(menus)
 
-	flex.AddItem(menuBar, 1, 0, false)
-
-	// buffer = femto.NewBufferFromString("Hello Smoe\nSome words to click on\n", "/home/sbe/smoe.txt")
-	// editor = femto.NewView(buffer)
-
-	// editor.SetRuntimeFiles(runtime.Files)
-	// editor.SetColorscheme(colorscheme)
-	// editor.SetInputCapture(editorInputCapture)
+	mainUiFlex.AddItem(menuBar, 1, 0, false)
 
 	tabBarLine = tabbar.NewTabBar()
 	tabBarLine.OnActive = func(id string, index int) {
@@ -186,16 +181,15 @@ func Main() {
 	tabBarLine.SetTabBackgroundColor(bg)
 	// tabBarLine.SetTabInactiveBackgroundColor(bg)
 
-	flex.AddItem(tabBarLine, 1, 0, false)
+	mainUiFlex.AddItem(tabBarLine, 1, 0, false)
 
 	editorPages = tview.NewPages()
-	flex.AddItem(editorPages, 0, 1, true)
+	mainUiFlex.AddItem(editorPages, 0, 1, true)
 
 	statusBar = statusbar.NewStatusBar(app)
-	flex.AddItem(statusBar, 1, 0, false)
+	mainUiFlex.AddItem(statusBar, 1, 0, false)
 
-	modalPages = tview.NewPages()
-	modalPages.AddPage("workspace", flex, true, true)
+	modalPages.AddPage("workspace", mainUiFlex, true, true)
 
 	app.SetRoot(modalPages, true)
 	app.SetAfterDrawFunc(menuBar.AfterDraw())

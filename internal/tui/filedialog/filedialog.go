@@ -13,10 +13,11 @@ import (
 
 type FileDialog struct {
 	*tview.Flex
-	app            *tview.Application
-	directoryField *tview.InputField
-	filenameField  *tview.InputField
-	fileList       *filelist.FileList
+	app              *tview.Application
+	directoryField   *tview.InputField
+	filenameField    *tview.InputField
+	fileList         *filelist.FileList
+	vertContentsFlex *tview.Flex
 
 	dirRequestsChan  chan string
 	currentDirectory string
@@ -84,12 +85,13 @@ func NewFileDialog(app *tview.Application) *FileDialog {
 	fileDialog := &FileDialog{
 		Flex: tview.NewFlex().
 			AddItem(nil, 0, 1, false).
-			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(tview.NewFlex().SetDirection(tview.FlexColumnCSS).
 				AddItem(nil, 0, 1, false).
 				AddItem(vertContentsFlex, height, 1, true).
 				AddItem(nil, 0, 1, false), width, 1, true).
 			AddItem(nil, 0, 1, false),
 		app:              app,
+		vertContentsFlex: vertContentsFlex,
 		filenameField:    filenameField,
 		directoryField:   directoryField,
 		fileList:         fileList,
@@ -121,6 +123,19 @@ func NewFileDialog(app *tview.Application) *FileDialog {
 	openButton.SetSelectedFunc(fileDialog.doOpen)
 	cancelButton.SetSelectedFunc(fileDialog.doCancel)
 	return fileDialog
+}
+
+func (fileDialog *FileDialog) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
+	return fileDialog.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
+		fileDialog.vertContentsFlex.MouseHandler()(action, event, setFocus)
+		return true, nil
+	})
+}
+
+func (fileDialog *FileDialog) InputHandler() func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
+	return fileDialog.WrapInputHandler(func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
+		fileDialog.vertContentsFlex.InputHandler()(event, setFocus)
+	})
 }
 
 func (fileDialog *FileDialog) handleDirectoryDone(key tcell.Key) {
