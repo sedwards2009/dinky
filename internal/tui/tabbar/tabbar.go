@@ -5,13 +5,13 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/mattn/go-runewidth"
-	"github.com/rivo/tview"
+	"github.com/sedwards2009/nuview"
 )
 
 const tabNamePadding = 1
 
 type TabBar struct {
-	*tview.Box
+	*nuview.Box
 	BackgroundStyle  tcell.Style
 	ActiveTabStyle   tcell.Style
 	InactiveTabStyle tcell.Style
@@ -32,7 +32,7 @@ func NewTabBar() *TabBar {
 	tabBg := tcell.NewHexColor(0x000000)
 	inactiveTabBg := tcell.NewHexColor(0x404040)
 	return &TabBar{
-		Box:              tview.NewBox(),
+		Box:              nuview.NewBox(),
 		BackgroundStyle:  tcell.StyleDefault.Foreground(fg).Background(bg).Bold(true),
 		ActiveTabStyle:   tcell.StyleDefault.Foreground(fg).Background(tabBg).Bold(true),
 		InactiveTabStyle: tcell.StyleDefault.Foreground(fg).Background(inactiveTabBg).Bold(false),
@@ -68,7 +68,6 @@ func (tabBar *TabBar) RemoveTab(id string) {
 }
 
 func (tabBar *TabBar) Draw(screen tcell.Screen) {
-	tabBar.Box.DrawForSubclass(screen, tabBar)
 	x, y, width, _ := tabBar.GetInnerRect()
 
 	x = x - tabBar.hscroll
@@ -144,13 +143,13 @@ func (tabBar *TabBar) Draw(screen tcell.Screen) {
 	}
 }
 
-func (tabBar *TabBar) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
-	return tabBar.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
+func (tabBar *TabBar) MouseHandler() func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {
+	return tabBar.WrapMouseHandler(func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {
 		rx, ry, _, _ := tabBar.GetRect()
 		x, y := event.Position()
 
 		if y == ry {
-			if action == tview.MouseLeftDown {
+			if action == nuview.MouseLeftDown {
 				index, _ := tabBar.tabIndexAtX(x - rx)
 				if index != -1 {
 					tabBar.active = index

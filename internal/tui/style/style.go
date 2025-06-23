@@ -1,33 +1,82 @@
 package style
 
 import (
+	"dinky/internal/tui/filelist"
+	"dinky/internal/tui/scrollbar"
+
 	"github.com/gdamore/tcell/v2"
-	"github.com/rivo/tview"
+	"github.com/sedwards2009/nuview"
 )
 
-var white = tcell.NewHexColor(0xf3f3f3) // White foreground
-var blue = tcell.NewHexColor(0x007ace)  // Blue background
-var black = tcell.NewHexColor(0x1e1e1e)
+var white = tcell.NewHexColor(0xffffff).TrueColor() // White foreground
+// var blue = tcell.NewHexColor(0x6677aa).TrueColor()  // Blue background
+var blue = tcell.NewHexColor(0x007ace).TrueColor()
+var black = tcell.NewHexColor(0x000000).TrueColor()
+var lightGray = tcell.NewHexColor(0xaaaaaa).TrueColor()
 
-func Init() {
+var darkGray = tcell.NewHexColor(0x333333).TrueColor() // Dark gray background
 
-	tview.Styles.PrimitiveBackgroundColor = blue
-	tview.Styles.PrimaryTextColor = white
-	tview.Styles.SecondaryTextColor = white
+var blackOnGrayStyle = tcell.StyleDefault.Foreground(black).Background(lightGray)
+var whiteOnBlueStyle = tcell.StyleDefault.Foreground(white).Background(blue)
+
+func Install() {
+	nuview.Styles.TitleColor = black
+	nuview.Styles.BorderColor = black
+
+	nuview.Styles.PrimitiveBackgroundColor = lightGray
+	nuview.Styles.PrimaryTextColor = black
+	nuview.Styles.SecondaryTextColor = black
+
+	nuview.Styles.ButtonLabelColor = black
+	nuview.Styles.ButtonLabelFocusedColor = black
+	nuview.Styles.ButtonBackgroundColor = white
+	nuview.Styles.ButtonBackgroundFocusedColor = blue
+
+	nuview.Styles.CheckboxLabelStyle = blackOnGrayStyle
+	nuview.Styles.CheckboxUncheckedStyle = blackOnGrayStyle
+	nuview.Styles.CheckboxCheckedStyle = blackOnGrayStyle
+	nuview.Styles.CheckboxFocusStyle = whiteOnBlueStyle
+	nuview.Styles.CheckboxCheckedString = "[✓]"
+	nuview.Styles.CheckboxUncheckedString = "[ ]"
+	nuview.Styles.CheckboxCursorCheckedString = "[✓]"
+	nuview.Styles.CheckboxCursorUncheckedString = "[ ]"
+
+	// nuview.Styles.MoreContrastBackgroundColor = tcell.ColorDarkGray
+	// nuview.Styles.ContrastBackgroundColor = black
+	// nuview.Styles.PrimaryTextColor = tcell.ColorLightGray
+	// nuview.Styles.PrimaryTextColor = white
+
+	nuview.Styles.InputFieldLabelColor = black
+	nuview.Styles.InputFieldFieldBackgroundColor = darkGray
+	nuview.Styles.InputFieldFieldBackgroundFocusedColor = black
+	nuview.Styles.InputFieldFieldTextColor = lightGray
+	nuview.Styles.InputFieldFieldTextFocusedColor = white
+	nuview.Styles.InputFieldPlaceholderTextColor = lightGray
+
+	nuview.Styles.ListMainTextColor = white
+	nuview.Styles.ListSecondaryTextColor = lightGray
+	nuview.Styles.ListShortcutColor = lightGray
+	nuview.Styles.ListSelectedTextColor = white
+	nuview.Styles.ListSelectedBackgroundColor = blue
+
 }
 
-var TextAreaBackgroundColor = black
-
-func StyleInputField(inputField *tview.InputField) {
-	// inputField.SetBackgroundColor(TextAreaBackgroundColor)
-	// inputField.SetLabelColor(tview.Styles.PrimaryTextColor)
-	inputField.SetFieldBackgroundColor(TextAreaBackgroundColor)
-	// inputField.SetTextColor(tview.Styles.PrimaryTextColor)
+func StyleScrollbarTrack(scrollbarTrack *scrollbar.ScrollbarTrack) {
+	scrollbarTrack.SetTrackColor(darkGray)
+	scrollbarTrack.SetThumbColor(white)
+	scrollbarTrack.SetWidth(1)
 }
 
-func StyleList(fileList *tview.List) {
-	fileList.SetBackgroundColor(TextAreaBackgroundColor)
-	// fileList.SetMainTextColor(tview.Styles.PrimaryTextColor)
-	fileList.SetMainTextStyle(tcell.StyleDefault.Foreground(white).Background(black))
-	fileList.SetSelectedStyle(tcell.StyleDefault.Foreground(black).Background(white))
+func StyleScrollbar(scrollbar *scrollbar.Scrollbar) {
+	StyleScrollbarTrack(scrollbar.Track)
+}
+
+func StyleFileList(fileList *filelist.FileList) {
+	fileList.SetTextColor(white)
+	fileList.SetBackgroundColor(black)
+	fileList.SetSelectedBackgroundColor(blue)
+	fileList.SetHeaderLabelColor(black)
+	fileList.SetHeaderBackgroundColor(white)
+
+	StyleScrollbar(fileList.Scrollbar)
 }

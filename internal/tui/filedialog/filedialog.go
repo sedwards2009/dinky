@@ -8,71 +8,70 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/rivo/tview"
+	"github.com/sedwards2009/nuview"
 )
 
 type FileDialog struct {
-	*tview.Flex
-	app              *tview.Application
-	directoryField   *tview.InputField
-	filenameField    *tview.InputField
+	*nuview.Flex
+	app              *nuview.Application
+	directoryField   *nuview.InputField
+	filenameField    *nuview.InputField
 	fileList         *filelist.FileList
-	vertContentsFlex *tview.Flex
+	vertContentsFlex *nuview.Flex
 
 	dirRequestsChan  chan string
 	currentDirectory string
 	completedFunc    func(accepted bool, path string)
 }
 
-func NewFileDialog(app *tview.Application) *FileDialog {
-	vertContentsFlex := tview.NewFlex()
+func NewFileDialog(app *nuview.Application) *FileDialog {
+	vertContentsFlex := nuview.NewFlex()
+	vertContentsFlex.SetBackgroundTransparent(false)
 	vertContentsFlex.SetTitle("Open File")
-	vertContentsFlex.SetTitleAlign(tview.AlignLeft)
+	vertContentsFlex.SetTitleAlign(nuview.AlignLeft)
 	vertContentsFlex.SetBorder(true)
-	vertContentsFlex.SetDirection(tview.FlexRow)
+	vertContentsFlex.SetDirection(nuview.FlexRow)
 
 	vertContentsFlex.AddItem(nil, 1, 0, false)
 
-	directoryFlex := tview.NewFlex()
-	directoryFlex.SetDirection(tview.FlexColumn)
+	directoryFlex := nuview.NewFlex()
+	directoryFlex.SetDirection(nuview.FlexColumn)
 	directoryFlex.SetBorder(false)
 
-	directoryField := tview.NewInputField()
+	directoryField := nuview.NewInputField()
 	directoryField.SetLabel("Directory: ")
-	style.StyleInputField(directoryField)
 	directoryFlex.AddItem(directoryField, 0, 1, false)
 
 	directoryFlex.AddItem(nil, 1, 0, false)
-	parentButton := tview.NewButton("\u2ba4")
+	parentButton := nuview.NewButton("\u2ba4")
 	directoryFlex.AddItem(parentButton, 3, 0, false)
 
 	vertContentsFlex.AddItem(directoryFlex, 1, 0, false)
 	vertContentsFlex.AddItem(nil, 1, 0, false)
 
 	fileList := filelist.NewFileList(app)
+	style.StyleFileList(fileList)
 
 	vertContentsFlex.AddItem(fileList, 0, 1, false)
 	vertContentsFlex.AddItem(nil, 1, 0, false)
 
-	filenameField := tview.NewInputField()
+	filenameField := nuview.NewInputField()
 	filenameField.SetLabel("File name: ")
-	style.StyleInputField(filenameField)
 	vertContentsFlex.AddItem(filenameField, 1, 0, false)
 
 	vertContentsFlex.AddItem(nil, 1, 0, false)
 
-	buttonFlex := tview.NewFlex().
-		SetDirection(tview.FlexColumn)
+	buttonFlex := nuview.NewFlex()
+	buttonFlex.SetDirection(nuview.FlexColumn)
 
-	showHiddenCheckbox := tview.NewCheckbox()
-	showHiddenCheckbox.SetLabel("Show Hidden Files")
-	buttonFlex.AddItem(showHiddenCheckbox, 20, 0, false)
+	showHiddenCheckbox := nuview.NewCheckbox()
+	showHiddenCheckbox.SetLabelRight(" Show Hidden Files")
+	buttonFlex.AddItem(showHiddenCheckbox, 0, 1, false)
 
-	buttonFlex.AddItem(nil, 0, 1, false)
-	openButton := tview.NewButton("Open")
+	openButton := nuview.NewButton("Open")
 	buttonFlex.AddItem(openButton, 10, 1, false)
 	buttonFlex.AddItem(nil, 1, 0, false)
-	cancelButton := tview.NewButton("Cancel")
+	cancelButton := nuview.NewButton("Cancel")
 	buttonFlex.AddItem(cancelButton, 10, 1, false)
 
 	vertContentsFlex.AddItem(buttonFlex, 1, 0, false)
@@ -82,14 +81,21 @@ func NewFileDialog(app *tview.Application) *FileDialog {
 	width := 60
 
 	dirRequestsChan := make(chan string, 10)
+
+	flex := nuview.NewFlex()
+	flex.AddItem(nil, 0, 1, false)
+
+	innerFlex := nuview.NewFlex()
+	innerFlex.SetDirection(nuview.FlexRow)
+	innerFlex.AddItem(nil, 0, 1, false)
+	innerFlex.AddItem(vertContentsFlex, height, 1, true)
+	innerFlex.AddItem(nil, 0, 1, false)
+
+	flex.AddItem(innerFlex, width, 1, true)
+	flex.AddItem(nil, 0, 1, false)
+
 	fileDialog := &FileDialog{
-		Flex: tview.NewFlex().
-			AddItem(nil, 0, 1, false).
-			AddItem(tview.NewFlex().SetDirection(tview.FlexColumnCSS).
-				AddItem(nil, 0, 1, false).
-				AddItem(vertContentsFlex, height, 1, true).
-				AddItem(nil, 0, 1, false), width, 1, true).
-			AddItem(nil, 0, 1, false),
+		Flex:             flex,
 		app:              app,
 		vertContentsFlex: vertContentsFlex,
 		filenameField:    filenameField,
@@ -125,15 +131,15 @@ func NewFileDialog(app *tview.Application) *FileDialog {
 	return fileDialog
 }
 
-func (fileDialog *FileDialog) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
-	return fileDialog.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
+func (fileDialog *FileDialog) MouseHandler() func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {
+	return fileDialog.WrapMouseHandler(func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {
 		fileDialog.vertContentsFlex.MouseHandler()(action, event, setFocus)
 		return true, nil
 	})
 }
 
-func (fileDialog *FileDialog) InputHandler() func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
-	return fileDialog.WrapInputHandler(func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
+func (fileDialog *FileDialog) InputHandler() func(event *tcell.EventKey, setFocus func(p nuview.Primitive)) {
+	return fileDialog.WrapInputHandler(func(event *tcell.EventKey, setFocus func(p nuview.Primitive)) {
 		fileDialog.vertContentsFlex.InputHandler()(event, setFocus)
 	})
 }

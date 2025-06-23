@@ -8,7 +8,7 @@ import (
 	runewidth "github.com/mattn/go-runewidth"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/rivo/tview"
+	"github.com/sedwards2009/nuview"
 )
 
 const (
@@ -17,8 +17,8 @@ const (
 )
 
 type StatusBar struct {
-	*tview.Box
-	app          *tview.Application
+	*nuview.Box
+	app          *nuview.Application
 	Style        tcell.Style
 	MessageStyle tcell.Style
 	ErrorStyle   tcell.Style
@@ -31,13 +31,13 @@ type StatusBar struct {
 	errorMessage string
 }
 
-func NewStatusBar(app *tview.Application) *StatusBar {
+func NewStatusBar(app *nuview.Application) *StatusBar {
 	fg := tcell.NewHexColor(0xf3f3f3)
 	bg := tcell.NewHexColor(0x007ace)
 	messageBg := tcell.NewHexColor(0x0b835c)
 	errorBg := tcell.NewHexColor(0xa4090c)
 	return &StatusBar{
-		Box:          tview.NewBox(),
+		Box:          nuview.NewBox(),
 		app:          app,
 		Style:        tcell.StyleDefault.Foreground(fg).Background(bg),
 		MessageStyle: tcell.StyleDefault.Foreground(fg).Background(messageBg),
@@ -64,7 +64,7 @@ func (statusBar *StatusBar) scheduleMessageReset(timeOut time.Duration) {
 }
 
 func (statusBar *StatusBar) Draw(screen tcell.Screen) {
-	statusBar.Box.DrawForSubclass(screen, statusBar)
+	// statusBar.Box.DrawForSubclass(screen, statusBar)
 	x, y, width, _ := statusBar.GetInnerRect()
 
 	style := statusBar.Style

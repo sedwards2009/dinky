@@ -2,21 +2,20 @@ package filelist
 
 import (
 	"dinky/internal/tui/scrollbar"
-	"log"
 	"os"
 	"path/filepath"
 	"slices"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/rivo/tview"
+	"github.com/sedwards2009/nuview"
 )
 
 type FileList struct {
-	*tview.Flex
-	app       *tview.Application
-	table     *tview.Table
-	scrollbar *scrollbar.Scrollbar
+	*nuview.Flex
+	app       *nuview.Application
+	table     *nuview.Table
+	Scrollbar *scrollbar.Scrollbar
 	path      string
 
 	allEntries     []os.DirEntry
@@ -31,6 +30,12 @@ type FileList struct {
 
 	changedFunc  func(path string, entry os.DirEntry)
 	selectedFunc func(path string, entry os.DirEntry)
+
+	textColor               tcell.Color
+	backgroundColor         tcell.Color
+	selectedBackgroundColor tcell.Color
+	headerLabelColor        tcell.Color
+	headerBackgroundColor   tcell.Color
 }
 
 type columnDescriptor struct {
@@ -40,23 +45,19 @@ type columnDescriptor struct {
 	sortFunc   func(a os.DirEntry, b os.DirEntry) int
 }
 
-func NewFileList(app *tview.Application) *FileList {
-
+func NewFileList(app *nuview.Application) *FileList {
 	columnDescriptors := []columnDescriptor{
 		{
 			name:  "Name",
-			align: tview.AlignLeft,
+			align: nuview.AlignLeft,
 			formatFunc: func(entry os.DirEntry) string {
-				if entry.IsDir() {
-					return "📁 " + entry.Name() + "/"
-				}
-				return entry.Name()
+				return emojiForFileType(entry) + " " + entry.Name()
 			},
 			sortFunc: sortNameFunc,
 		},
 		{
 			name:  "Size",
-			align: tview.AlignRight,
+			align: nuview.AlignRight,
 			formatFunc: func(entry os.DirEntry) string {
 				info, err := entry.Info()
 				if err != nil {
@@ -68,7 +69,7 @@ func NewFileList(app *tview.Application) *FileList {
 		},
 		{
 			name:  "Modified",
-			align: tview.AlignLeft,
+			align: nuview.AlignLeft,
 			formatFunc: func(entry os.DirEntry) string {
 				info, err := entry.Info()
 				if err != nil {
@@ -80,29 +81,29 @@ func NewFileList(app *tview.Application) *FileList {
 		},
 		{
 			name:       "Permissions",
-			align:      tview.AlignLeft,
+			align:      nuview.AlignLeft,
 			formatFunc: permissions,
 			sortFunc:   sortPermissionsFunc,
 		},
 		{
 			name:       "Owner",
-			align:      tview.AlignLeft,
+			align:      nuview.AlignLeft,
 			formatFunc: ownerName,
 			sortFunc:   sortOwnerFunc,
 		},
 		{
 			name:       "Group",
-			align:      tview.AlignLeft,
+			align:      nuview.AlignLeft,
 			formatFunc: groupName,
 			sortFunc:   sortGroupFunc,
 		},
 	}
 
-	topFlex := tview.NewFlex()
-	topFlex.SetDirection(tview.FlexColumn)
+	topFlex := nuview.NewFlex()
+	topFlex.SetDirection(nuview.FlexColumn)
 	topFlex.SetBorder(false)
 
-	table := tview.NewTable()
+	table := nuview.NewTable()
 	table.SetSelectable(true, false)
 	table.SetBorder(false)
 	table.SetFixed(1, 0)
@@ -119,12 +120,18 @@ func NewFileList(app *tview.Application) *FileList {
 		app:               app,
 		Flex:              topFlex,
 		table:             table,
-		scrollbar:         fileListScrollbar,
+		Scrollbar:         fileListScrollbar,
 		path:              "/home/sbe",
 		columnDescriptors: columnDescriptors,
 		dirRequestsChan:   dirRequestsChan,
 		sortColumn:        0,
 		sortDirection:     1,
+
+		textColor:               nuview.Styles.PrimaryTextColor,
+		backgroundColor:         nuview.Styles.PrimitiveBackgroundColor,
+		selectedBackgroundColor: nuview.Styles.ContrastBackgroundColor,
+		headerLabelColor:        nuview.Styles.ButtonLabelColor,
+		headerBackgroundColor:   nuview.Styles.ButtonBackgroundColor,
 	}
 
 	fileListScrollbar.Track.SetBeforeDrawFunc(func(_ tcell.Screen) {
@@ -151,6 +158,9 @@ func NewFileList(app *tview.Application) *FileList {
 	table.SetSelectedFunc(func(row int, _ int) {
 		notifyFunc(fileList.selectedFunc, row)
 	})
+	table.SetDoubleClickFunc(func(row int, _ int) {
+		notifyFunc(fileList.selectedFunc, row)
+	})
 
 	fileList.loadColumnHeaders()
 	go fileList.runDirectoryLister(dirRequestsChan)
@@ -160,7 +170,7 @@ func NewFileList(app *tview.Application) *FileList {
 
 func (fileList *FileList) loadColumnHeaders() {
 	for i, desc := range fileList.columnDescriptors {
-		cell := &tview.TableCell{
+		cell := &nuview.TableCell{
 			Text:          desc.name,
 			NotSelectable: true,
 			Clicked: func() bool {
@@ -191,11 +201,16 @@ func (fileList *FileList) runDirectoryLister(dirRequests chan string) {
 		if !ok || dirPath == "" {
 			return
 		}
-		log.Printf("FileList: Requesting directory: %s", dirPath)
 		entries, err := os.ReadDir(dirPath)
 		if err != nil {
 
 		} else {
+			if dirPath != "/" {
+				parentEntry, err := parentDirEntry(dirPath)
+				if err == nil {
+					entries = append([]os.DirEntry{aliasDirEntry(parentEntry, "..")}, entries...)
+				}
+			}
 			fileList.app.QueueUpdateDraw(func() {
 				fileList.setEntries(entries, dirPath)
 			})
@@ -219,7 +234,8 @@ func (fileList *FileList) setEntries(entries []os.DirEntry, dirPath string) {
 func (fileList *FileList) filterVisible(entries []os.DirEntry) []os.DirEntry {
 	var visibleEntries []os.DirEntry
 	for _, entry := range entries {
-		if !strings.HasPrefix(entry.Name(), ".") {
+		name := entry.Name()
+		if name == ".." || !strings.HasPrefix(name, ".") {
 			visibleEntries = append(visibleEntries, entry)
 		}
 	}
@@ -251,17 +267,19 @@ func (fileList *FileList) sortEntries(entries []os.DirEntry, sortColumn int, sor
 }
 
 func (fileList *FileList) updateColumnHeaders() {
+	cellStyle := tcell.StyleDefault.Foreground(fileList.headerLabelColor).Background(fileList.headerBackgroundColor)
 	for i, desc := range fileList.columnDescriptors {
 		cell := fileList.table.GetCell(0, i)
 		cell.SetText(desc.name)
+		cell.SetStyle(cellStyle)
 	}
 
 	cell := fileList.table.GetCell(0, fileList.sortColumn)
 
 	if fileList.sortDirection == 1 {
-		cell.SetText(cell.Text + " ▼")
+		cell.SetText(string(cell.Text) + " ▼")
 	} else {
-		cell.SetText(cell.Text + " ▲")
+		cell.SetText(string(cell.Text) + " ▲")
 	}
 }
 
@@ -272,9 +290,9 @@ func (fileList *FileList) loadEntries(entries []os.DirEntry) {
 
 	for i, entry := range entries {
 		for j, desc := range fileList.columnDescriptors {
-			cell := &tview.TableCell{
+			cell := &nuview.TableCell{
 				Text:  desc.formatFunc(entry),
-				Color: tview.Styles.PrimaryTextColor,
+				Style: tcell.StyleDefault.Foreground(fileList.textColor).Background(fileList.backgroundColor),
 				Align: desc.align,
 			}
 			fileList.table.SetCell(i+1, j, cell)
@@ -284,6 +302,31 @@ func (fileList *FileList) loadEntries(entries []os.DirEntry) {
 		fileList.table.Select(1, 0)
 	}
 	fileList.table.SetOffset(0, 0)
+}
+
+func (fileList *FileList) SetTextColor(color tcell.Color) {
+	fileList.textColor = color
+}
+
+func (fileList *FileList) SetBackgroundColor(color tcell.Color) {
+	fileList.backgroundColor = color
+	fileList.table.SetBackgroundColor(color)
+	fileList.Box.SetBackgroundColor(color)
+}
+
+func (fileList *FileList) SetSelectedBackgroundColor(color tcell.Color) {
+	fileList.selectedBackgroundColor = color
+	fileList.table.SetSelectedStyle(tcell.StyleDefault.Background(color).Foreground(fileList.textColor))
+}
+
+func (fileList *FileList) SetHeaderLabelColor(color tcell.Color) {
+	fileList.headerLabelColor = color
+	fileList.updateColumnHeaders()
+}
+
+func (fileList *FileList) SetHeaderBackgroundColor(color tcell.Color) {
+	fileList.headerBackgroundColor = color
+	fileList.updateColumnHeaders()
 }
 
 func (fileList *FileList) SetChangedFunc(changedFunc func(path string, entry os.DirEntry)) {

@@ -1,31 +1,32 @@
 package scrollbar
 
 import (
-	"github.com/gdamore/tcell/v2"
-	"github.com/rivo/tview"
+	"github.com/sedwards2009/nuview"
 )
 
 type Scrollbar struct {
-	*tview.Flex
+	*nuview.Flex
 	Track       *ScrollbarTrack
-	upButton    *tview.Button
-	downButton  *tview.Button
+	upButton    *nuview.Button
+	downButton  *nuview.Button
 	changedFunc func(position int)
 }
 
 func NewScrollbar() *Scrollbar {
 	scrollbarTrack := NewScrollbarTrack()
-	upButton := tview.NewButton("▲")
+	upButton := nuview.NewButton("▲")
 	upButton.SetRect(0, 0, 1, 1)
-	downButton := tview.NewButton("▼")
+	downButton := nuview.NewButton("▼")
 	downButton.SetRect(0, 0, 1, 1)
 
+	flex := nuview.NewFlex()
+	flex.SetDirection(nuview.FlexRow)
+	flex.AddItem(scrollbarTrack, 0, 1, false)
+	flex.AddItem(upButton, 1, 0, false)
+	flex.AddItem(downButton, 1, 0, false)
+
 	scrollbar := &Scrollbar{
-		Flex: tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(scrollbarTrack, 0, 1, false).
-			AddItem(upButton, 1, 0, false).
-			AddItem(downButton, 1, 0, false),
+		Flex:       flex,
 		Track:      scrollbarTrack,
 		upButton:   upButton,
 		downButton: downButton,
@@ -48,11 +49,6 @@ func NewScrollbar() *Scrollbar {
 	})
 
 	return scrollbar
-}
-
-func (scrollbar *Scrollbar) SetButtonStyle(style tcell.Style) {
-	scrollbar.upButton.SetStyle(style)
-	scrollbar.downButton.SetStyle(style)
 }
 
 func (scrollbar *Scrollbar) SetChangedFunc(changedFunc func(position int)) {

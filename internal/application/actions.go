@@ -57,9 +57,9 @@ func handleOpenFile() {
 	}
 	openFileDialogName := "openFileDialog"
 	openFileDialog.SetCompletedFunc(func(accepted bool, path string) {
-		modalPages.RemovePage(openFileDialogName)
+		modalPages.RemovePanel(openFileDialogName)
 	})
-	modalPages.AddPage(openFileDialogName, openFileDialog, true, true)
+	modalPages.AddPanel(openFileDialogName, openFileDialog, true, true)
 }
 
 func bufferToBytes(buffer *femto.Buffer) []byte {

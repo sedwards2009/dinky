@@ -6,30 +6,32 @@ import (
 	"log"
 	"os"
 
-	"github.com/rivo/tview"
+	"github.com/sedwards2009/nuview"
 )
 
 func main() {
 	logFile := setupLogging()
 	defer logFile.Close()
 
-	style.Init()
+	style.Install()
 
-	app := tview.NewApplication()
+	app := nuview.NewApplication()
 	app.EnableMouse(true)
 	log.Println("Starting Scrollbar Demo...")
 	scrollbarWidget := scrollbar.NewScrollbar()
 
-	layout := tview.NewFlex().
-		AddItem(nil, 0, 1, false).
-		AddItem(tview.NewFlex().
-			AddItem(nil, 0, 1, false).
-			AddItem(scrollbarWidget, 80, 0, true).
-			AddItem(nil, 0, 1, false).
-			SetDirection(tview.FlexColumn),
-			20, 0, true).
-		AddItem(nil, 0, 1, false).
-		SetDirection(tview.FlexRow)
+	layout := nuview.NewFlex()
+	layout.AddItem(nil, 0, 1, false)
+
+	innerLayout := nuview.NewFlex()
+	innerLayout.AddItem(nil, 0, 1, false)
+	innerLayout.AddItem(scrollbarWidget, 80, 0, true)
+	innerLayout.AddItem(nil, 0, 1, false)
+	innerLayout.SetDirection(nuview.FlexColumn)
+
+	layout.AddItem(innerLayout, 20, 0, true)
+	layout.AddItem(nil, 0, 1, false)
+	layout.SetDirection(nuview.FlexRow)
 
 	app.SetRoot(layout, true)
 

@@ -6,22 +6,22 @@ import (
 	"log"
 	"os"
 
-	"github.com/rivo/tview"
+	"github.com/sedwards2009/nuview"
 )
 
 func main() {
 	logFile := setupLogging()
 	defer logFile.Close()
 
-	style.Init()
+	style.Install()
 
-	app := tview.NewApplication()
+	app := nuview.NewApplication()
 	app.EnableMouse(true)
 
-	workspace := tview.NewBox()
+	workspace := nuview.NewBox()
 
-	modalPages := tview.NewPages()
-	modalPages.AddPage("workspace", workspace, true, true)
+	modalPages := nuview.NewPanels()
+	modalPages.AddPanel("workspace", workspace, true, true)
 
 	fileDialog := filedialog.NewFileDialog(app)
 	fileDialog.SetPath("/home/sbe")
@@ -33,7 +33,7 @@ func main() {
 		}
 		app.Stop()
 	})
-	modalPages.AddPage("fileDialog", fileDialog, true, true)
+	modalPages.AddPanel("fileDialog", fileDialog, true, true)
 
 	app.SetRoot(modalPages, true)
 

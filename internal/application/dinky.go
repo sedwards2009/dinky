@@ -3,6 +3,7 @@ package application
 import (
 	"dinky/internal/tui/menu"
 	"dinky/internal/tui/statusbar"
+	"dinky/internal/tui/style"
 	"dinky/internal/tui/tabbar"
 	"log"
 	"os"
@@ -11,19 +12,19 @@ import (
 	"github.com/google/uuid"
 	"github.com/pgavlin/femto"
 	"github.com/pgavlin/femto/runtime"
-	"github.com/rivo/tview"
+	"github.com/sedwards2009/nuview"
 )
 
 // -----------------------------------------------------------------
-var app *tview.Application
+var app *nuview.Application
 var menus []*menu.Menu
 var fileBufferID string
 var buffer *femto.Buffer
 var tabBarLine *tabbar.TabBar
 var menuBar *menu.MenuBar
 var editor *femto.View
-var modalPages *tview.Pages
-var editorPages *tview.Pages
+var modalPages *nuview.Panels
+var editorPages *nuview.Panels
 var statusBar *statusbar.StatusBar
 
 var colorscheme femto.Colorscheme
@@ -62,12 +63,19 @@ func newFile(contents string, filename string) {
 	}
 
 	fileBuffers = append(fileBuffers, fileBuffer)
-	editorPages.AddPage(fileBuffer.uuid, editor, true, false)
-	tabBarLine.AddTab(fileBuffer.filename, fileBuffer.uuid)
+	editorPages.AddPanel(fileBuffer.uuid, editor, true, false)
+	editorPages.SetCurrentPanel(fileBuffer.uuid)
+	tabName := "[Untitled]"
+	if filename != "" {
+		tabName = filename
+	}
+	tabBarLine.AddTab(tabName, fileBuffer.uuid)
 	if buffer == nil {
 		buffer = fileBuffer.buffer
 		editor = fileBuffer.editor
 	}
+
+	app.SetFocus(editor)
 }
 
 func loadFile(filename string) {
@@ -91,7 +99,7 @@ func getFileBufferByID(id string) *FileBuffer {
 func selectTab(id string) {
 	fileBuffer := getFileBufferByID(id)
 	fileBufferID = id
-	editorPages.SwitchToPage(id)
+	editorPages.SendToFront(id)
 	buffer = fileBuffer.buffer
 	editor = fileBuffer.editor
 	syncMenuFromBuffer(buffer)
@@ -143,10 +151,12 @@ func Main() {
 	logFile := setupLogging()
 	defer logFile.Close()
 
+	style.Install()
+
 	initEditorColorScheme()
 	initKeyBindings()
 
-	app = tview.NewApplication()
+	app = nuview.NewApplication()
 	app.EnableMouse(true)
 	app.SetBeforeDrawFunc(func(screen tcell.Screen) bool {
 		updateStatusBar(screen)
@@ -159,10 +169,10 @@ func Main() {
 		return event
 	})
 
-	modalPages = tview.NewPages()
+	modalPages = nuview.NewPanels()
 
-	mainUiFlex := tview.NewFlex()
-	mainUiFlex.SetDirection(tview.FlexColumnCSS)
+	mainUiFlex := nuview.NewFlex()
+	mainUiFlex.SetDirection(nuview.FlexRow)
 
 	menuBar = menu.NewMenuBar()
 	menus = createMenus()
@@ -183,13 +193,13 @@ func Main() {
 
 	mainUiFlex.AddItem(tabBarLine, 1, 0, false)
 
-	editorPages = tview.NewPages()
+	editorPages = nuview.NewPanels()
 	mainUiFlex.AddItem(editorPages, 0, 1, true)
 
 	statusBar = statusbar.NewStatusBar(app)
 	mainUiFlex.AddItem(statusBar, 1, 0, false)
 
-	modalPages.AddPage("workspace", mainUiFlex, true, true)
+	modalPages.AddPanel("workspace", mainUiFlex, true, true)
 
 	app.SetRoot(modalPages, true)
 	app.SetAfterDrawFunc(menuBar.AfterDraw())

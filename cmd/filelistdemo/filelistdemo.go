@@ -6,35 +6,39 @@ import (
 	"log"
 	"os"
 
-	"github.com/rivo/tview"
+	"github.com/sedwards2009/nuview"
 )
 
 func main() {
 	logFile := setupLogging()
 	defer logFile.Close()
 
-	style.Init()
+	style.Install()
 
-	app := tview.NewApplication()
+	app := nuview.NewApplication()
 	app.EnableMouse(true)
 	log.Println("Starting Filelist Demo...")
 
 	realFileList := filelist.NewFileList(app)
+	style.StyleFileList(realFileList)
 
-	layout := tview.NewFlex().
-		AddItem(nil, 0, 1, false).
-		AddItem(tview.NewFlex().
-			AddItem(nil, 0, 1, false).
-			AddItem(realFileList, 80, 0, true).
-			AddItem(nil, 0, 1, false).
-			SetDirection(tview.FlexColumn),
-			20, 0, true).
-		AddItem(nil, 0, 1, false).
-		SetDirection(tview.FlexRow)
+	layout := nuview.NewFlex()
+	layout.AddItem(nil, 0, 1, false)
+
+	innerFlex := nuview.NewFlex()
+	innerFlex.AddItem(nil, 0, 1, false)
+	innerFlex.AddItem(realFileList, 80, 0, true)
+	innerFlex.AddItem(nil, 0, 1, false)
+	innerFlex.SetDirection(nuview.FlexColumn)
+
+	layout.AddItem(innerFlex, 20, 0, true)
+
+	layout.AddItem(nil, 0, 1, false)
+	layout.SetDirection(nuview.FlexRow)
 
 	app.SetRoot(layout, true)
 
-	realFileList.SetPath("/home/sbe")
+	realFileList.SetPath(os.Getenv("HOME"))
 
 	if err := app.Run(); err != nil {
 		log.Fatalf("Application error: %v", err)

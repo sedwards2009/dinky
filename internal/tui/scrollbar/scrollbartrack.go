@@ -2,11 +2,11 @@ package scrollbar
 
 import (
 	"github.com/gdamore/tcell/v2"
-	"github.com/rivo/tview"
+	"github.com/sedwards2009/nuview"
 )
 
 type ScrollbarTrack struct {
-	*tview.Box
+	*nuview.Box
 
 	// position of the scrollbar thumb.
 	position int
@@ -27,7 +27,7 @@ type ScrollbarTrack struct {
 
 func NewScrollbarTrack() *ScrollbarTrack {
 	return &ScrollbarTrack{
-		Box:        tview.NewBox(),
+		Box:        nuview.NewBox(),
 		position:   0,
 		thumbSize:  10,
 		max:        100,
@@ -70,7 +70,7 @@ func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
 	doubleThumbHeight := int(doubleThumbHeightFloat + 0.5) // Round to nearest integer
 
 	doubleThumbY := doubleHeight * position / scrollbarTrack.max
-	thumbStyle := tcell.StyleDefault.Background(scrollbarTrack.thumbColor)
+	thumbStyle := tcell.StyleDefault.Foreground(scrollbarTrack.trackColor).Background(scrollbarTrack.thumbColor)
 	thumbReverseStyle := thumbStyle.Reverse(true)
 
 	if position == scrollbarTrack.max-thumbSize {
@@ -100,8 +100,8 @@ func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
 	}
 }
 
-func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
-	return scrollbarTrack.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
+func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {
+	return scrollbarTrack.WrapMouseHandler(func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {
 		rx, ry, _, height := scrollbarTrack.GetInnerRect()
 		absEventX, absEventY := event.Position()
 		eventX := absEventX - rx
@@ -110,7 +110,7 @@ func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action tview.MouseActi
 			return false, nil // Click outside the scrollbar
 		}
 
-		if action == tview.MouseLeftDown || (action == tview.MouseMove && event.Buttons() == tcell.Button1) {
+		if action == nuview.MouseLeftDown || (action == nuview.MouseMove && event.Buttons() == tcell.Button1) {
 			// Calculate the new position based on the click
 			// Assuming the scrollbar is vertical, we calculate the position based on the y coordinate
 			newPosition := (absEventY-ry)*scrollbarTrack.max/height - scrollbarTrack.thumbSize/2
@@ -126,29 +126,30 @@ func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action tview.MouseActi
 			return true, nil // Consumed the event
 		}
 
-		if action == tview.MouseScrollUp || action == tview.MouseScrollDown {
-			// Handle scroll events
-			if action == tview.MouseScrollUp {
-				pos := scrollbarTrack.Position() - max(scrollbarTrack.ThumbSize()/2, 1)
-				scrollbarTrack.SetPosition(pos)
-				if scrollbarTrack.changedFunc != nil {
-					scrollbarTrack.changedFunc(pos)
-				}
-			} else if action == tview.MouseScrollDown {
-				pos := scrollbarTrack.Position() + max(scrollbarTrack.ThumbSize()/2, 1)
-				scrollbarTrack.SetPosition(pos)
-				if scrollbarTrack.changedFunc != nil {
-					scrollbarTrack.changedFunc(pos)
-				}
+		// Handle scroll events
+		if action == nuview.MouseScrollUp {
+			pos := scrollbarTrack.Position() - max(scrollbarTrack.ThumbSize()/2, 1)
+			scrollbarTrack.SetPosition(pos)
+			if scrollbarTrack.changedFunc != nil {
+				scrollbarTrack.changedFunc(pos)
 			}
 			return true, nil // Consumed the event
 		}
+		if action == nuview.MouseScrollDown {
+			pos := scrollbarTrack.Position() + max(scrollbarTrack.ThumbSize()/2, 1)
+			scrollbarTrack.SetPosition(pos)
+			if scrollbarTrack.changedFunc != nil {
+				scrollbarTrack.changedFunc(pos)
+			}
+			return true, nil // Consumed the event
+		}
+
 		return false, nil // Not consumed
 	})
 }
 
 // SetPosition sets the position of the scrollbar thumb.
-func (scrollbarTrack *ScrollbarTrack) SetPosition(position int) *ScrollbarTrack {
+func (scrollbarTrack *ScrollbarTrack) SetPosition(position int) {
 	if position < 0 {
 		scrollbarTrack.position = 0
 	} else if position > scrollbarTrack.max-scrollbarTrack.thumbSize {
@@ -156,7 +157,6 @@ func (scrollbarTrack *ScrollbarTrack) SetPosition(position int) *ScrollbarTrack 
 	} else {
 		scrollbarTrack.position = position
 	}
-	return scrollbarTrack
 }
 
 // GetPosition returns the current position of the scrollbar thumb.
@@ -165,13 +165,12 @@ func (scrollbarTrack *ScrollbarTrack) Position() int {
 }
 
 // SetThumbSize sets the size of the scrollbar thumb.
-func (scrollbarTrack *ScrollbarTrack) SetThumbSize(size int) *ScrollbarTrack {
+func (scrollbarTrack *ScrollbarTrack) SetThumbSize(size int) {
 	if size < 1 {
 		scrollbarTrack.thumbSize = 1
 	} else {
 		scrollbarTrack.thumbSize = size
 	}
-	return scrollbarTrack
 }
 
 // GetThumbSize returns the size of the scrollbar thumb.
@@ -180,11 +179,10 @@ func (scrollbarTrack *ScrollbarTrack) ThumbSize() int {
 }
 
 // SetMax sets the maximum value of the scrollbar.
-func (scrollbarTrack *ScrollbarTrack) SetMax(max int) *ScrollbarTrack {
+func (scrollbarTrack *ScrollbarTrack) SetMax(max int) {
 	if max > 0 {
 		scrollbarTrack.max = max
 	}
-	return scrollbarTrack
 }
 
 // GetMax returns the maximum value of the scrollbar.
@@ -193,11 +191,10 @@ func (scrollbarTrack *ScrollbarTrack) Max() int {
 }
 
 // SetWidth sets the width of the scrollbar.
-func (scrollbarTrack *ScrollbarTrack) SetWidth(width int) *ScrollbarTrack {
+func (scrollbarTrack *ScrollbarTrack) SetWidth(width int) {
 	if width > 0 {
 		scrollbarTrack.width = width
 	}
-	return scrollbarTrack
 }
 
 // GetWidth returns the width of the scrollbar.
@@ -206,9 +203,8 @@ func (scrollbarTrack *ScrollbarTrack) Width() int {
 }
 
 // SetTrackColor sets the color of the scrollbar track.
-func (scrollbarTrack *ScrollbarTrack) SetTrackColor(color tcell.Color) *ScrollbarTrack {
+func (scrollbarTrack *ScrollbarTrack) SetTrackColor(color tcell.Color) {
 	scrollbarTrack.trackColor = color
-	return scrollbarTrack
 }
 
 // GetTrackColor returns the color of the scrollbar track.
@@ -217,9 +213,8 @@ func (scrollbarTrack *ScrollbarTrack) TrackColor() tcell.Color {
 }
 
 // SetThumbColor sets the color of the scrollbar thumb.
-func (scrollbarTrack *ScrollbarTrack) SetThumbColor(color tcell.Color) *ScrollbarTrack {
+func (scrollbarTrack *ScrollbarTrack) SetThumbColor(color tcell.Color) {
 	scrollbarTrack.thumbColor = color
-	return scrollbarTrack
 }
 
 // GetThumbColor returns the color of the scrollbar thumb.
