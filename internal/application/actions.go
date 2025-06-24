@@ -56,8 +56,9 @@ func handleOpenFile() {
 		openFileDialog.SetPath(cwd)
 	}
 	openFileDialogName := "openFileDialog"
-	openFileDialog.SetCompletedFunc(func(accepted bool, path string) {
+	openFileDialog.SetCompletedFunc(func(accepted bool, filePath string) {
 		modalPages.RemovePanel(openFileDialogName)
+		loadFile(filePath)
 	})
 	modalPages.AddPanel(openFileDialogName, openFileDialog, true, true)
 }

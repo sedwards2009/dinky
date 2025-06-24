@@ -7,6 +7,7 @@ import (
 	"dinky/internal/tui/tabbar"
 	"log"
 	"os"
+	"path"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/google/uuid"
@@ -67,9 +68,10 @@ func newFile(contents string, filename string) {
 	editorPages.SetCurrentPanel(fileBuffer.uuid)
 	tabName := "[Untitled]"
 	if filename != "" {
-		tabName = filename
+		tabName = path.Base(filename)
 	}
 	tabBarLine.AddTab(tabName, fileBuffer.uuid)
+	tabBarLine.SetActive(fileBuffer.uuid)
 	if buffer == nil {
 		buffer = fileBuffer.buffer
 		editor = fileBuffer.editor
@@ -99,7 +101,7 @@ func getFileBufferByID(id string) *FileBuffer {
 func selectTab(id string) {
 	fileBuffer := getFileBufferByID(id)
 	fileBufferID = id
-	editorPages.SendToFront(id)
+	editorPages.SetCurrentPanel(id)
 	buffer = fileBuffer.buffer
 	editor = fileBuffer.editor
 	syncMenuFromBuffer(buffer)

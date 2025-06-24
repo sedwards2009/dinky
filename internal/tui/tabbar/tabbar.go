@@ -54,6 +54,14 @@ func (tabBar *TabBar) Active() (int, string) {
 	return tabBar.active, tabBar.tabs[tabBar.active].ID
 }
 
+func (tabBar *TabBar) SetActive(id string) {
+	for i, tab := range tabBar.tabs {
+		if tab.ID == id {
+			tabBar.active = i
+		}
+	}
+}
+
 func (tabBar *TabBar) AddTab(title string, id string) {
 	tabBar.tabs = append(tabBar.tabs, Tab{Title: title, ID: id})
 }
