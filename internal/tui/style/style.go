@@ -2,7 +2,9 @@ package style
 
 import (
 	"dinky/internal/tui/filelist"
+	"dinky/internal/tui/menu"
 	"dinky/internal/tui/scrollbar"
+	"dinky/internal/tui/tabbar"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/sedwards2009/nuview"
@@ -79,4 +81,16 @@ func StyleFileList(fileList *filelist.FileList) {
 	fileList.SetHeaderBackgroundColor(white)
 
 	StyleScrollbar(fileList.Scrollbar)
+}
+
+func StyleTabBar(tabBar *tabbar.TabBar) {
+	tabBar.ActiveTabStyle = tcell.StyleDefault.Foreground(white).Background(black).Bold(true)
+	tabBar.InactiveTabStyle = tcell.StyleDefault.Foreground(lightGray).Background(darkGray).Bold(false)
+	tabBar.BackgroundStyle = tcell.StyleDefault.Foreground(white).Background(blue)
+}
+
+func StyleMenuBar(menuBar *menu.MenuBar) {
+	menuBar.MenuBarStyle = tcell.StyleDefault.Foreground(white).Background(blue)
+	menuBar.MenuStyle = tcell.StyleDefault.Foreground(black).Background(lightGray)
+	menuBar.MenuSelectedStyle = tcell.StyleDefault.Foreground(white).Background(blue)
 }

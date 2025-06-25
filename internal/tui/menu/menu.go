@@ -10,10 +10,12 @@ import (
 
 type MenuBar struct {
 	*nuview.Box
-	MenuBarStyle tcell.Style
-	menus        []*Menu
-	selectedPath []int
-	onClose      func()
+	MenuBarStyle      tcell.Style
+	MenuStyle         tcell.Style
+	MenuSelectedStyle tcell.Style
+	menus             []*Menu
+	selectedPath      []int
+	onClose           func()
 }
 
 type Menu struct {
@@ -37,11 +39,14 @@ const (
 func NewMenuBar() *MenuBar {
 	fg := tcell.NewHexColor(0xf3f3f3)
 	bg := tcell.NewHexColor(0x007ace)
+	defaultStyle := tcell.StyleDefault.Foreground(fg).Background(bg).Bold(true)
 	return &MenuBar{
 		Box: nuview.NewBox(),
 
-		MenuBarStyle: tcell.StyleDefault.Foreground(fg).Background(bg),
-		selectedPath: []int{-1},
+		MenuBarStyle:      defaultStyle,
+		MenuStyle:         defaultStyle,
+		MenuSelectedStyle: defaultStyle.Reverse(true),
+		selectedPath:      []int{-1},
 	}
 }
 
@@ -105,7 +110,7 @@ func (menuBar *MenuBar) drawMenuItems(screen tcell.Screen, menuX int, menuY int,
 	y := topY
 	menuWidth := menuWidthInCells(items)
 
-	borderStyle := menuBar.MenuBarStyle
+	borderStyle := menuBar.MenuStyle
 
 	utils.DrawCappedHorizontalLine(screen, menuX, y, menuWidth, borderStyle, borderStyle, '┌', '─', '┐')
 	y++
@@ -116,7 +121,7 @@ func (menuBar *MenuBar) drawMenuItems(screen tcell.Screen, menuX int, menuY int,
 		} else {
 			textStyle := borderStyle
 			if i == selectedIndex {
-				textStyle = textStyle.Reverse(true)
+				textStyle = menuBar.MenuSelectedStyle
 			}
 			utils.DrawCappedHorizontalLine(screen, menuX, y, menuWidth, borderStyle, textStyle, '│', ' ', '│')
 			utils.DrawText(screen, menuX+2, y, item.Title, textStyle)
@@ -131,6 +136,7 @@ func (menuBar *MenuBar) drawMenuItems(screen tcell.Screen, menuX int, menuY int,
 	utils.DrawDimVerticalLine(screen, menuX+menuWidth, topY+1, len(items)+1)
 	utils.DrawDimVerticalLine(screen, menuX+menuWidth+1, topY+1, len(items)+1)
 	utils.DrawDimHorizontalLine(screen, menuX+2, y+1, menuWidth)
+	screen.HideCursor()
 }
 
 func menuWidthInCells(items []*MenuItem) int {
@@ -243,39 +249,36 @@ func (menuBar *MenuBar) MouseHandler() func(action nuview.MouseAction, event *tc
 			return true, nil
 		}
 
-		if menuBar.selectedPath[0] == -1 {
+		selectedIndex := menuBar.selectedPath[0]
+		if selectedIndex == -1 { // Is a menu open?
 			return false, nil
 		}
 
-		if action == nuview.MouseLeftUp || action == nuview.MouseLeftDown {
-			if menuBar.selectedPath[0] != -1 {
-				selectedIndex := menuBar.selectedPath[0]
-				items := menuBar.menus[selectedIndex].Items
-				index := y - ry - 2
+		var selectedMenuItem *MenuItem = nil
+		items := menuBar.menus[selectedIndex].Items
+		selectedMenuItemIndex := y - ry - 2
+		menuLeft := menuBar.menuIndexLeft(selectedIndex)
+		width := menuWidthInCells(items)
+		if x >= menuLeft && x < (menuLeft+width) && selectedMenuItemIndex >= 0 && selectedMenuItemIndex < len(items) {
+			selectedMenuItem = items[selectedMenuItemIndex]
+		}
 
-				menuLeft := menuBar.menuIndexLeft(selectedIndex)
-				width := menuWidthInCells(items)
-				if x >= menuLeft && x < (menuLeft+width) && index >= 0 && index < len(items) {
-					if action == nuview.MouseLeftUp {
-						if items[index].Title != "" {
-							if items[index].Callback != nil {
-								items[index].Callback(items[index].ID)
-							}
-							menuBar.Close()
-						}
-					}
-
-					return true, nil
-				}
-
-				menuBar.Close()
+		if action == nuview.MouseLeftUp {
+			if selectedMenuItem != nil && selectedMenuItem.Title != "" {
+				items[selectedMenuItemIndex].Callback(items[selectedMenuItemIndex].ID)
 			}
-		}
-
-		if action == nuview.MouseLeftDown {
 			menuBar.Close()
+			return true, nil
 		}
 
+		if action == nuview.MouseLeftDown && selectedMenuItem == nil {
+			menuBar.Close()
+			return true, nil
+		}
+
+		if selectedMenuItem != nil {
+			menuBar.selectedPath[1] = selectedMenuItemIndex
+		}
 		return true, nil
 	})
 }

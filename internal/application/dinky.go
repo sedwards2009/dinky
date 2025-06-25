@@ -177,6 +177,7 @@ func Main() {
 	mainUiFlex.SetDirection(nuview.FlexRow)
 
 	menuBar = menu.NewMenuBar()
+	style.StyleMenuBar(menuBar)
 	menus = createMenus()
 	syncMenuKeyBindings(menus, actionToKeyMapping)
 	menuBar.SetMenus(menus)
@@ -184,6 +185,7 @@ func Main() {
 	mainUiFlex.AddItem(menuBar, 1, 0, false)
 
 	tabBarLine = tabbar.NewTabBar()
+	style.StyleTabBar(tabBarLine)
 	tabBarLine.OnActive = func(id string, index int) {
 		selectTab(id)
 	}
