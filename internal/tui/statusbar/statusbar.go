@@ -29,6 +29,7 @@ type StatusBar struct {
 	TabSize      int
 	message      string
 	errorMessage string
+	UpdateHook   func(statusBar *StatusBar) // Hook for updating the status bar
 }
 
 func NewStatusBar(app *nuview.Application) *StatusBar {
@@ -64,7 +65,10 @@ func (statusBar *StatusBar) scheduleMessageReset(timeOut time.Duration) {
 }
 
 func (statusBar *StatusBar) Draw(screen tcell.Screen) {
-	// statusBar.Box.DrawForSubclass(screen, statusBar)
+	if statusBar.UpdateHook != nil {
+		statusBar.UpdateHook(statusBar)
+	}
+
 	x, y, width, _ := statusBar.GetInnerRect()
 
 	style := statusBar.Style

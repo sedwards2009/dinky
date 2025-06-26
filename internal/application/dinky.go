@@ -65,7 +65,6 @@ func newFile(contents string, filename string) {
 
 	fileBuffers = append(fileBuffers, fileBuffer)
 	editorPages.AddPanel(fileBuffer.uuid, editor, true, false)
-	editorPages.SetCurrentPanel(fileBuffer.uuid)
 	tabName := "[Untitled]"
 	if filename != "" {
 		tabName = path.Base(filename)
@@ -77,6 +76,7 @@ func newFile(contents string, filename string) {
 		editor = fileBuffer.editor
 	}
 
+	selectTab(fileBuffer.uuid)
 	app.SetFocus(editor)
 }
 
@@ -105,10 +105,10 @@ func selectTab(id string) {
 	buffer = fileBuffer.buffer
 	editor = fileBuffer.editor
 	syncMenuFromBuffer(buffer)
-	syncStatusBarFromFileBuffer(fileBuffer)
 }
 
-func syncStatusBarFromFileBuffer(fileBuffer *FileBuffer) {
+func syncStatusBarFromFileBuffer(statusBar *statusbar.StatusBar) {
+	fileBuffer := getFileBufferByID(fileBufferID)
 	statusBar.Filename = fileBuffer.filename
 	statusBar.Line = fileBuffer.editor.Cursor.Y + 1
 	statusBar.Col = fileBuffer.editor.Cursor.X + 1
@@ -143,12 +143,6 @@ func editorInputCapture(event *tcell.EventKey) *tcell.EventKey {
 	return event
 }
 
-func updateStatusBar(screen tcell.Screen) bool {
-	fileBuffer := getFileBufferByID(fileBufferID)
-	syncStatusBarFromFileBuffer(fileBuffer)
-	return false
-}
-
 func Main() {
 	logFile := setupLogging()
 	defer logFile.Close()
@@ -160,10 +154,6 @@ func Main() {
 
 	app = nuview.NewApplication()
 	app.EnableMouse(true)
-	app.SetBeforeDrawFunc(func(screen tcell.Screen) bool {
-		updateStatusBar(screen)
-		return false
-	})
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyCtrlC {
 			return tcell.NewEventKey(tcell.KeyCtrlC, 0, tcell.ModCtrl)
@@ -201,6 +191,7 @@ func Main() {
 	mainUiFlex.AddItem(editorPages, 0, 1, true)
 
 	statusBar = statusbar.NewStatusBar(app)
+	statusBar.UpdateHook = syncStatusBarFromFileBuffer
 	mainUiFlex.AddItem(statusBar, 1, 0, false)
 
 	modalPages.AddPanel("workspace", mainUiFlex, true, true)
