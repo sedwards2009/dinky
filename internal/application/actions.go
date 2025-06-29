@@ -49,7 +49,7 @@ var fileDialog *filedialog.FileDialog
 
 const fileDialogName = "fileDialog"
 
-func showFileDialog(title string, actionLabel string, defaultPath string, completedFunc func(accepted bool, filePath string)) {
+func showFileDialog(title string, mode filedialog.FileDialogMode, defaultPath string, completedFunc func(accepted bool, filePath string)) {
 	if fileDialog == nil {
 		fileDialog = filedialog.NewFileDialog(app)
 	}
@@ -63,7 +63,7 @@ func showFileDialog(title string, actionLabel string, defaultPath string, comple
 	} else {
 		fileDialog.SetPath(defaultPath)
 	}
-	fileDialog.SetActionLabel(actionLabel)
+	fileDialog.SetMode(mode)
 	fileDialog.SetCompletedFunc(completedFunc)
 	modalPages.AddPanel(fileDialogName, fileDialog, true, true)
 }
@@ -75,7 +75,7 @@ func hideFileDialog() {
 }
 
 func handleOpenFile() {
-	showFileDialog("Open File", "Open", "", func(accepted bool, filePath string) {
+	showFileDialog("Open File", filedialog.OPEN_FILE_MODE, "", func(accepted bool, filePath string) {
 		hideFileDialog()
 		if !accepted {
 			return
@@ -119,7 +119,7 @@ func writeCurrentFileBuffer() {
 
 func handleSaveFileAs() {
 	fileBuffer := getFileBufferByID(fileBufferID)
-	showFileDialog("Save File As", "Save", fileBuffer.filename, func(accepted bool, filePath string) {
+	showFileDialog("Save File As", filedialog.SAVE_FILE_MODE, fileBuffer.filename, func(accepted bool, filePath string) {
 		hideFileDialog()
 		if !accepted {
 			return

@@ -11,6 +11,13 @@ import (
 	"github.com/sedwards2009/nuview"
 )
 
+type FileDialogMode int
+
+const (
+	OPEN_FILE_MODE FileDialogMode = iota
+	SAVE_FILE_MODE
+)
+
 type FileDialog struct {
 	*nuview.Flex
 	app              *nuview.Application
@@ -23,6 +30,7 @@ type FileDialog struct {
 	dirRequestsChan  chan string
 	currentDirectory string
 	completedFunc    func(accepted bool, path string)
+	mode             FileDialogMode
 }
 
 func NewFileDialog(app *nuview.Application) *FileDialog {
@@ -105,13 +113,20 @@ func NewFileDialog(app *nuview.Application) *FileDialog {
 		dirRequestsChan:  dirRequestsChan,
 		currentDirectory: "/",
 		actionButton:     actionButton,
+		mode:             OPEN_FILE_MODE,
 	}
 
 	fileList.SetChangedFunc(fileDialog.handleListChanged)
 	fileList.SetSelectedFunc(fileDialog.handleListSelected)
 
 	directoryField.SetDoneFunc(fileDialog.handleDirectoryDone)
+	directoryField.SetChangedFunc(func(text string) {
+		fileDialog.syncActionButton()
+	})
 	filenameField.SetDoneFunc(fileDialog.handleFilenameDone)
+	filenameField.SetChangedFunc(func(text string) {
+		fileDialog.syncActionButton()
+	})
 
 	parentButton.SetSelectedFunc(func() {
 		currentPath := fileDialog.fileList.Path()
@@ -137,8 +152,15 @@ func (fileDialog *FileDialog) SetTitle(title string) {
 	fileDialog.vertContentsFlex.SetTitle(title)
 }
 
-func (fileDialog *FileDialog) SetActionLabel(label string) {
-	fileDialog.actionButton.SetLabel(label)
+func (fileDialog *FileDialog) SetMode(mode FileDialogMode) {
+	fileDialog.mode = mode
+	if mode == OPEN_FILE_MODE {
+		fileDialog.actionButton.SetLabel("Open")
+		fileDialog.vertContentsFlex.SetTitle("Open File")
+	} else if mode == SAVE_FILE_MODE {
+		fileDialog.actionButton.SetLabel("Save")
+		fileDialog.vertContentsFlex.SetTitle("Save As")
+	}
 }
 
 func (fileDialog *FileDialog) MouseHandler() func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {
@@ -163,6 +185,7 @@ func (fileDialog *FileDialog) handleDirectoryDone(key tcell.Key) {
 	if info, err := os.Stat(newDirectory); err == nil && info.IsDir() {
 		fileDialog.fileList.SetPath(newDirectory)
 		fileDialog.directoryField.SetText(newDirectory)
+		fileDialog.syncActionButton()
 	}
 }
 
@@ -204,6 +227,7 @@ func (fileDialog *FileDialog) handleFilenameDone(key tcell.Key) {
 	fileDialog.fileList.SetPath(directory)
 	fileDialog.directoryField.SetText(directory)
 	fileDialog.filenameField.SetText(filename)
+	fileDialog.syncActionButton()
 }
 
 func (fileDialog *FileDialog) doOpen() {
@@ -227,6 +251,7 @@ func (fileDialog *FileDialog) handleListSelected(path string, entry os.DirEntry)
 	if entry.IsDir() {
 		fileDialog.fileList.SetPath(path)
 		fileDialog.directoryField.SetText(path + "/")
+		fileDialog.syncActionButton()
 	} else {
 		fileDialog.doOpen()
 	}
@@ -236,16 +261,59 @@ func (fileDialog *FileDialog) handleListChanged(path string, entry os.DirEntry) 
 	if !entry.IsDir() {
 		fileDialog.filenameField.SetText(entry.Name())
 	}
+	fileDialog.syncActionButton()
 }
 
 func (fileDialog *FileDialog) SetPath(path string) {
 	if info, err := os.Stat(path); err == nil {
-		if info.IsDir() && !strings.HasSuffix(path, "/") {
-			path += "/"
+		if info.IsDir() {
+			if !strings.HasSuffix(path, "/") {
+				path += "/"
+			}
+			fileDialog.fileList.SetPath(path)
+			fileDialog.directoryField.SetText(path)
+			fileDialog.filenameField.SetText("")
+		} else {
+			dir := filepath.Dir(path)
+			filename := filepath.Base(path)
+			fileDialog.fileList.SetPath(dir)
+			fileDialog.directoryField.SetText(dir)
+			fileDialog.filenameField.SetText(filename)
 		}
-	} else {
+		fileDialog.syncActionButton()
+	}
+}
+
+func (fileDialog *FileDialog) syncActionButton() {
+	var fullpath string
+	directory := fileDialog.directoryField.GetText()
+	filename := fileDialog.filenameField.GetText()
+
+	if fileDialog.mode == OPEN_FILE_MODE {
+		fullpath = filepath.Join(directory, filename)
+
+		enabled := false
+		if info, err := os.Stat(fullpath); err == nil && !info.IsDir() {
+			enabled = true
+		}
+		fileDialog.actionButton.SetEnabled(enabled)
 		return
 	}
-	fileDialog.fileList.SetPath(path)
-	fileDialog.directoryField.SetText(path)
+
+	if fileDialog.mode == SAVE_FILE_MODE {
+		if filename == "" {
+			fileDialog.actionButton.SetEnabled(false)
+			return
+		}
+
+		if info, err := os.Stat(directory); err == nil {
+			if !info.IsDir() {
+				fileDialog.actionButton.SetEnabled(false)
+			} else {
+				fileDialog.actionButton.SetEnabled(true)
+			}
+		}
+		return
+	}
+
 }
