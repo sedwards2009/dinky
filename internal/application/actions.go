@@ -11,6 +11,7 @@ import (
 
 const (
 	ACTION_NEW                 = "NewFile"
+	ACTION_CLOSE_FILE          = "CloseFile"
 	ACTION_OPEN_FILE           = "OpenFile"
 	ACTION_SAVE_FILE           = "SaveFile"
 	ACTION_SAVE_FILE_AS        = "SaveFileAs"
@@ -25,6 +26,7 @@ var dinkyActionMapping map[string]func()
 func init() {
 	dinkyActionMapping = map[string]func(){
 		ACTION_NEW:                 handleNewFile,
+		ACTION_CLOSE_FILE:          handleCloseFile,
 		ACTION_OPEN_FILE:           handleOpenFile,
 		ACTION_OPEN_MENU:           handleOpenMenu,
 		ACTION_SAVE_FILE:           handleSaveFile,
@@ -131,7 +133,22 @@ func handleSaveFileAs() {
 }
 
 func handleCloseFile() {
+	tabBarLine.RemoveTab(fileBufferID)
+	editorPages.RemovePanel(fileBufferID)
 
+	for i, fileBuffer := range fileBuffers {
+		if fileBuffer.uuid == fileBufferID {
+			fileBuffers = append(fileBuffers[:i], fileBuffers[i+1:]...)
+			break
+		}
+	}
+
+	if len(fileBuffers) == 0 {
+		fileBufferID = ""
+		handleQuit()
+	} else {
+		selectTab(fileBuffers[0].uuid)
+	}
 }
 
 func handleOpenMenu() {

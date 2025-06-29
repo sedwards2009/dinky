@@ -114,6 +114,7 @@ func initKeyBindings() {
 
 	dinkyKeyToActionMapping = map[string]string{
 		"Ctrl-n": ACTION_NEW,
+		"Ctrl-w": ACTION_CLOSE_FILE,
 		"Ctrl-o": ACTION_OPEN_FILE,
 		"Ctrl-s": ACTION_SAVE_FILE,
 		"F12":    ACTION_OPEN_MENU,

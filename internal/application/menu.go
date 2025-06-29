@@ -14,6 +14,7 @@ func createMenus() []*menu.Menu {
 			{ID: ACTION_OPEN_FILE, Title: "Open", Callback: handleDinkyAction},
 			{ID: ACTION_SAVE_FILE, Title: "Save", Callback: handleDinkyAction},
 			{ID: ACTION_SAVE_FILE_AS, Title: "Save As…", Callback: handleDinkyAction},
+			{ID: ACTION_CLOSE_FILE, Title: "Close", Callback: handleDinkyAction},
 			{Title: "", Callback: nil}, // Separator
 			{ID: ACTION_QUIT, Title: "Quit", Callback: handleDinkyAction},
 		}},
