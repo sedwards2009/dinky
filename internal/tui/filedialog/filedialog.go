@@ -18,6 +18,7 @@ type FileDialog struct {
 	filenameField    *nuview.InputField
 	fileList         *filelist.FileList
 	vertContentsFlex *nuview.Flex
+	actionButton     *nuview.Button
 
 	dirRequestsChan  chan string
 	currentDirectory string
@@ -68,8 +69,8 @@ func NewFileDialog(app *nuview.Application) *FileDialog {
 	showHiddenCheckbox.SetLabelRight(" Show Hidden Files")
 	buttonFlex.AddItem(showHiddenCheckbox, 0, 1, false)
 
-	openButton := nuview.NewButton("Open")
-	buttonFlex.AddItem(openButton, 10, 1, false)
+	actionButton := nuview.NewButton("Open")
+	buttonFlex.AddItem(actionButton, 10, 1, false)
 	buttonFlex.AddItem(nil, 1, 0, false)
 	cancelButton := nuview.NewButton("Cancel")
 	buttonFlex.AddItem(cancelButton, 10, 1, false)
@@ -103,6 +104,7 @@ func NewFileDialog(app *nuview.Application) *FileDialog {
 		fileList:         fileList,
 		dirRequestsChan:  dirRequestsChan,
 		currentDirectory: "/",
+		actionButton:     actionButton,
 	}
 
 	fileList.SetChangedFunc(fileDialog.handleListChanged)
@@ -126,9 +128,17 @@ func NewFileDialog(app *nuview.Application) *FileDialog {
 		fileList.SetShowHidden(checked)
 	})
 
-	openButton.SetSelectedFunc(fileDialog.doOpen)
+	actionButton.SetSelectedFunc(fileDialog.doOpen)
 	cancelButton.SetSelectedFunc(fileDialog.doCancel)
 	return fileDialog
+}
+
+func (fileDialog *FileDialog) SetTitle(title string) {
+	fileDialog.vertContentsFlex.SetTitle(title)
+}
+
+func (fileDialog *FileDialog) SetActionLabel(label string) {
+	fileDialog.actionButton.SetLabel(label)
 }
 
 func (fileDialog *FileDialog) MouseHandler() func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {

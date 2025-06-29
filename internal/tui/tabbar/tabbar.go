@@ -75,6 +75,15 @@ func (tabBar *TabBar) RemoveTab(id string) {
 	}
 }
 
+func (tabBar *TabBar) SetTabTitle(id string, title string) {
+	for i, tab := range tabBar.tabs {
+		if tab.ID == id {
+			tabBar.tabs[i].Title = title
+			break
+		}
+	}
+}
+
 func (tabBar *TabBar) Draw(screen tcell.Screen) {
 	x, y, width, _ := tabBar.GetInnerRect()
 

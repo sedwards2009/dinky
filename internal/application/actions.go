@@ -3,6 +3,7 @@ package application
 import (
 	"dinky/internal/tui/filedialog"
 	"os"
+	"path/filepath"
 
 	"github.com/google/renameio/v2"
 	"github.com/pgavlin/femto"
@@ -44,26 +45,43 @@ func handleNewFile() {
 	newFile("", "")
 }
 
-var openFileDialog *filedialog.FileDialog
+var fileDialog *filedialog.FileDialog
 
-func handleOpenFile() {
-	if openFileDialog == nil {
-		openFileDialog = filedialog.NewFileDialog(app)
+const fileDialogName = "fileDialog"
+
+func showFileDialog(title string, actionLabel string, defaultPath string, completedFunc func(accepted bool, filePath string)) {
+	if fileDialog == nil {
+		fileDialog = filedialog.NewFileDialog(app)
+	}
+	fileDialog.SetTitle(title)
+	if defaultPath == "" {
 		cwd, err := os.Getwd()
 		if err != nil {
 			cwd = "/"
 		}
-		openFileDialog.SetPath(cwd)
+		fileDialog.SetPath(cwd)
+	} else {
+		fileDialog.SetPath(defaultPath)
 	}
-	openFileDialogName := "openFileDialog"
-	openFileDialog.SetCompletedFunc(func(accepted bool, filePath string) {
-		modalPages.RemovePanel(openFileDialogName)
+	fileDialog.SetActionLabel(actionLabel)
+	fileDialog.SetCompletedFunc(completedFunc)
+	modalPages.AddPanel(fileDialogName, fileDialog, true, true)
+}
+
+func hideFileDialog() {
+	if fileDialog != nil {
+		modalPages.RemovePanel(fileDialogName)
+	}
+}
+
+func handleOpenFile() {
+	showFileDialog("Open File", "Open", "", func(accepted bool, filePath string) {
+		hideFileDialog()
 		if !accepted {
 			return
 		}
 		loadFile(filePath)
 	})
-	modalPages.AddPanel(openFileDialogName, openFileDialog, true, true)
 }
 
 func bufferToBytes(buffer *femto.Buffer) []byte {
@@ -82,6 +100,15 @@ func writeFile(filename string, buffer *femto.Buffer) (ok bool, message string) 
 
 func handleSaveFile() {
 	fileBuffer := getFileBufferByID(fileBufferID)
+	if fileBuffer.filename == "" {
+		handleSaveFileAs()
+	} else {
+		writeCurrentFileBuffer()
+	}
+}
+
+func writeCurrentFileBuffer() {
+	fileBuffer := getFileBufferByID(fileBufferID)
 	ok, message := writeFile(fileBuffer.filename, fileBuffer.buffer)
 	if ok {
 		statusBar.ShowMessage(message)
@@ -91,6 +118,19 @@ func handleSaveFile() {
 }
 
 func handleSaveFileAs() {
+	fileBuffer := getFileBufferByID(fileBufferID)
+	showFileDialog("Save File As", "Save", fileBuffer.filename, func(accepted bool, filePath string) {
+		hideFileDialog()
+		if !accepted {
+			return
+		}
+		fileBuffer.filename = filePath
+		tabBarLine.SetTabTitle(fileBufferID, filepath.Base(fileBuffer.filename))
+		writeCurrentFileBuffer()
+	})
+}
+
+func handleCloseFile() {
 
 }
 
