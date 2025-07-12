@@ -23,6 +23,8 @@ type ScrollbarTrack struct {
 
 	beforeDrawFunc func(screen tcell.Screen)
 	changedFunc    func(position int)
+
+	isHorizontal bool // Indicates if the scrollbar is horizontal instead of vertical
 }
 
 func NewScrollbarTrack() *ScrollbarTrack {
@@ -41,20 +43,44 @@ func (scrollbarTrack *ScrollbarTrack) SetBeforeDrawFunc(beforeDrawFunc func(scre
 	scrollbarTrack.beforeDrawFunc = beforeDrawFunc
 }
 
+func (scrollbarTrack *ScrollbarTrack) SetHorizontal(isHorizontal bool) {
+	scrollbarTrack.isHorizontal = isHorizontal
+}
+
 func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
 	if scrollbarTrack.beforeDrawFunc != nil {
 		scrollbarTrack.beforeDrawFunc(screen)
 	}
 
-	x, y, width, height := scrollbarTrack.GetInnerRect()
+	innerX, innerY, width, height := scrollbarTrack.GetInnerRect()
 	if width < 1 || height < 1 {
 		return
 	}
 
+	firstHalfCellRune := '\u2584'
+	secondHalfCellRune := '\u2580'
+
+	majorLength := height
+	majorPos := innerY
+	if scrollbarTrack.isHorizontal {
+		majorLength = width
+		majorPos = innerX
+		firstHalfCellRune = '\u2590'
+		secondHalfCellRune = '\u258c'
+	}
+
+	setContent := func(n int, ch rune, style tcell.Style) {
+		if scrollbarTrack.isHorizontal {
+			screen.SetContent(n, innerY, ch, nil, style)
+		} else {
+			screen.SetContent(innerX, n, ch, nil, style)
+		}
+	}
+
 	// Draw the track
 	trackStyle := tcell.StyleDefault.Background(scrollbarTrack.trackColor)
-	for i := 0; i < height; i++ {
-		screen.SetContent(x, y+i, ' ', nil, trackStyle)
+	for i := 0; i < majorLength; i++ {
+		setContent(majorPos+i, ' ', trackStyle)
 	}
 
 	position := scrollbarTrack.position
@@ -64,56 +90,66 @@ func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
 		position = 0
 	}
 
-	doubleHeight := height * 2
+	doubleMajorLength := majorLength * 2
 	// Calculate the position and size of the scrollbar thumb.
-	doubleThumbHeightFloat := float64(doubleHeight) * float64(thumbSize) / float64(scrollbarTrack.max+1)
-	doubleThumbHeight := int(doubleThumbHeightFloat + 0.5) // Round to nearest integer
+	doubleThumbSizeFloat := float64(doubleMajorLength) * float64(thumbSize) / float64(scrollbarTrack.max+1)
+	doubleThumbSize := int(doubleThumbSizeFloat + 0.5) // Round to nearest integer
 
-	doubleThumbY := doubleHeight * position / scrollbarTrack.max
+	doubleThumbMajor := doubleMajorLength * position / scrollbarTrack.max
 	thumbStyle := tcell.StyleDefault.Foreground(scrollbarTrack.trackColor).Background(scrollbarTrack.thumbColor)
 	thumbReverseStyle := thumbStyle.Reverse(true)
 
 	if position == scrollbarTrack.max-thumbSize {
 		// Special case for when the thumb is at the bottom and we don't want to show a gap due to rounding
-		doubleThumbHeight += 2
+		doubleThumbSize += 2
 	}
 
-	if doubleThumbY&1 == 1 {
+	if doubleThumbMajor&1 == 1 {
 		// Draw the top of the thumb in the bottom half of the cell
-		screen.SetContent(x, y+doubleThumbY>>1, '\u2584', nil, thumbReverseStyle)
-		doubleThumbY++
-		doubleThumbHeight--
+		setContent(majorPos+doubleThumbMajor>>1, firstHalfCellRune, thumbReverseStyle)
+		doubleThumbMajor++
+		doubleThumbSize--
 	}
 
-	if doubleThumbHeight&1 == 1 {
+	if doubleThumbSize&1 == 1 {
 		// Draw the bottom part of the thumb in the top half of the cell
-		screen.SetContent(x, y+doubleThumbY>>1+doubleThumbHeight>>1, '\u2580', nil, thumbReverseStyle)
-		doubleThumbHeight--
+		setContent(majorPos+doubleThumbMajor>>1+doubleThumbSize>>1, secondHalfCellRune, thumbReverseStyle)
+		doubleThumbSize--
 	}
 
 	// Draw the scrollbar thumb.
-	thumbY := doubleThumbY >> 1 // Convert back to single height
-	for i := 0; i < doubleThumbHeight>>1; i++ {
-		if thumbY+i < height {
-			screen.SetContent(x, y+thumbY+i, ' ', nil, thumbStyle)
+	thumbY := doubleThumbMajor >> 1 // Convert back to single height
+	for i := 0; i < doubleThumbSize>>1; i++ {
+		if thumbY+i < majorLength {
+			setContent(majorPos+thumbY+i, ' ', thumbStyle)
 		}
 	}
 }
 
 func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {
 	return scrollbarTrack.WrapMouseHandler(func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {
-		rx, ry, _, height := scrollbarTrack.GetInnerRect()
+		rx, ry, width, height := scrollbarTrack.GetInnerRect()
 		absEventX, absEventY := event.Position()
 		eventX := absEventX - rx
 		eventY := absEventY - ry
-		if eventX < 0 || eventX >= scrollbarTrack.width || eventY < 0 || eventY >= height {
+
+		majorLength := height
+		eventMinorAxis := eventX
+		eventMajorAxis := eventY
+		if scrollbarTrack.isHorizontal {
+			majorLength = width
+			eventMinorAxis = eventY
+			eventMajorAxis = eventX
+		}
+
+		if eventMinorAxis < 0 || eventMinorAxis >= scrollbarTrack.width || eventMajorAxis < 0 || eventMajorAxis >= majorLength {
 			return false, nil // Click outside the scrollbar
 		}
 
 		if action == nuview.MouseLeftDown || (action == nuview.MouseMove && event.Buttons() == tcell.Button1) {
 			// Calculate the new position based on the click
 			// Assuming the scrollbar is vertical, we calculate the position based on the y coordinate
-			newPosition := (absEventY-ry)*scrollbarTrack.max/height - scrollbarTrack.thumbSize/2
+			newPosition := eventMajorAxis*scrollbarTrack.max/majorLength - scrollbarTrack.thumbSize/2
 			if newPosition < 0 {
 				newPosition = 0
 			} else if newPosition > scrollbarTrack.max {

@@ -10,6 +10,8 @@ type Scrollbar struct {
 	upButton    *nuview.Button
 	downButton  *nuview.Button
 	changedFunc func(position int)
+
+	isHorizontal bool // Indicates if the scrollbar is horizontal instead of vertical
 }
 
 func NewScrollbar() *Scrollbar {
@@ -49,6 +51,21 @@ func NewScrollbar() *Scrollbar {
 	})
 
 	return scrollbar
+}
+
+func (scrollbar *Scrollbar) SetHorizontal(isHorizontal bool) {
+	scrollbar.isHorizontal = isHorizontal
+	scrollbar.Track.SetHorizontal(isHorizontal)
+
+	if isHorizontal {
+		scrollbar.Flex.SetDirection(nuview.FlexColumn)
+		scrollbar.upButton.SetLabel("\u25c4")
+		scrollbar.downButton.SetLabel("\u25ba")
+	} else {
+		scrollbar.Flex.SetDirection(nuview.FlexRow)
+		scrollbar.upButton.SetLabel("\u25b2")
+		scrollbar.downButton.SetLabel("\u25bc")
+	}
 }
 
 func (scrollbar *Scrollbar) SetChangedFunc(changedFunc func(position int)) {

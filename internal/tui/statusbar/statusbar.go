@@ -23,6 +23,7 @@ type StatusBar struct {
 	MessageStyle tcell.Style
 	ErrorStyle   tcell.Style
 	Filename     string
+	IsModified   bool
 	Line         int
 	Col          int
 	LineEndings  string
@@ -84,7 +85,11 @@ func (statusBar *StatusBar) Draw(screen tcell.Screen) {
 
 	utils.DrawHorizontalLine(screen, x, y, width, style, ' ')
 
-	utils.DrawText(screen, x+1, y, leftMessage, style)
+	if statusBar.IsModified {
+		utils.DrawText(screen, x, y, "M", style)
+	}
+
+	utils.DrawText(screen, x+2, y, leftMessage, style)
 
 	cursorMessage := fmt.Sprintf("Ln %d, Col %d", statusBar.Line, statusBar.Col)
 	padding := 19 - runewidth.StringWidth(cursorMessage)

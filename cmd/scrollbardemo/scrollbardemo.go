@@ -18,18 +18,24 @@ func main() {
 	app := nuview.NewApplication()
 	app.EnableMouse(true)
 	log.Println("Starting Scrollbar Demo...")
-	scrollbarWidget := scrollbar.NewScrollbar()
+	verticalScrollbarWidget := scrollbar.NewScrollbar()
 
 	layout := nuview.NewFlex()
 	layout.AddItem(nil, 0, 1, false)
 
 	innerLayout := nuview.NewFlex()
 	innerLayout.AddItem(nil, 0, 1, false)
-	innerLayout.AddItem(scrollbarWidget, 80, 0, true)
+	innerLayout.AddItem(verticalScrollbarWidget, 1, 0, true)
 	innerLayout.AddItem(nil, 0, 1, false)
 	innerLayout.SetDirection(nuview.FlexColumn)
 
-	layout.AddItem(innerLayout, 20, 0, true)
+	layout.AddItem(innerLayout, 0, 10, true)
+
+	horizontalScrollbarWidget := scrollbar.NewScrollbar()
+	horizontalScrollbarWidget.SetHorizontal(true)
+
+	layout.AddItem(horizontalScrollbarWidget, 1, 0, false)
+
 	layout.AddItem(nil, 0, 1, false)
 	layout.SetDirection(nuview.FlexRow)
 

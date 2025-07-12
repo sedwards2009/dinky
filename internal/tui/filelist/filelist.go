@@ -2,6 +2,7 @@ package filelist
 
 import (
 	"dinky/internal/tui/scrollbar"
+	"log"
 	"os"
 	"path/filepath"
 	"slices"
@@ -13,10 +14,11 @@ import (
 
 type FileList struct {
 	*nuview.Flex
-	app       *nuview.Application
-	table     *nuview.Table
-	Scrollbar *scrollbar.Scrollbar
-	path      string
+	app                 *nuview.Application
+	table               *nuview.Table
+	VerticalScrollbar   *scrollbar.Scrollbar
+	HorizontalScrollbar *scrollbar.Scrollbar
+	path                string
 
 	allEntries     []os.DirEntry
 	visibleEntries []os.DirEntry
@@ -109,23 +111,32 @@ func NewFileList(app *nuview.Application) *FileList {
 	table.SetFixed(1, 0)
 	table.SetEvaluateAllRows(true)
 
-	topFlex.AddItem(table, 0, 1, false)
+	middleFlex := nuview.NewFlex()
+	middleFlex.SetDirection(nuview.FlexRow)
+	middleFlex.SetBorder(false)
+	middleFlex.AddItem(table, 0, 1, true)
+	horizontalScrollbar := scrollbar.NewScrollbar()
+	horizontalScrollbar.SetHorizontal(true)
+	middleFlex.AddItem(horizontalScrollbar, 1, 0, false)
 
-	fileListScrollbar := scrollbar.NewScrollbar()
-	topFlex.AddItem(fileListScrollbar, 1, 0, false)
+	topFlex.AddItem(middleFlex, 0, 1, false)
+
+	verticalScrollbar := scrollbar.NewScrollbar()
+	topFlex.AddItem(verticalScrollbar, 1, 0, false)
 
 	dirRequestsChan := make(chan string, 10)
 
 	fileList := &FileList{
-		app:               app,
-		Flex:              topFlex,
-		table:             table,
-		Scrollbar:         fileListScrollbar,
-		path:              "/home/sbe",
-		columnDescriptors: columnDescriptors,
-		dirRequestsChan:   dirRequestsChan,
-		sortColumn:        0,
-		sortDirection:     1,
+		app:                 app,
+		Flex:                topFlex,
+		table:               table,
+		VerticalScrollbar:   verticalScrollbar,
+		HorizontalScrollbar: horizontalScrollbar,
+		path:                "/home/sbe",
+		columnDescriptors:   columnDescriptors,
+		dirRequestsChan:     dirRequestsChan,
+		sortColumn:          0,
+		sortDirection:       1,
 
 		textColor:               nuview.Styles.PrimaryTextColor,
 		backgroundColor:         nuview.Styles.PrimitiveBackgroundColor,
@@ -134,16 +145,28 @@ func NewFileList(app *nuview.Application) *FileList {
 		headerBackgroundColor:   nuview.Styles.ButtonBackgroundColor,
 	}
 
-	fileListScrollbar.Track.SetBeforeDrawFunc(func(_ tcell.Screen) {
+	verticalScrollbar.Track.SetBeforeDrawFunc(func(_ tcell.Screen) {
 		row, _ := table.GetOffset()
-		fileListScrollbar.Track.SetMax(table.GetRowCount() - 1)
+		verticalScrollbar.Track.SetMax(table.GetRowCount() - 1)
 		_, _, _, height := fileList.table.GetInnerRect()
-		fileListScrollbar.Track.SetThumbSize(height)
-		fileListScrollbar.Track.SetPosition(row)
+		verticalScrollbar.Track.SetThumbSize(height)
+		verticalScrollbar.Track.SetPosition(row)
 	})
-	fileListScrollbar.SetChangedFunc(func(position int) {
+	verticalScrollbar.SetChangedFunc(func(position int) {
 		_, column := fileList.table.GetOffset()
 		fileList.table.SetOffset(position, column)
+	})
+
+	horizontalScrollbar.Track.SetBeforeDrawFunc(func(_ tcell.Screen) {
+		firstVisibleColumn, lastVisibleColumn := table.GetVisibleColumnRange()
+		horizontalScrollbar.Track.SetMax(table.GetColumnCount() - 1)
+		horizontalScrollbar.Track.SetThumbSize(lastVisibleColumn - firstVisibleColumn + 1)
+		horizontalScrollbar.Track.SetPosition(firstVisibleColumn)
+	})
+	horizontalScrollbar.SetChangedFunc(func(position int) {
+		row, col := fileList.table.GetOffset()
+		log.Printf("Setting table horizontal position to %d from %d", position, col)
+		fileList.table.SetOffset(row, position)
 	})
 
 	notifyFunc := func(consumerFunc func(path string, entry os.DirEntry), row int) {

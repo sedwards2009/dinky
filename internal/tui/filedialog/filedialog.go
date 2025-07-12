@@ -86,22 +86,20 @@ func NewFileDialog(app *nuview.Application) *FileDialog {
 	vertContentsFlex.AddItem(buttonFlex, 1, 0, false)
 	vertContentsFlex.AddItem(nil, 1, 0, false)
 
-	height := 30
-	width := 60
-
 	dirRequestsChan := make(chan string, 10)
 
+	padding := 4
 	flex := nuview.NewFlex()
-	flex.AddItem(nil, 0, 1, false)
+	flex.AddItem(nil, padding, 0, false)
 
 	innerFlex := nuview.NewFlex()
 	innerFlex.SetDirection(nuview.FlexRow)
-	innerFlex.AddItem(nil, 0, 1, false)
-	innerFlex.AddItem(vertContentsFlex, height, 1, true)
-	innerFlex.AddItem(nil, 0, 1, false)
+	innerFlex.AddItem(nil, padding, 0, false)
+	innerFlex.AddItem(vertContentsFlex, 0, 1, true)
+	innerFlex.AddItem(nil, padding, 0, false)
 
-	flex.AddItem(innerFlex, width, 1, true)
-	flex.AddItem(nil, 0, 1, false)
+	flex.AddItem(innerFlex, 0, 1, true)
+	flex.AddItem(nil, padding, 0, false)
 
 	fileDialog := &FileDialog{
 		Flex:             flex,

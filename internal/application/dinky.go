@@ -113,6 +113,8 @@ func syncStatusBarFromFileBuffer(statusBar *statusbar.StatusBar) {
 	statusBar.Line = fileBuffer.editor.Cursor.Y + 1
 	statusBar.Col = fileBuffer.editor.Cursor.X + 1
 
+	statusBar.IsModified = fileBuffer.buffer.IsModified
+
 	tabSize := int(fileBuffer.buffer.Settings["tabsize"].(float64))
 	statusBar.TabSize = tabSize
 
