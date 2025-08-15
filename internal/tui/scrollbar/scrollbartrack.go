@@ -92,7 +92,7 @@ func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
 
 	doubleMajorLength := majorLength * 2
 	// Calculate the position and size of the scrollbar thumb.
-	doubleThumbSizeFloat := float64(doubleMajorLength) * float64(thumbSize) / float64(scrollbarTrack.max+1)
+	doubleThumbSizeFloat := float64(doubleMajorLength) * float64(thumbSize) / float64(scrollbarTrack.max)
 	doubleThumbSize := int(doubleThumbSizeFloat + 0.5) // Round to nearest integer
 
 	doubleThumbMajor := doubleMajorLength * position / scrollbarTrack.max
@@ -118,10 +118,10 @@ func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
 	}
 
 	// Draw the scrollbar thumb.
-	thumbY := doubleThumbMajor >> 1 // Convert back to single height
+	thumbPos := doubleThumbMajor >> 1 // Convert back to single height
 	for i := 0; i < doubleThumbSize>>1; i++ {
-		if thumbY+i < majorLength {
-			setContent(majorPos+thumbY+i, ' ', thumbStyle)
+		if thumbPos+i < majorLength {
+			setContent(majorPos+thumbPos+i, ' ', thumbStyle)
 		}
 	}
 }
@@ -146,14 +146,18 @@ func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action nuview.MouseAct
 			return false, nil // Click outside the scrollbar
 		}
 
+		if scrollbarTrack.thumbSize >= scrollbarTrack.max {
+			return false, nil
+		}
+
 		if action == nuview.MouseLeftDown || (action == nuview.MouseMove && event.Buttons() == tcell.Button1) {
 			// Calculate the new position based on the click
 			// Assuming the scrollbar is vertical, we calculate the position based on the y coordinate
 			newPosition := eventMajorAxis*scrollbarTrack.max/majorLength - scrollbarTrack.thumbSize/2
 			if newPosition < 0 {
 				newPosition = 0
-			} else if newPosition > scrollbarTrack.max {
-				newPosition = scrollbarTrack.max
+			} else if newPosition > scrollbarTrack.max-scrollbarTrack.thumbSize {
+				newPosition = scrollbarTrack.max - scrollbarTrack.thumbSize
 			}
 			scrollbarTrack.position = newPosition
 			if scrollbarTrack.changedFunc != nil {
