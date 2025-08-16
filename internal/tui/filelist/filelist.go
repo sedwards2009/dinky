@@ -2,7 +2,6 @@ package filelist
 
 import (
 	"dinky/internal/tui/scrollbar"
-	"log"
 	"os"
 	"path/filepath"
 	"slices"
@@ -109,7 +108,6 @@ func NewFileList(app *nuview.Application) *FileList {
 	table.SetSelectable(true, false)
 	table.SetBorder(false)
 	table.SetFixed(1, 0)
-	table.SetEvaluateAllRows(true)
 
 	middleFlex := nuview.NewFlex()
 	middleFlex.SetDirection(nuview.FlexRow)
@@ -144,6 +142,7 @@ func NewFileList(app *nuview.Application) *FileList {
 		headerLabelColor:        nuview.Styles.ButtonLabelColor,
 		headerBackgroundColor:   nuview.Styles.ButtonBackgroundColor,
 	}
+	fileList.table.SetXScroll(0)
 
 	verticalScrollbar.Track.SetBeforeDrawFunc(func(_ tcell.Screen) {
 		row, _ := table.GetOffset()
@@ -158,15 +157,12 @@ func NewFileList(app *nuview.Application) *FileList {
 	})
 
 	horizontalScrollbar.Track.SetBeforeDrawFunc(func(_ tcell.Screen) {
-		firstVisibleColumn, lastVisibleColumn := table.GetVisibleColumnRange()
-		horizontalScrollbar.Track.SetMax(table.GetColumnCount() - 1)
-		horizontalScrollbar.Track.SetThumbSize(lastVisibleColumn - firstVisibleColumn + 1)
-		horizontalScrollbar.Track.SetPosition(firstVisibleColumn)
+		horizontalScrollbar.Track.SetMax(table.ScrollableWidth())
+		horizontalScrollbar.Track.SetThumbSize(table.ScrollableViewportWidth())
+		horizontalScrollbar.Track.SetPosition(table.GetXScroll())
 	})
 	horizontalScrollbar.SetChangedFunc(func(position int) {
-		row, col := fileList.table.GetOffset()
-		log.Printf("Setting table horizontal position to %d from %d", position, col)
-		fileList.table.SetOffset(row, position)
+		fileList.table.SetXScroll(position)
 	})
 
 	notifyFunc := func(consumerFunc func(path string, entry os.DirEntry), row int) {

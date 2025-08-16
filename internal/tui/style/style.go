@@ -83,6 +83,7 @@ func StyleFileList(fileList *filelist.FileList) {
 	fileList.SetHeaderBackgroundColor(white)
 
 	StyleScrollbar(fileList.VerticalScrollbar)
+	StyleScrollbar(fileList.HorizontalScrollbar)
 }
 
 func StyleTabBar(tabBar *tabbar.TabBar) {
