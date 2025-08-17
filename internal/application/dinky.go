@@ -181,6 +181,9 @@ func Main() {
 	tabBarLine.OnActive = func(id string, index int) {
 		selectTab(id)
 	}
+	tabBarLine.OnTabCloseClick = func(id string, index int) {
+		closeFile(id)
+	}
 
 	defaultStyle := colorscheme.GetColor("default")
 	_, bg, _ := defaultStyle.Decompose()

@@ -133,6 +133,10 @@ func handleSaveFileAs() {
 }
 
 func handleCloseFile() {
+	closeFile(fileBufferID)
+}
+
+func closeFile(fileBufferID string) {
 	tabBarLine.RemoveTab(fileBufferID)
 	editorPages.RemovePanel(fileBufferID)
 

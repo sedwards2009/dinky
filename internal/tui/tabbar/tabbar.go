@@ -19,6 +19,7 @@ type TabBar struct {
 	active           int
 	hscroll          int
 	OnActive         func(id string, index int)
+	OnTabCloseClick  func(id string, index int)
 }
 
 type Tab struct {
@@ -142,6 +143,7 @@ func (tabBar *TabBar) Draw(screen tcell.Screen) {
 			draw(c, 1, currentTabTextStyle)
 		}
 		draw(' ', 1, currentTabTextStyle)
+		draw('\u2715', 1, currentTabTextStyle)
 
 		if i == len(tabBar.tabs)-1 {
 			done = true
@@ -167,11 +169,14 @@ func (tabBar *TabBar) MouseHandler() func(action nuview.MouseAction, event *tcel
 
 		if y == ry {
 			if action == nuview.MouseLeftDown {
-				index, _ := tabBar.tabIndexAtX(x - rx)
+				index, _, closeClick := tabBar.tabIndexAtX(x - rx)
 				if index != -1 {
 					tabBar.active = index
 					if tabBar.OnActive != nil {
 						tabBar.OnActive(tabBar.tabs[index].ID, index)
+					}
+					if closeClick && tabBar.OnTabCloseClick != nil {
+						tabBar.OnTabCloseClick(tabBar.tabs[index].ID, index)
 					}
 					return true, nil
 				}
@@ -183,24 +188,26 @@ func (tabBar *TabBar) MouseHandler() func(action nuview.MouseAction, event *tcel
 	})
 }
 
-func (tabBar *TabBar) tabIndexAtX(posX int) (index int, leftX int) {
+func (tabBar *TabBar) tabIndexAtX(posX int) (index int, leftX int, closeClick bool) {
 	x := 0
 	for i, tab := range tabBar.tabs {
 		if posX < x {
-			return -1, -1
+			return -1, -1, false
 		}
 
 		left := x
 		x += 1 // '◢'
 		x += tabNamePadding
 		x += runewidth.StringWidth(tab.Title)
-		x += tabNamePadding
+		x += 1 // ' '
+		x += 1 // '✕'
 		x += 1 // '◣'
 		if posX < x {
-			return i, left
+			closeClick = posX == x-2
+			return i, left, closeClick
 		}
 		x += 2 // gap
 	}
 
-	return -1, -1
+	return -1, -1, false
 }
