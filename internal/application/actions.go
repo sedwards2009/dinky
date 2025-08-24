@@ -133,7 +133,14 @@ func handleSaveFileAs() {
 }
 
 func handleCloseFile() {
-	closeFile(fileBufferID)
+	fileBuffer := getFileBufferByID(fileBufferID)
+	if fileBuffer.buffer.IsModified {
+		ShowConfirmDialog("File has unsaved changes. Close anyway?", func() {
+			closeFile(fileBufferID)
+		}, func() {})
+	} else {
+		closeFile(fileBufferID)
+	}
 }
 
 func closeFile(fileBufferID string) {

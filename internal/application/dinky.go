@@ -182,7 +182,8 @@ func Main() {
 		selectTab(id)
 	}
 	tabBarLine.OnTabCloseClick = func(id string, index int) {
-		closeFile(id)
+		fileBufferID = id
+		handleCloseFile()
 	}
 
 	defaultStyle := colorscheme.GetColor("default")
