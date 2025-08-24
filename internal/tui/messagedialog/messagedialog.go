@@ -71,20 +71,36 @@ func (d *MessageDialog) Open(title string, message string, buttons []string, wid
 
 	d.buttonsFlex.ClearItems()
 	nuviewButtons := make([]*nuview.Button, len(buttons))
-	for i, button := range buttons {
-		btn := nuview.NewButton(button)
-		nuviewButtons[i] = btn
+
+	if len(buttons) == 1 {
+		// If it is just one button, then center it.
+		btn := nuview.NewButton(buttons[0])
+		nuviewButtons[0] = btn
 		btn.SetSelectedFunc(func() {
 			if d.OnButtonClick != nil {
-				d.OnButtonClick(button, i)
+				d.OnButtonClick(buttons[0], 0)
 			}
 		})
+		d.buttonsFlex.AddItem(nil, 0, 1, false)
+		d.buttonsFlex.AddItem(btn, 0, 1, true)
+		d.buttonsFlex.AddItem(nil, 0, 1, false)
+	} else {
+		for i, button := range buttons {
+			btn := nuview.NewButton(button)
+			nuviewButtons[i] = btn
+			btn.SetSelectedFunc(func() {
+				if d.OnButtonClick != nil {
+					d.OnButtonClick(button, i)
+				}
+			})
 
-		d.buttonsFlex.AddItem(btn, 0, 1, i == 0)
-		if i < len(buttons)-1 {
-			d.buttonsFlex.AddItem(nil, 0, 1, false)
+			d.buttonsFlex.AddItem(btn, 0, 1, i == 0)
+			if i < len(buttons)-1 {
+				d.buttonsFlex.AddItem(nil, 0, 1, false)
+			}
 		}
 	}
+
 	d.buttons = nuviewButtons
 	d.ResizeItem(d.innerFlex, height, 0)
 	d.innerFlex.ResizeItem(d.verticalContentsFlex, width, 0)

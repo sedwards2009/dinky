@@ -5,6 +5,7 @@ import (
 	"dinky/internal/tui/statusbar"
 	"dinky/internal/tui/style"
 	"dinky/internal/tui/tabbar"
+	"fmt"
 	"log"
 	"os"
 	"path"
@@ -80,13 +81,14 @@ func newFile(contents string, filename string) {
 	app.SetFocus(editor)
 }
 
-func loadFile(filename string) {
+func loadFile(filename string) string {
 	// Read the file contents
 	contents, err := os.ReadFile(filename)
 	if err != nil {
-		log.Fatalf("Failed to read file: %v", err)
+		return fmt.Sprintf("Failed to read file '%s':\n%v", filename, err)
 	}
 	newFile(string(contents), filename)
+	return ""
 }
 
 func getFileBufferByID(id string) *FileBuffer {
@@ -189,7 +191,6 @@ func Main() {
 	defaultStyle := colorscheme.GetColor("default")
 	_, bg, _ := defaultStyle.Decompose()
 	tabBarLine.SetTabBackgroundColor(bg)
-	// tabBarLine.SetTabInactiveBackgroundColor(bg)
 
 	mainUiFlex.AddItem(tabBarLine, 1, 0, false)
 
@@ -209,11 +210,31 @@ func Main() {
 		app.SetFocus(editor)
 	})
 
+	errorMessages := []string{}
 	for _, arg := range os.Args[1:] {
-		loadFile(arg)
+		resultString := loadFile(arg)
+		if resultString != "" {
+			errorMessages = append(errorMessages, resultString)
+		}
 	}
+
+	var showLoadingError func()
+	showLoadingError = func() {
+		CloseMessageDialog()
+		if len(errorMessages) > 0 {
+			errorMessage := errorMessages[0]
+			errorMessages = errorMessages[1:]
+			ShowMessageDialog("Error loading file", errorMessage, []string{"OK"}, 60, 8,
+				showLoadingError,
+				func(button string, index int) {
+					showLoadingError()
+				})
+		}
+	}
+	app.QueueUpdateDraw(showLoadingError)
+
 	if len(fileBuffers) == 0 {
-		newFile("Hello Dinky\nSome words to click on\n", "")
+		newFile("", "")
 	}
 	selectTab(fileBuffers[0].uuid)
 
