@@ -224,7 +224,7 @@ func Main() {
 		if len(errorMessages) > 0 {
 			errorMessage := errorMessages[0]
 			errorMessages = errorMessages[1:]
-			ShowOkDialog("Error loading file", errorMessage, 60, 8, showLoadingError)
+			ShowOkDialog("Error loading file", errorMessage, showLoadingError)
 		}
 	}
 	app.QueueUpdateDraw(showLoadingError)

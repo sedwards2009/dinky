@@ -192,7 +192,7 @@ func handleAbout() {
 		"\n"+
 		"Website: https://github.com/sedwards2009/dinky\n"+
 		"(c) 2025 Simon Edwards",
-		40, 11, func() {})
+		nil)
 }
 
 func handleQuit() {
