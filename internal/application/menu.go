@@ -2,7 +2,6 @@ package application
 
 import (
 	"dinky/internal/tui/menu"
-	"log"
 
 	"github.com/pgavlin/femto"
 )
@@ -33,7 +32,7 @@ func createMenus() []*menu.Menu {
 			{ID: ACTION_TOGGLE_SOFT_WRAP, Title: "Soft Wrap", Callback: handleDinkyAction},
 		}},
 		{Title: "Help", Items: []*menu.MenuItem{
-			{Title: "About", Callback: func(id string) { log.Println("About") }},
+			{ID: ACTION_ABOUT, Title: "About", Callback: handleDinkyAction},
 		}},
 	}
 }

@@ -19,6 +19,7 @@ const (
 	ACTION_TOGGLE_SOFT_WRAP    = "ToggleSoftWrap"
 	ACTION_TOGGLE_LINE_NUMBERS = "ToggleLineNumbers"
 	ACTION_QUIT                = "Quit"
+	ACTION_ABOUT               = "About"
 )
 
 var dinkyActionMapping map[string]func()
@@ -34,6 +35,7 @@ func init() {
 		ACTION_TOGGLE_LINE_NUMBERS: handleLineNumbers,
 		ACTION_TOGGLE_SOFT_WRAP:    handleSoftWrap,
 		ACTION_QUIT:                handleQuit,
+		ACTION_ABOUT:               handleAbout,
 	}
 }
 
@@ -183,6 +185,14 @@ func handleFemtoAction(id string) {
 	if f, ok := femto.BindingActionsMapping[id]; ok {
 		f(editor)
 	}
+}
+
+func handleAbout() {
+	ShowOkDialog("About", "Dinky - A little text editor\nVersion 0.1.0\n"+
+		"\n"+
+		"Website: https://github.com/sedwards2009/dinky\n"+
+		"(c) 2025 Simon Edwards",
+		40, 11, func() {})
 }
 
 func handleQuit() {
