@@ -29,9 +29,12 @@ func MeasureStringDimensions(text string) (width int, height int) {
 	return width, height
 }
 
-func ShowMessageDialog(title string, message string, buttons []string, width int, height int, OnClose func(),
+func ShowMessageDialog(title string, message string, buttons []string, OnClose func(),
 	OnButtonClick func(button string, index int)) {
 
+	width, height := MeasureStringDimensions(message)
+	width += 4
+	height += 6
 	if messageDialog == nil {
 		messageDialog = messagedialog.NewMessageDialog(app)
 	}
@@ -50,7 +53,7 @@ func CloseMessageDialog() {
 }
 
 func ShowConfirmDialog(message string, onConfirm func(), onCancel func()) {
-	ShowMessageDialog("Confirm", message, []string{"OK", "Cancel"}, 50, 7,
+	ShowMessageDialog("Confirm", message, []string{"OK", "Cancel"},
 		func() {
 			CloseMessageDialog()
 			onCancel()
@@ -66,8 +69,7 @@ func ShowConfirmDialog(message string, onConfirm func(), onCancel func()) {
 }
 
 func ShowOkDialog(title string, message string, onClose func()) {
-	width, height := MeasureStringDimensions(message)
-	ShowMessageDialog(title, message, []string{"OK"}, width+4, height+6,
+	ShowMessageDialog(title, message, []string{"OK"},
 		func() {
 			CloseMessageDialog()
 			if onClose != nil {
