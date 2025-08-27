@@ -26,6 +26,8 @@ func createMenus() []*menu.Menu {
 			{ID: femto.ActionPaste, Title: "Paste", Callback: handleFemtoAction},
 			{Title: "", Callback: nil}, // Separator
 			{ID: femto.ActionSelectAll, Title: "Select All", Callback: handleFemtoAction},
+			{Title: "", Callback: nil}, // Separator
+			{ID: ACTION_SET_LINE_ENDINGS, Title: "Line Endings…", Callback: handleDinkyAction},
 		}},
 		{Title: "View", Items: []*menu.MenuItem{
 			{ID: ACTION_TOGGLE_LINE_NUMBERS, Title: "Line Numbers", Callback: handleDinkyAction},
@@ -80,9 +82,35 @@ func syncLineNumbers(menus []*menu.Menu, on bool) {
 	}
 }
 
+func syncLineEndings(menus []*menu.Menu, buffer *femto.Buffer) {
+	for _, menu := range menus {
+		for _, menuItem := range menu.Items {
+			if menuItem.ID == ACTION_SET_LINE_ENDINGS {
+				if isBufferCRLF(buffer) {
+					menuItem.Title = "Line Endings (CRLF)…"
+				} else {
+					menuItem.Title = "Line Endings (LF)…"
+				}
+			}
+		}
+	}
+}
+
+func syncTabSize(menus []*menu.Menu, size int) {
+	for _, menu := range menus {
+		for _, menuItem := range menu.Items {
+			if menuItem.ID == ACTION_SET_TAB_SIZE {
+				menuItem.Title = "Tab Size (" + string(rune('0'+size)) + ")…"
+			}
+		}
+	}
+}
+
 func syncMenuFromBuffer(buffer *femto.Buffer) {
 	softwrap := buffer.Settings["softwrap"].(bool)
 	syncSoftWrap(menus, softwrap)
 	lineNumbers := buffer.Settings["ruler"].(bool)
 	syncLineNumbers(menus, lineNumbers)
+	syncTabSize(menus, int(buffer.Settings["tabsize"].(float64)))
+	syncLineEndings(menus, buffer)
 }

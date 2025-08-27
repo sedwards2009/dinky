@@ -19,6 +19,7 @@ const (
 	ACTION_TOGGLE_SOFT_WRAP    = "ToggleSoftWrap"
 	ACTION_TOGGLE_LINE_NUMBERS = "ToggleLineNumbers"
 	ACTION_SET_TAB_SIZE        = "SetTabSize"
+	ACTION_SET_LINE_ENDINGS    = "SetLineEndings"
 	ACTION_QUIT                = "Quit"
 	ACTION_ABOUT               = "About"
 )
@@ -36,6 +37,7 @@ func init() {
 		ACTION_TOGGLE_LINE_NUMBERS: handleLineNumbers,
 		ACTION_TOGGLE_SOFT_WRAP:    handleSoftWrap,
 		ACTION_SET_TAB_SIZE:        handleSetTabSize,
+		ACTION_SET_LINE_ENDINGS:    handleSetLineEndings,
 		ACTION_QUIT:                handleQuit,
 		ACTION_ABOUT:               handleAbout,
 	}
@@ -219,6 +221,28 @@ func handleSetTabSize() {
 				}
 				buffer.Settings["tabsize"] = tabSize
 				statusBar.ShowMessage("Tab size set to " + button)
+			}
+		})
+}
+
+func handleSetLineEndings() {
+	buttons := []string{"LF (Unix)", "CRLF (DOS)", "Cancel"}
+	ShowMessageDialog("Line Endings", "Select line ending style:", buttons,
+		func() {
+			// On close (do nothing)
+		},
+		func(button string, index int) {
+			CloseMessageDialog()
+			if index < len(buttons)-1 { // Not cancel
+				switch index {
+				case 0:
+					buffer.Settings["fileformat"] = "unix"
+					statusBar.ShowMessage("Line endings set to LF (Unix)")
+				case 1:
+					buffer.Settings["fileformat"] = "dos"
+					statusBar.ShowMessage("Line endings set to CRLF (DOS)")
+				}
+				syncMenuFromBuffer(buffer)
 			}
 		})
 }
