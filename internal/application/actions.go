@@ -18,6 +18,7 @@ const (
 	ACTION_OPEN_MENU           = "OpenMenu"
 	ACTION_TOGGLE_SOFT_WRAP    = "ToggleSoftWrap"
 	ACTION_TOGGLE_LINE_NUMBERS = "ToggleLineNumbers"
+	ACTION_SET_TAB_SIZE        = "SetTabSize"
 	ACTION_QUIT                = "Quit"
 	ACTION_ABOUT               = "About"
 )
@@ -34,6 +35,7 @@ func init() {
 		ACTION_SAVE_FILE_AS:        handleSaveFileAs,
 		ACTION_TOGGLE_LINE_NUMBERS: handleLineNumbers,
 		ACTION_TOGGLE_SOFT_WRAP:    handleSoftWrap,
+		ACTION_SET_TAB_SIZE:        handleSetTabSize,
 		ACTION_QUIT:                handleQuit,
 		ACTION_ABOUT:               handleAbout,
 	}
@@ -193,6 +195,32 @@ func handleAbout() {
 		"Website: https://github.com/sedwards2009/dinky\n"+
 		"(c) 2025 Simon Edwards",
 		nil)
+}
+
+func handleSetTabSize() {
+	buttons := []string{"2", "4", "8", "16", "Cancel"}
+	ShowMessageDialog("Tab Size", "Select tab size:", buttons,
+		func() {
+			// On close (do nothing)
+		},
+		func(button string, index int) {
+			CloseMessageDialog()
+			if index < len(buttons)-1 { // Not cancel
+				var tabSize float64
+				switch index {
+				case 0:
+					tabSize = 2
+				case 1:
+					tabSize = 4
+				case 2:
+					tabSize = 8
+				case 3:
+					tabSize = 16
+				}
+				buffer.Settings["tabsize"] = tabSize
+				statusBar.ShowMessage("Tab size set to " + button)
+			}
+		})
 }
 
 func handleQuit() {

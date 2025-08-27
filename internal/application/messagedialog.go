@@ -29,12 +29,37 @@ func MeasureStringDimensions(text string) (width int, height int) {
 	return width, height
 }
 
+func MessageButtonsSize(buttons []string) int {
+	if len(buttons) == 0 {
+		return 0
+	}
+
+	width := 0
+	for _, button := range buttons {
+		width += len([]rune(button)) // Use runes to handle Unicode characters properly
+	}
+
+	// Add 2 for each button for padding
+	width += len(buttons) * 2
+	// Add 1 for each space between buttons
+	width += len(buttons) - 1
+
+	width *= 2
+	return width
+}
+
 func ShowMessageDialog(title string, message string, buttons []string, OnClose func(),
 	OnButtonClick func(button string, index int)) {
 
 	width, height := MeasureStringDimensions(message)
-	width += 4
 	height += 6
+
+	minimumButtonsWidth := MessageButtonsSize(buttons)
+	if width < minimumButtonsWidth {
+		width = minimumButtonsWidth
+	}
+	width += 4
+
 	if messageDialog == nil {
 		messageDialog = messagedialog.NewMessageDialog(app)
 	}

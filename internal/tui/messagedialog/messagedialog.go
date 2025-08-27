@@ -82,7 +82,7 @@ func (d *MessageDialog) Open(title string, message string, buttons []string, wid
 			}
 		})
 		d.buttonsFlex.AddItem(nil, 0, 1, false)
-		d.buttonsFlex.AddItem(btn, 0, 1, true)
+		d.buttonsFlex.AddItem(btn, 0, 2, true)
 		d.buttonsFlex.AddItem(nil, 0, 1, false)
 	} else {
 		for i, button := range buttons {
@@ -94,7 +94,7 @@ func (d *MessageDialog) Open(title string, message string, buttons []string, wid
 				}
 			})
 
-			d.buttonsFlex.AddItem(btn, 0, 1, i == 0)
+			d.buttonsFlex.AddItem(btn, 0, 2, i == 0)
 			if i < len(buttons)-1 {
 				d.buttonsFlex.AddItem(nil, 0, 1, false)
 			}

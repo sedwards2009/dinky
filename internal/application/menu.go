@@ -30,6 +30,7 @@ func createMenus() []*menu.Menu {
 		{Title: "View", Items: []*menu.MenuItem{
 			{ID: ACTION_TOGGLE_LINE_NUMBERS, Title: "Line Numbers", Callback: handleDinkyAction},
 			{ID: ACTION_TOGGLE_SOFT_WRAP, Title: "Soft Wrap", Callback: handleDinkyAction},
+			{ID: ACTION_SET_TAB_SIZE, Title: "Tab Size…", Callback: handleDinkyAction},
 		}},
 		{Title: "Help", Items: []*menu.MenuItem{
 			{ID: ACTION_ABOUT, Title: "About", Callback: handleDinkyAction},
