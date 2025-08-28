@@ -1,11 +1,11 @@
 package application
 
 import (
-	"dinky/internal/tui/messagedialog"
+	"dinky/internal/tui/dialog"
 	"strings"
 )
 
-var messageDialog *messagedialog.MessageDialog
+var messageDialog *dialog.MessageDialog
 
 const messageDialogName = "messagedialog"
 
@@ -61,7 +61,7 @@ func ShowMessageDialog(title string, message string, buttons []string, OnClose f
 	width += 4
 
 	if messageDialog == nil {
-		messageDialog = messagedialog.NewMessageDialog(app)
+		messageDialog = dialog.NewMessageDialog(app)
 	}
 	modalPages.AddPanel(messageDialogName, messageDialog, true, true)
 	messageDialog.OnClose = OnClose

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"dinky/internal/tui/messagedialog"
+	"dinky/internal/tui/dialog"
 	"dinky/internal/tui/style"
 	"log"
 	"os"
@@ -19,7 +19,7 @@ func main() {
 	app.EnableMouse(true)
 	log.Println("Starting MessageDialog Demo...")
 
-	messageDialog := messagedialog.NewMessageDialog(app)
+	messageDialog := dialog.NewMessageDialog(app)
 	messageDialog.OnButtonClick = func(button string, index int) {
 		log.Printf("Button clicked: %s (index: %d)", button, index)
 		app.Stop()
