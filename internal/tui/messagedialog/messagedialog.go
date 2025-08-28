@@ -69,39 +69,7 @@ func (d *MessageDialog) Open(title string, message string, buttons []string, wid
 	d.verticalContentsFlex.SetTitle(title)
 	d.messageView.SetText(message)
 
-	d.buttonsFlex.ClearItems()
-	nuviewButtons := make([]*nuview.Button, len(buttons))
-
-	if len(buttons) == 1 {
-		// If it is just one button, then center it.
-		btn := nuview.NewButton(buttons[0])
-		nuviewButtons[0] = btn
-		btn.SetSelectedFunc(func() {
-			if d.OnButtonClick != nil {
-				d.OnButtonClick(buttons[0], 0)
-			}
-		})
-		d.buttonsFlex.AddItem(nil, 0, 1, false)
-		d.buttonsFlex.AddItem(btn, 0, 2, true)
-		d.buttonsFlex.AddItem(nil, 0, 1, false)
-	} else {
-		for i, button := range buttons {
-			btn := nuview.NewButton(button)
-			nuviewButtons[i] = btn
-			btn.SetSelectedFunc(func() {
-				if d.OnButtonClick != nil {
-					d.OnButtonClick(button, i)
-				}
-			})
-
-			d.buttonsFlex.AddItem(btn, 0, 2, i == 0)
-			if i < len(buttons)-1 {
-				d.buttonsFlex.AddItem(nil, 0, 1, false)
-			}
-		}
-	}
-
-	d.buttons = nuviewButtons
+	d.buttons = createButtonsRow(d.buttonsFlex, buttons, d.OnButtonClick)
 	d.ResizeItem(d.innerFlex, height, 0)
 	d.innerFlex.ResizeItem(d.verticalContentsFlex, width, 0)
 
@@ -157,4 +125,41 @@ func (d *MessageDialog) MouseHandler() func(action nuview.MouseAction, event *tc
 		d.verticalContentsFlex.MouseHandler()(action, event, setFocus)
 		return true, nil
 	})
+}
+
+// createButtonsRow creates and configures the buttons for the message dialog
+func createButtonsRow(buttonsFlex *nuview.Flex, buttons []string, onButtonClick func(button string, index int)) []*nuview.Button {
+	buttonsFlex.ClearItems()
+	nuviewButtons := make([]*nuview.Button, len(buttons))
+
+	if len(buttons) == 1 {
+		// If it is just one button, then center it.
+		btn := nuview.NewButton(buttons[0])
+		nuviewButtons[0] = btn
+		btn.SetSelectedFunc(func() {
+			if onButtonClick != nil {
+				onButtonClick(buttons[0], 0)
+			}
+		})
+		buttonsFlex.AddItem(nil, 0, 1, false)
+		buttonsFlex.AddItem(btn, 0, 2, true)
+		buttonsFlex.AddItem(nil, 0, 1, false)
+	} else {
+		for i, button := range buttons {
+			btn := nuview.NewButton(button)
+			nuviewButtons[i] = btn
+			btn.SetSelectedFunc(func() {
+				if onButtonClick != nil {
+					onButtonClick(button, i)
+				}
+			})
+
+			buttonsFlex.AddItem(btn, 0, 2, i == 0)
+			if i < len(buttons)-1 {
+				buttonsFlex.AddItem(nil, 0, 1, false)
+			}
+		}
+	}
+
+	return nuviewButtons
 }
