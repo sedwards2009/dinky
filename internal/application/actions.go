@@ -192,7 +192,7 @@ func handleFemtoAction(id string) {
 }
 
 func handleAbout() {
-	ShowOkDialog("About", "Dinky - A little text editor\nVersion 0.1.0\n"+
+	ShowOkDialog("About", "Dinky - A little text editor\nVersion "+Version+"\n"+
 		"\n"+
 		"Website: https://github.com/sedwards2009/dinky\n"+
 		"(c) 2025 Simon Edwards",

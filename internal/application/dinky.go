@@ -17,6 +17,9 @@ import (
 	"github.com/sedwards2009/nuview"
 )
 
+// Version information
+const Version = "0.1.0"
+
 // -----------------------------------------------------------------
 var app *nuview.Application
 var menus []*menu.Menu
@@ -147,7 +150,57 @@ func editorInputCapture(event *tcell.EventKey) *tcell.EventKey {
 	return event
 }
 
+func showHelp() {
+	fmt.Printf("Dinky - A little text editor\n\n")
+	fmt.Printf("Usage: dinky [options] [file1] [file2] ...\n\n")
+	fmt.Printf("Options:\n")
+	fmt.Printf("  -h, --help     Show this help message and exit\n")
+	fmt.Printf("  -v, --version  Show version information and exit\n\n")
+	fmt.Printf("Arguments:\n")
+	fmt.Printf("  file1, file2, ...  Files to open in the editor\n\n")
+	fmt.Printf("If no files are specified, a new empty file will be created.\n")
+}
+
+func showVersion() {
+	fmt.Printf("Dinky version %s\n", Version)
+}
+
+func parseCommandLine() bool {
+	args := os.Args[1:]
+	fileArgs := []string{}
+
+	for _, arg := range args {
+		switch arg {
+		case "-h", "--help":
+			showHelp()
+			return false
+		case "-v", "--version":
+			showVersion()
+			return false
+		default:
+			// If it starts with a dash, it's an unknown option
+			if len(arg) > 0 && arg[0] == '-' {
+				fmt.Fprintf(os.Stderr, "Error: Unknown option '%s'\n", arg)
+				fmt.Fprintf(os.Stderr, "Use 'dinky --help' for usage information.\n")
+				return false
+			}
+			// Otherwise, it's a file to open
+			fileArgs = append(fileArgs, arg)
+		}
+	}
+
+	// Update os.Args to contain only the program name and file arguments
+	os.Args = append([]string{os.Args[0]}, fileArgs...)
+
+	return true
+}
+
 func Main() {
+	// Parse command line arguments first
+	if !parseCommandLine() {
+		return
+	}
+
 	logFile := setupLogging()
 	defer logFile.Close()
 
