@@ -6,6 +6,7 @@ import (
 	"dinky/internal/tui/style"
 	"dinky/internal/tui/tabbar"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -22,6 +23,7 @@ const Version = "0.1.0"
 
 // -----------------------------------------------------------------
 var app *nuview.Application
+var enableLogging bool
 var menus []*menu.Menu
 var fileBufferID string
 var buffer *femto.Buffer
@@ -155,7 +157,8 @@ func showHelp() {
 	fmt.Printf("Usage: dinky [options] [file1] [file2] ...\n\n")
 	fmt.Printf("Options:\n")
 	fmt.Printf("  -h, --help     Show this help message and exit\n")
-	fmt.Printf("  -v, --version  Show version information and exit\n\n")
+	fmt.Printf("  -v, --version  Show version information and exit\n")
+	fmt.Printf("  --log          Enable logging to app.log file\n\n")
 	fmt.Printf("Arguments:\n")
 	fmt.Printf("  file1, file2, ...  Files to open in the editor\n\n")
 	fmt.Printf("If no files are specified, a new empty file will be created.\n")
@@ -177,6 +180,8 @@ func parseCommandLine() bool {
 		case "-v", "--version":
 			showVersion()
 			return false
+		case "--log":
+			enableLogging = true
 		default:
 			// If it starts with a dash, it's an unknown option
 			if len(arg) > 0 && arg[0] == '-' {
@@ -201,8 +206,15 @@ func Main() {
 		return
 	}
 
-	logFile := setupLogging()
-	defer logFile.Close()
+	var logFile *os.File
+	if enableLogging {
+		logFile = setupLogging()
+		defer logFile.Close()
+		log.Println("Dinky starting with logging enabled")
+	} else {
+		// Disable logging by setting output to discard
+		log.SetOutput(io.Discard)
+	}
 
 	style.Install()
 
