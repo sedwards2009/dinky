@@ -10,38 +10,40 @@ import (
 )
 
 const (
-	ACTION_NEW                 = "NewFile"
-	ACTION_CLOSE_FILE          = "CloseFile"
-	ACTION_OPEN_FILE           = "OpenFile"
-	ACTION_SAVE_FILE           = "SaveFile"
-	ACTION_SAVE_FILE_AS        = "SaveFileAs"
-	ACTION_OPEN_MENU           = "OpenMenu"
-	ACTION_TOGGLE_SOFT_WRAP    = "ToggleSoftWrap"
-	ACTION_TOGGLE_LINE_NUMBERS = "ToggleLineNumbers"
-	ACTION_SET_TAB_SIZE        = "SetTabSize"
-	ACTION_SET_LINE_ENDINGS    = "SetLineEndings"
-	ACTION_GO_TO_LINE          = "GoToLine"
-	ACTION_QUIT                = "Quit"
-	ACTION_ABOUT               = "About"
+	ACTION_NEW                  = "NewFile"
+	ACTION_CLOSE_FILE           = "CloseFile"
+	ACTION_OPEN_FILE            = "OpenFile"
+	ACTION_SAVE_FILE            = "SaveFile"
+	ACTION_SAVE_FILE_AS         = "SaveFileAs"
+	ACTION_OPEN_MENU            = "OpenMenu"
+	ACTION_TOGGLE_SOFT_WRAP     = "ToggleSoftWrap"
+	ACTION_TOGGLE_LINE_NUMBERS  = "ToggleLineNumbers"
+	ACTION_TOGGLE_MATCH_BRACKET = "ToggleMatchBracket"
+	ACTION_SET_TAB_SIZE         = "SetTabSize"
+	ACTION_SET_LINE_ENDINGS     = "SetLineEndings"
+	ACTION_GO_TO_LINE           = "GoToLine"
+	ACTION_QUIT                 = "Quit"
+	ACTION_ABOUT                = "About"
 )
 
 var dinkyActionMapping map[string]func()
 
 func init() {
 	dinkyActionMapping = map[string]func(){
-		ACTION_NEW:                 handleNewFile,
-		ACTION_CLOSE_FILE:          handleCloseFile,
-		ACTION_OPEN_FILE:           handleOpenFile,
-		ACTION_OPEN_MENU:           handleOpenMenu,
-		ACTION_SAVE_FILE:           handleSaveFile,
-		ACTION_SAVE_FILE_AS:        handleSaveFileAs,
-		ACTION_TOGGLE_LINE_NUMBERS: handleLineNumbers,
-		ACTION_TOGGLE_SOFT_WRAP:    handleSoftWrap,
-		ACTION_SET_TAB_SIZE:        handleSetTabSize,
-		ACTION_SET_LINE_ENDINGS:    handleSetLineEndings,
-		ACTION_GO_TO_LINE:          handleGoToLine,
-		ACTION_QUIT:                handleQuit,
-		ACTION_ABOUT:               handleAbout,
+		ACTION_NEW:                  handleNewFile,
+		ACTION_CLOSE_FILE:           handleCloseFile,
+		ACTION_OPEN_FILE:            handleOpenFile,
+		ACTION_OPEN_MENU:            handleOpenMenu,
+		ACTION_SAVE_FILE:            handleSaveFile,
+		ACTION_SAVE_FILE_AS:         handleSaveFileAs,
+		ACTION_TOGGLE_LINE_NUMBERS:  handleLineNumbers,
+		ACTION_TOGGLE_SOFT_WRAP:     handleSoftWrap,
+		ACTION_TOGGLE_MATCH_BRACKET: handleMatchBracket,
+		ACTION_SET_TAB_SIZE:         handleSetTabSize,
+		ACTION_SET_LINE_ENDINGS:     handleSetLineEndings,
+		ACTION_GO_TO_LINE:           handleGoToLine,
+		ACTION_QUIT:                 handleQuit,
+		ACTION_ABOUT:                handleAbout,
 	}
 }
 
@@ -185,6 +187,12 @@ func handleSoftWrap() {
 	on := buffer.Settings["softwrap"].(bool)
 	buffer.Settings["softwrap"] = !on
 	syncSoftWrap(menus, !on)
+}
+
+func handleMatchBracket() {
+	on := buffer.Settings["matchbrace"].(bool)
+	buffer.Settings["matchbrace"] = !on
+	syncMatchBracket(menus, !on)
 }
 
 func handleFemtoAction(id string) {

@@ -32,6 +32,7 @@ func createMenus() []*menu.Menu {
 		{Title: "View", Items: []*menu.MenuItem{
 			{ID: ACTION_TOGGLE_LINE_NUMBERS, Title: "Line Numbers", Callback: handleDinkyAction},
 			{ID: ACTION_TOGGLE_SOFT_WRAP, Title: "Soft Wrap", Callback: handleDinkyAction},
+			{ID: ACTION_TOGGLE_MATCH_BRACKET, Title: "Match Brackets", Callback: handleDinkyAction},
 			{ID: ACTION_SET_TAB_SIZE, Title: "Tab Size…", Callback: handleDinkyAction},
 			{Title: "", Callback: nil}, // Separator
 			{ID: ACTION_GO_TO_LINE, Title: "Go to Line…", Callback: handleDinkyAction},
@@ -84,6 +85,21 @@ func syncLineNumbers(menus []*menu.Menu, on bool) {
 	}
 }
 
+func syncMatchBracket(menus []*menu.Menu, on bool) {
+	for _, menu := range menus {
+		for _, menuItem := range menu.Items {
+			if menuItem.ID == ACTION_TOGGLE_MATCH_BRACKET {
+				if on {
+					menuItem.Title = "\u2713 "
+				} else {
+					menuItem.Title = "  "
+				}
+				menuItem.Title += "Match Brackets"
+			}
+		}
+	}
+}
+
 func syncLineEndings(menus []*menu.Menu, buffer *femto.Buffer) {
 	for _, menu := range menus {
 		for _, menuItem := range menu.Items {
@@ -113,6 +129,8 @@ func syncMenuFromBuffer(buffer *femto.Buffer) {
 	syncSoftWrap(menus, softwrap)
 	lineNumbers := buffer.Settings["ruler"].(bool)
 	syncLineNumbers(menus, lineNumbers)
+	matchBracket := buffer.Settings["matchbrace"].(bool)
+	syncMatchBracket(menus, matchBracket)
 	syncTabSize(menus, int(buffer.Settings["tabsize"].(float64)))
 	syncLineEndings(menus, buffer)
 }

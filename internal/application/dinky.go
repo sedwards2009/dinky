@@ -61,6 +61,7 @@ func newFile(contents string, filename string) {
 	editor.SetColorscheme(colorscheme)
 	editor.SetKeybindings(femtoDefaultKeyBindings)
 	editor.SetInputCapture(editorInputCapture)
+	buffer.Settings["matchbrace"] = true
 
 	fileBuffer := &FileBuffer{
 		buffer:   buffer,
