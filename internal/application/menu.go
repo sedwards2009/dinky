@@ -55,49 +55,31 @@ func syncMenuKeyBindings(menus []*menu.Menu, femtoActionToKeyMapping map[string]
 	}
 }
 
-func syncSoftWrap(menus []*menu.Menu, on bool) {
+func syncToggleMenuItem(menus []*menu.Menu, actionID string, label string, on bool) {
 	for _, menu := range menus {
 		for _, menuItem := range menu.Items {
-			if menuItem.ID == ACTION_TOGGLE_SOFT_WRAP {
+			if menuItem.ID == actionID {
 				if on {
 					menuItem.Title = "\u2713 "
 				} else {
 					menuItem.Title = "  "
 				}
-				menuItem.Title += "Soft Wrap"
+				menuItem.Title += label
 			}
 		}
 	}
+}
+
+func syncSoftWrap(menus []*menu.Menu, on bool) {
+	syncToggleMenuItem(menus, ACTION_TOGGLE_SOFT_WRAP, "Soft Wrap", on)
 }
 
 func syncLineNumbers(menus []*menu.Menu, on bool) {
-	for _, menu := range menus {
-		for _, menuItem := range menu.Items {
-			if menuItem.ID == ACTION_TOGGLE_LINE_NUMBERS {
-				if on {
-					menuItem.Title = "\u2713 "
-				} else {
-					menuItem.Title = "  "
-				}
-				menuItem.Title += "Line Numbers"
-			}
-		}
-	}
+	syncToggleMenuItem(menus, ACTION_TOGGLE_LINE_NUMBERS, "Line Numbers", on)
 }
 
 func syncMatchBracket(menus []*menu.Menu, on bool) {
-	for _, menu := range menus {
-		for _, menuItem := range menu.Items {
-			if menuItem.ID == ACTION_TOGGLE_MATCH_BRACKET {
-				if on {
-					menuItem.Title = "\u2713 "
-				} else {
-					menuItem.Title = "  "
-				}
-				menuItem.Title += "Match Brackets"
-			}
-		}
-	}
+	syncToggleMenuItem(menus, ACTION_TOGGLE_MATCH_BRACKET, "Match Brackets", on)
 }
 
 func syncLineEndings(menus []*menu.Menu, buffer *femto.Buffer) {
