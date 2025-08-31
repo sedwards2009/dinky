@@ -117,6 +117,7 @@ func initKeyBindings() {
 		"Ctrl-w": ACTION_CLOSE_FILE,
 		"Ctrl-o": ACTION_OPEN_FILE,
 		"Ctrl-s": ACTION_SAVE_FILE,
+		"Ctrl-g": ACTION_GO_TO_LINE,
 		"F12":    ACTION_OPEN_MENU,
 		"Ctrl-q": ACTION_QUIT,
 	}

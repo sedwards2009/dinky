@@ -20,6 +20,7 @@ const (
 	ACTION_TOGGLE_LINE_NUMBERS = "ToggleLineNumbers"
 	ACTION_SET_TAB_SIZE        = "SetTabSize"
 	ACTION_SET_LINE_ENDINGS    = "SetLineEndings"
+	ACTION_GO_TO_LINE          = "GoToLine"
 	ACTION_QUIT                = "Quit"
 	ACTION_ABOUT               = "About"
 )
@@ -38,6 +39,7 @@ func init() {
 		ACTION_TOGGLE_SOFT_WRAP:    handleSoftWrap,
 		ACTION_SET_TAB_SIZE:        handleSetTabSize,
 		ACTION_SET_LINE_ENDINGS:    handleSetLineEndings,
+		ACTION_GO_TO_LINE:          handleGoToLine,
 		ACTION_QUIT:                handleQuit,
 		ACTION_ABOUT:               handleAbout,
 	}

@@ -95,13 +95,6 @@ func (d *InputDialog) Close() {
 
 func (d *InputDialog) inputFilter(event *tcell.EventKey) *tcell.EventKey {
 	key := event.Key()
-	if key == tcell.KeyTab {
-		if event.Modifiers() == tcell.ModNone {
-			key = tcell.KeyRight
-		} else if event.Modifiers() == tcell.ModShift {
-			key = tcell.KeyLeft
-		}
-	}
 
 	switch key {
 	case tcell.KeyEscape:
@@ -119,12 +112,18 @@ func (d *InputDialog) inputFilter(event *tcell.EventKey) *tcell.EventKey {
 		}
 
 	case tcell.KeyRight:
-	case tcell.KeyTab:
 		for i := 0; i < len(d.buttons)-1; i++ {
 			if d.buttons[i].HasFocus() {
 				d.app.SetFocus(d.buttons[i+1])
 				return nil
 			}
+		}
+
+	case tcell.KeyTab:
+		if event.Modifiers() == tcell.ModNone {
+			d.handleTab(1)
+		} else if event.Modifiers() == tcell.ModShift {
+			d.handleTab(-1)
 		}
 
 	case tcell.KeyEnter:
@@ -150,4 +149,31 @@ func (d *InputDialog) MouseHandler() func(action nuview.MouseAction, event *tcel
 		d.verticalContentsFlex.MouseHandler()(action, event, setFocus)
 		return true, nil
 	})
+}
+
+// Focus is called when this primitive receives focus.
+func (d *InputDialog) Focus(delegate func(p nuview.Primitive)) {
+	delegate(d.inputField)
+}
+
+func (d *InputDialog) handleTab(direction int) {
+	widgets := []nuview.Primitive{}
+	for _, btn := range d.buttons {
+		widgets = append(widgets, btn)
+	}
+	widgets = append(widgets, d.inputField)
+
+	for i := 0; i < len(widgets); i++ {
+		if widgets[i].GetFocusable().HasFocus() {
+			x := i + direction
+			if x < 0 {
+				x = len(widgets) - 1
+			} else if x >= len(widgets) {
+				x = 0
+			} else {
+			}
+			d.app.SetFocus(widgets[x])
+			return
+		}
+	}
 }
