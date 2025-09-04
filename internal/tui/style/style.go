@@ -97,3 +97,12 @@ func StyleMenuBar(menuBar *menu.MenuBar) {
 	menuBar.MenuStyle = tcell.StyleDefault.Foreground(black).Background(lightGray)
 	menuBar.MenuSelectedStyle = tcell.StyleDefault.Foreground(white).Background(blue)
 }
+
+func StyleTable(table *nuview.Table) {
+	table.SetBackgroundColor(black)
+	table.SetSelectedStyle(tcell.StyleDefault.Background(blue).Foreground(white))
+}
+
+func StyleTableCell(cell *nuview.TableCell) {
+	cell.SetStyle(tcell.StyleDefault.Foreground(white).Background(black))
+}
