@@ -1,49 +1,54 @@
 package application
 
 import (
+	"dinky/internal/tui/dialog"
 	"dinky/internal/tui/filedialog"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/google/renameio/v2"
 	"github.com/pgavlin/femto"
+	"github.com/pgavlin/femto/runtime"
 )
 
 const (
-	ACTION_NEW                  = "NewFile"
-	ACTION_CLOSE_FILE           = "CloseFile"
-	ACTION_OPEN_FILE            = "OpenFile"
-	ACTION_SAVE_FILE            = "SaveFile"
-	ACTION_SAVE_FILE_AS         = "SaveFileAs"
-	ACTION_OPEN_MENU            = "OpenMenu"
-	ACTION_TOGGLE_SOFT_WRAP     = "ToggleSoftWrap"
-	ACTION_TOGGLE_LINE_NUMBERS  = "ToggleLineNumbers"
-	ACTION_TOGGLE_MATCH_BRACKET = "ToggleMatchBracket"
-	ACTION_SET_TAB_SIZE         = "SetTabSize"
-	ACTION_SET_LINE_ENDINGS     = "SetLineEndings"
-	ACTION_GO_TO_LINE           = "GoToLine"
-	ACTION_QUIT                 = "Quit"
-	ACTION_ABOUT                = "About"
+	ACTION_NEW                     = "NewFile"
+	ACTION_CLOSE_FILE              = "CloseFile"
+	ACTION_OPEN_FILE               = "OpenFile"
+	ACTION_SAVE_FILE               = "SaveFile"
+	ACTION_SAVE_FILE_AS            = "SaveFileAs"
+	ACTION_OPEN_MENU               = "OpenMenu"
+	ACTION_TOGGLE_SOFT_WRAP        = "ToggleSoftWrap"
+	ACTION_TOGGLE_LINE_NUMBERS     = "ToggleLineNumbers"
+	ACTION_TOGGLE_MATCH_BRACKET    = "ToggleMatchBracket"
+	ACTION_SET_TAB_SIZE            = "SetTabSize"
+	ACTION_SET_LINE_ENDINGS        = "SetLineEndings"
+	ACTION_SET_SYNTAX_HIGHLIGHTING = "SetSyntaxHighlighting"
+	ACTION_GO_TO_LINE              = "GoToLine"
+	ACTION_QUIT                    = "Quit"
+	ACTION_ABOUT                   = "About"
 )
 
 var dinkyActionMapping map[string]func()
 
 func init() {
 	dinkyActionMapping = map[string]func(){
-		ACTION_NEW:                  handleNewFile,
-		ACTION_CLOSE_FILE:           handleCloseFile,
-		ACTION_OPEN_FILE:            handleOpenFile,
-		ACTION_OPEN_MENU:            handleOpenMenu,
-		ACTION_SAVE_FILE:            handleSaveFile,
-		ACTION_SAVE_FILE_AS:         handleSaveFileAs,
-		ACTION_TOGGLE_LINE_NUMBERS:  handleLineNumbers,
-		ACTION_TOGGLE_SOFT_WRAP:     handleSoftWrap,
-		ACTION_TOGGLE_MATCH_BRACKET: handleMatchBracket,
-		ACTION_SET_TAB_SIZE:         handleSetTabSize,
-		ACTION_SET_LINE_ENDINGS:     handleSetLineEndings,
-		ACTION_GO_TO_LINE:           handleGoToLine,
-		ACTION_QUIT:                 handleQuit,
-		ACTION_ABOUT:                handleAbout,
+		ACTION_NEW:                     handleNewFile,
+		ACTION_CLOSE_FILE:              handleCloseFile,
+		ACTION_OPEN_FILE:               handleOpenFile,
+		ACTION_OPEN_MENU:               handleOpenMenu,
+		ACTION_SAVE_FILE:               handleSaveFile,
+		ACTION_SAVE_FILE_AS:            handleSaveFileAs,
+		ACTION_TOGGLE_LINE_NUMBERS:     handleLineNumbers,
+		ACTION_TOGGLE_SOFT_WRAP:        handleSoftWrap,
+		ACTION_TOGGLE_MATCH_BRACKET:    handleMatchBracket,
+		ACTION_SET_TAB_SIZE:            handleSetTabSize,
+		ACTION_SET_LINE_ENDINGS:        handleSetLineEndings,
+		ACTION_SET_SYNTAX_HIGHLIGHTING: handleSetSyntaxHighlighting,
+		ACTION_GO_TO_LINE:              handleGoToLine,
+		ACTION_QUIT:                    handleQuit,
+		ACTION_ABOUT:                   handleAbout,
 	}
 }
 
@@ -83,6 +88,25 @@ func showFileDialog(title string, mode filedialog.FileDialogMode, defaultPath st
 func hideFileDialog() {
 	if fileDialog != nil {
 		modalPages.RemovePanel(fileDialogName)
+	}
+}
+
+var listDialog *dialog.ListDialog
+
+const listDialogName = "listDialog"
+
+func showListDialog(options dialog.ListDialogOptions) {
+	if listDialog == nil {
+		listDialog = dialog.NewListDialog(app)
+	}
+	modalPages.AddPanel(listDialogName, listDialog, true, true)
+	listDialog.Open(options)
+}
+
+func hideListDialog() {
+	if listDialog != nil {
+		listDialog.Close()
+		modalPages.RemovePanel(listDialogName)
 	}
 }
 
@@ -255,6 +279,65 @@ func handleSetLineEndings() {
 				syncMenuFromBuffer(buffer)
 			}
 		})
+}
+
+func handleSetSyntaxHighlighting() {
+	if buffer == nil {
+		statusBar.ShowMessage("No file open")
+		return
+	}
+
+	// Get all available syntax files
+	syntaxFiles := runtime.Files.ListRuntimeFiles(femto.RTSyntax)
+
+	// Create list items from syntax files
+	items := []dialog.ListItem{}
+	items = append(items, dialog.ListItem{Text: "Auto-detect", Value: ""})
+
+	for _, file := range syntaxFiles {
+		// Extract the name without the .yaml extension
+		name := strings.TrimSuffix(file.Name(), ".yaml")
+		// Capitalize the first letter for display
+		displayName := strings.Title(name)
+		items = append(items, dialog.ListItem{Text: displayName, Value: name})
+	}
+
+	currentFiletype := buffer.FileType()
+	if currentFiletype == "Unknown" || currentFiletype == "" {
+		currentFiletype = ""
+	}
+
+	showListDialog(dialog.ListDialogOptions{
+		Title:           "Set Syntax Highlighting",
+		Message:         "Select syntax highlighting mode:",
+		Buttons:         []string{"OK", "Cancel"},
+		Width:           50,
+		Height:          20,
+		DefaultSelected: currentFiletype,
+		Items:           items,
+		OnCancel: func() {
+			hideListDialog()
+		},
+		OnAccept: func(value string, buttonIndex int) {
+			hideListDialog()
+			if buttonIndex == 1 { // Cancel button
+				return
+			}
+
+			if value == "" {
+				// Auto-detect - reset filetype and trigger detection
+				buffer.Settings["filetype"] = "Unknown"
+				editor.SetRuntimeFiles(runtime.Files)
+				statusBar.ShowMessage("Syntax highlighting set to auto-detect")
+			} else {
+				// Set specific syntax
+				buffer.Settings["filetype"] = value
+				editor.SetRuntimeFiles(runtime.Files)
+				statusBar.ShowMessage("Syntax highlighting set to " + strings.Title(value))
+			}
+			syncMenuFromBuffer(buffer)
+		},
+	})
 }
 
 func handleQuit() {
