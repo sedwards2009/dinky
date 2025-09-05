@@ -1,6 +1,7 @@
 package dialog
 
 import (
+	"dinky/internal/tui/scrollbar"
 	"dinky/internal/tui/style"
 
 	"github.com/gdamore/tcell/v2"
@@ -15,6 +16,8 @@ type ListDialog struct {
 	verticalContentsFlex *nuview.Flex
 	buttonsFlex          *nuview.Flex
 	tableField           *nuview.Table
+	tableFlex            *nuview.Flex
+	VerticalScrollbar    *scrollbar.Scrollbar
 	innerFlex            *nuview.Flex
 	buttons              []*nuview.Button
 	options              ListDialogOptions
@@ -58,7 +61,16 @@ func NewListDialog(app *nuview.Application) *ListDialog {
 	tableField := nuview.NewTable()
 	style.StyleTable(tableField)
 
-	verticalContentsFlex.AddItem(tableField, 0, 1, false)
+	tableFlex := nuview.NewFlex()
+	tableFlex.SetDirection(nuview.FlexColumn)
+	tableFlex.SetBorder(false)
+	tableFlex.AddItem(tableField, 0, 1, false)
+
+	verticalScrollbar := scrollbar.NewScrollbar()
+	style.StyleScrollbar(verticalScrollbar)
+	tableFlex.AddItem(verticalScrollbar, 1, 0, false)
+
+	verticalContentsFlex.AddItem(tableFlex, 0, 1, false)
 	verticalContentsFlex.AddItem(nil, 1, 0, false)
 
 	buttonsFlex := nuview.NewFlex()
@@ -83,7 +95,22 @@ func NewListDialog(app *nuview.Application) *ListDialog {
 		innerFlex:            innerFlex,
 		buttonsFlex:          buttonsFlex,
 		tableField:           tableField,
+		tableFlex:            tableFlex,
+		VerticalScrollbar:    verticalScrollbar,
 	}
+
+	// Set up vertical scrollbar
+	verticalScrollbar.Track.SetBeforeDrawFunc(func(_ tcell.Screen) {
+		row, _ := tableField.GetOffset()
+		verticalScrollbar.Track.SetMax(tableField.GetRowCount() - 1)
+		_, _, _, height := d.tableField.GetInnerRect()
+		verticalScrollbar.Track.SetThumbSize(height)
+		verticalScrollbar.Track.SetPosition(row)
+	})
+	verticalScrollbar.SetChangedFunc(func(position int) {
+		_, column := d.tableField.GetOffset()
+		d.tableField.SetOffset(position, column)
+	})
 
 	d.tableField.SetDoubleClickFunc(func(row int, _ int) {
 		if d.options.OnAccept == nil {
