@@ -2,6 +2,7 @@ package application
 
 import (
 	"dinky/internal/tui/menu"
+	"strings"
 
 	"github.com/pgavlin/femto"
 )
@@ -107,6 +108,33 @@ func syncTabSize(menus []*menu.Menu, size int) {
 	}
 }
 
+func syncSyntaxHighlighting(menus []*menu.Menu, buffer *femto.Buffer) {
+	for _, menu := range menus {
+		for _, menuItem := range menu.Items {
+			if menuItem.ID == ACTION_SET_SYNTAX_HIGHLIGHTING {
+				if buffer == nil {
+					menuItem.Title = "Syntax…"
+					return
+				}
+
+				currentFiletype := buffer.FileType()
+				if currentFiletype == "Unknown" || currentFiletype == "" {
+					menuItem.Title = "Syntax (Auto)…"
+				} else {
+					// Capitalize the first letter for display
+					var displayName string
+					if len(currentFiletype) > 0 {
+						displayName = strings.ToUpper(string(currentFiletype[0])) + currentFiletype[1:]
+					} else {
+						displayName = currentFiletype
+					}
+					menuItem.Title = "Syntax (" + displayName + ")…"
+				}
+			}
+		}
+	}
+}
+
 func syncMenuFromBuffer(buffer *femto.Buffer) {
 	softwrap := buffer.Settings["softwrap"].(bool)
 	syncSoftWrap(menus, softwrap)
@@ -116,4 +144,5 @@ func syncMenuFromBuffer(buffer *femto.Buffer) {
 	syncMatchBracket(menus, matchBracket)
 	syncTabSize(menus, int(buffer.Settings["tabsize"].(float64)))
 	syncLineEndings(menus, buffer)
+	syncSyntaxHighlighting(menus, buffer)
 }
