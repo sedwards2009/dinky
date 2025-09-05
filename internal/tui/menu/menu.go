@@ -197,10 +197,10 @@ func (menuBar *MenuBar) InputHandler() func(event *tcell.EventKey, setFocus func
 
 		case tcell.KeyEnter:
 			if item.Title != "" {
+				menuBar.Close()
 				if item.Callback != nil {
 					item.Callback(item.ID)
 				}
-				menuBar.Close()
 			}
 		}
 	})

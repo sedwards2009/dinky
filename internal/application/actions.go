@@ -101,6 +101,7 @@ func showListDialog(options dialog.ListDialogOptions) {
 	}
 	modalPages.AddPanel(listDialogName, listDialog, true, true)
 	listDialog.Open(options)
+	app.SetFocus(listDialog)
 }
 
 func hideListDialog() {

@@ -130,7 +130,7 @@ func NewFileList(app *nuview.Application) *FileList {
 		table:               table,
 		VerticalScrollbar:   verticalScrollbar,
 		HorizontalScrollbar: horizontalScrollbar,
-		path:                "/home/sbe",
+		path:                "/",
 		columnDescriptors:   columnDescriptors,
 		dirRequestsChan:     dirRequestsChan,
 		sortColumn:          0,

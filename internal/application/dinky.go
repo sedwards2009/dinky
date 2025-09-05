@@ -57,6 +57,7 @@ func initEditorColorScheme() {
 func newFile(contents string, filename string) {
 	buffer = femto.NewBufferFromString(contents, "")
 	editor = femto.NewView(buffer)
+	buffer.Path = filename // femto uses this to determine the file type
 	editor.SetRuntimeFiles(runtime.Files)
 	editor.SetColorscheme(colorscheme)
 	editor.SetKeybindings(femtoDefaultKeyBindings)
