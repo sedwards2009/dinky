@@ -63,6 +63,7 @@ func newFile(contents string, filename string) {
 	editor.SetKeybindings(femtoDefaultKeyBindings)
 	editor.SetInputCapture(editorInputCapture)
 	buffer.Settings["matchbrace"] = true
+	buffer.Settings["tabstospaces"] = false // Default to using tab character
 
 	fileBuffer := &FileBuffer{
 		buffer:   buffer,

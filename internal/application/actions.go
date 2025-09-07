@@ -24,6 +24,7 @@ const (
 	ACTION_TOGGLE_LINE_NUMBERS     = "ToggleLineNumbers"
 	ACTION_TOGGLE_MATCH_BRACKET    = "ToggleMatchBracket"
 	ACTION_SET_TAB_SIZE            = "SetTabSize"
+	ACTION_SET_TAB_CHARACTER       = "SetTabCharacter"
 	ACTION_SET_LINE_ENDINGS        = "SetLineEndings"
 	ACTION_SET_SYNTAX_HIGHLIGHTING = "SetSyntaxHighlighting"
 	ACTION_GO_TO_LINE              = "GoToLine"
@@ -45,6 +46,7 @@ func init() {
 		ACTION_TOGGLE_SOFT_WRAP:        handleSoftWrap,
 		ACTION_TOGGLE_MATCH_BRACKET:    handleMatchBracket,
 		ACTION_SET_TAB_SIZE:            handleSetTabSize,
+		ACTION_SET_TAB_CHARACTER:       handleSetTabCharacter,
 		ACTION_SET_LINE_ENDINGS:        handleSetLineEndings,
 		ACTION_SET_SYNTAX_HIGHLIGHTING: handleSetSyntaxHighlighting,
 		ACTION_GO_TO_LINE:              handleGoToLine,
@@ -273,6 +275,28 @@ func handleSetTabSize() nuview.Primitive {
 				}
 				buffer.Settings["tabsize"] = tabSize
 				statusBar.ShowMessage("Tab size set to " + button)
+			}
+		})
+}
+
+func handleSetTabCharacter() nuview.Primitive {
+	buttons := []string{"Tab", "Space", "Cancel"}
+	return ShowMessageDialog("Tab Character", "Select tab character:", buttons,
+		func() {
+			// On close (do nothing)
+		},
+		func(button string, index int) {
+			CloseMessageDialog()
+			if index < len(buttons)-1 { // Not cancel
+				switch index {
+				case 0:
+					buffer.Settings["tabstospaces"] = false
+					statusBar.ShowMessage("Tab character set to Tab")
+				case 1:
+					buffer.Settings["tabstospaces"] = true
+					statusBar.ShowMessage("Tab character set to Space")
+				}
+				syncMenuFromBuffer(buffer)
 			}
 		})
 }

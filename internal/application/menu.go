@@ -28,6 +28,7 @@ func createMenus() []*menu.Menu {
 			{Title: "", Callback: nil}, // Separator
 			{ID: femto.ActionSelectAll, Title: "Select All", Callback: handleFemtoAction},
 			{Title: "", Callback: nil}, // Separator
+			{ID: ACTION_SET_TAB_CHARACTER, Title: "Tab Character…", Callback: handleDinkyAction},
 			{ID: ACTION_SET_LINE_ENDINGS, Title: "Line Endings…", Callback: handleDinkyAction},
 		}},
 		{Title: "View", Items: []*menu.MenuItem{
@@ -98,6 +99,25 @@ func syncLineEndings(menus []*menu.Menu, buffer *femto.Buffer) {
 	}
 }
 
+func syncTabCharacter(menus []*menu.Menu, buffer *femto.Buffer) {
+	for _, menu := range menus {
+		for _, menuItem := range menu.Items {
+			if menuItem.ID == ACTION_SET_TAB_CHARACTER {
+				if buffer == nil {
+					menuItem.Title = "Tab Character…"
+					return
+				}
+				expandTab, ok := buffer.Settings["tabstospaces"]
+				if !ok || !expandTab.(bool) {
+					menuItem.Title = "Tab Character (Tab)…"
+				} else {
+					menuItem.Title = "Tab Character (Space)…"
+				}
+			}
+		}
+	}
+}
+
 func syncTabSize(menus []*menu.Menu, size int) {
 	for _, menu := range menus {
 		for _, menuItem := range menu.Items {
@@ -143,6 +163,7 @@ func syncMenuFromBuffer(buffer *femto.Buffer) {
 	matchBracket := buffer.Settings["matchbrace"].(bool)
 	syncMatchBracket(menus, matchBracket)
 	syncTabSize(menus, int(buffer.Settings["tabsize"].(float64)))
+	syncTabCharacter(menus, buffer)
 	syncLineEndings(menus, buffer)
 	syncSyntaxHighlighting(menus, buffer)
 }
