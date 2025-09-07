@@ -10,6 +10,7 @@ import (
 	"github.com/google/renameio/v2"
 	"github.com/pgavlin/femto"
 	"github.com/pgavlin/femto/runtime"
+	"github.com/sedwards2009/nuview"
 )
 
 const (
@@ -30,10 +31,10 @@ const (
 	ACTION_ABOUT                   = "About"
 )
 
-var dinkyActionMapping map[string]func()
+var dinkyActionMapping map[string]func() nuview.Primitive
 
 func init() {
-	dinkyActionMapping = map[string]func(){
+	dinkyActionMapping = map[string]func() nuview.Primitive{
 		ACTION_NEW:                     handleNewFile,
 		ACTION_CLOSE_FILE:              handleCloseFile,
 		ACTION_OPEN_FILE:               handleOpenFile,
@@ -52,23 +53,28 @@ func init() {
 	}
 }
 
-func handleDinkyAction(id string) {
+func handleDinkyAction(id string) nuview.Primitive {
 	if f, ok := dinkyActionMapping[id]; ok {
-		f()
+		return f()
 	}
+	return nil
 }
 
-func handleNewFile() {
+func handleNewFile() nuview.Primitive {
 	newFile("", "")
+	return nil
 }
 
 var fileDialog *filedialog.FileDialog
 
 const fileDialogName = "fileDialog"
 
-func showFileDialog(title string, mode filedialog.FileDialogMode, defaultPath string, completedFunc func(accepted bool, filePath string)) {
+func showFileDialog(title string, mode filedialog.FileDialogMode, defaultPath string, completedFunc func(accepted bool,
+	filePath string)) nuview.Primitive {
+
 	if fileDialog == nil {
 		fileDialog = filedialog.NewFileDialog(app)
+		fileDialog.SetName(fileDialogName)
 	}
 	fileDialog.SetTitle(title)
 	if defaultPath == "" {
@@ -83,6 +89,7 @@ func showFileDialog(title string, mode filedialog.FileDialogMode, defaultPath st
 	fileDialog.SetMode(mode)
 	fileDialog.SetCompletedFunc(completedFunc)
 	modalPages.AddPanel(fileDialogName, fileDialog, true, true)
+	return fileDialog
 }
 
 func hideFileDialog() {
@@ -95,13 +102,14 @@ var listDialog *dialog.ListDialog
 
 const listDialogName = "listDialog"
 
-func showListDialog(options dialog.ListDialogOptions) {
+func ShowListDialog(options dialog.ListDialogOptions) nuview.Primitive {
 	if listDialog == nil {
 		listDialog = dialog.NewListDialog(app)
+		listDialog.SetName(listDialogName)
 	}
 	modalPages.AddPanel(listDialogName, listDialog, true, true)
 	listDialog.Open(options)
-	app.SetFocus(listDialog)
+	return listDialog
 }
 
 func hideListDialog() {
@@ -111,8 +119,8 @@ func hideListDialog() {
 	}
 }
 
-func handleOpenFile() {
-	showFileDialog("Open File", filedialog.OPEN_FILE_MODE, "", func(accepted bool, filePath string) {
+func handleOpenFile() nuview.Primitive {
+	return showFileDialog("Open File", filedialog.OPEN_FILE_MODE, "", func(accepted bool, filePath string) {
 		hideFileDialog()
 		if !accepted {
 			return
@@ -135,13 +143,14 @@ func writeFile(filename string, buffer *femto.Buffer) (ok bool, message string) 
 	return true, "Wrote file " + filename
 }
 
-func handleSaveFile() {
+func handleSaveFile() nuview.Primitive {
 	fileBuffer := getFileBufferByID(fileBufferID)
 	if fileBuffer.filename == "" {
-		handleSaveFileAs()
+		return handleSaveFileAs()
 	} else {
 		writeCurrentFileBuffer()
 	}
+	return nil
 }
 
 func writeCurrentFileBuffer() {
@@ -154,7 +163,7 @@ func writeCurrentFileBuffer() {
 	}
 }
 
-func handleSaveFileAs() {
+func handleSaveFileAs() nuview.Primitive {
 	fileBuffer := getFileBufferByID(fileBufferID)
 	showFileDialog("Save File As", filedialog.SAVE_FILE_MODE, fileBuffer.filename, func(accepted bool, filePath string) {
 		hideFileDialog()
@@ -165,9 +174,10 @@ func handleSaveFileAs() {
 		tabBarLine.SetTabTitle(fileBufferID, filepath.Base(fileBuffer.filename))
 		writeCurrentFileBuffer()
 	})
+	return nil
 }
 
-func handleCloseFile() {
+func handleCloseFile() nuview.Primitive {
 	fileBuffer := getFileBufferByID(fileBufferID)
 	if fileBuffer.buffer.IsModified {
 		ShowConfirmDialog("File has unsaved changes. Close anyway?", func() {
@@ -176,6 +186,7 @@ func handleCloseFile() {
 	} else {
 		closeFile(fileBufferID)
 	}
+	return nil
 }
 
 func closeFile(fileBufferID string) {
@@ -197,46 +208,52 @@ func closeFile(fileBufferID string) {
 	}
 }
 
-func handleOpenMenu() {
+func handleOpenMenu() nuview.Primitive {
 	menuBar.Open()
 	app.SetFocus(menuBar)
+	return nil
 }
 
-func handleLineNumbers() {
+func handleLineNumbers() nuview.Primitive {
 	on := buffer.Settings["ruler"].(bool)
 	buffer.Settings["ruler"] = !on
 	syncLineNumbers(menus, !on)
+	return nil
 }
 
-func handleSoftWrap() {
+func handleSoftWrap() nuview.Primitive {
 	on := buffer.Settings["softwrap"].(bool)
 	buffer.Settings["softwrap"] = !on
 	syncSoftWrap(menus, !on)
+	return nil
 }
 
-func handleMatchBracket() {
+func handleMatchBracket() nuview.Primitive {
 	on := buffer.Settings["matchbrace"].(bool)
 	buffer.Settings["matchbrace"] = !on
 	syncMatchBracket(menus, !on)
+	return nil
 }
 
-func handleFemtoAction(id string) {
+func handleFemtoAction(id string) nuview.Primitive {
 	if f, ok := femto.BindingActionsMapping[id]; ok {
 		f(editor)
 	}
+	return nil
 }
 
-func handleAbout() {
+func handleAbout() nuview.Primitive {
 	ShowOkDialog("About", "Dinky - A little text editor\nVersion "+Version+"\n"+
 		"\n"+
 		"Website: https://github.com/sedwards2009/dinky\n"+
 		"(c) 2025 Simon Edwards",
 		nil)
+	return nil
 }
 
-func handleSetTabSize() {
+func handleSetTabSize() nuview.Primitive {
 	buttons := []string{"2", "4", "8", "16", "Cancel"}
-	ShowMessageDialog("Tab Size", "Select tab size:", buttons,
+	return ShowMessageDialog("Tab Size", "Select tab size:", buttons,
 		func() {
 			// On close (do nothing)
 		},
@@ -260,9 +277,9 @@ func handleSetTabSize() {
 		})
 }
 
-func handleSetLineEndings() {
+func handleSetLineEndings() nuview.Primitive {
 	buttons := []string{"LF (Unix)", "CRLF (DOS)", "Cancel"}
-	ShowMessageDialog("Line Endings", "Select line ending style:", buttons,
+	return ShowMessageDialog("Line Endings", "Select line ending style:", buttons,
 		func() {
 			// On close (do nothing)
 		},
@@ -282,10 +299,10 @@ func handleSetLineEndings() {
 		})
 }
 
-func handleSetSyntaxHighlighting() {
+func handleSetSyntaxHighlighting() nuview.Primitive {
 	if buffer == nil {
 		statusBar.ShowMessage("No file open")
-		return
+		return nil
 	}
 
 	// Get all available syntax files
@@ -308,7 +325,7 @@ func handleSetSyntaxHighlighting() {
 		currentFiletype = ""
 	}
 
-	showListDialog(dialog.ListDialogOptions{
+	return ShowListDialog(dialog.ListDialogOptions{
 		Title:           "Set Syntax Highlighting",
 		Message:         "Select syntax highlighting mode:",
 		Buttons:         []string{"OK", "Cancel"},
@@ -341,6 +358,7 @@ func handleSetSyntaxHighlighting() {
 	})
 }
 
-func handleQuit() {
+func handleQuit() nuview.Primitive {
 	app.Stop()
+	return nil
 }

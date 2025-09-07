@@ -15,7 +15,7 @@ type MenuBar struct {
 	MenuSelectedStyle tcell.Style
 	menus             []*Menu
 	selectedPath      []int
-	onClose           func()
+	onClose           func(nextFocus nuview.Primitive)
 }
 
 type Menu struct {
@@ -28,7 +28,11 @@ type MenuItem struct {
 	ID       string
 	Title    string
 	Shortcut string
-	Callback func(ID string)
+
+	// Called when the menu item is activated. ID is the ID of the menu item.
+	// The optional return value is the primative which should receive the
+	// focus once the menu closes.
+	Callback func(ID string) nuview.Primitive
 }
 
 const (
@@ -196,14 +200,22 @@ func (menuBar *MenuBar) InputHandler() func(event *tcell.EventKey, setFocus func
 			menuBar.selectedPath[1] = nextMenuItem(menu.Items, selectedItemIndex, 1)
 
 		case tcell.KeyEnter:
-			if item.Title != "" {
-				menuBar.Close()
-				if item.Callback != nil {
-					item.Callback(item.ID)
-				}
-			}
+			menuBar.executeItem(item)
 		}
 	})
+}
+
+func (menuBar *MenuBar) executeItem(item *MenuItem) {
+	if item.Title != "" {
+		var nextFocus nuview.Primitive
+		if item.Callback != nil {
+			nextFocus = item.Callback(item.ID)
+		}
+		menuBar.selectMenuBarItem(-1)
+		if menuBar.onClose != nil {
+			menuBar.onClose(nextFocus)
+		}
+	}
 }
 
 func nextMenuItem(items []*MenuItem, selectedIndex int, direction int) int {
@@ -264,10 +276,11 @@ func (menuBar *MenuBar) MouseHandler() func(action nuview.MouseAction, event *tc
 		}
 
 		if action == nuview.MouseLeftUp {
-			if selectedMenuItem != nil && selectedMenuItem.Title != "" {
-				items[selectedMenuItemIndex].Callback(items[selectedMenuItemIndex].ID)
+			if selectedMenuItem != nil {
+				menuBar.executeItem(selectedMenuItem)
+			} else {
+				menuBar.Close()
 			}
-			menuBar.Close()
 			return true, nil
 		}
 
@@ -329,10 +342,10 @@ func (m *MenuBar) menuIndexLeft(index int) int {
 func (menuBar *MenuBar) Close() {
 	menuBar.selectMenuBarItem(-1)
 	if menuBar.onClose != nil {
-		menuBar.onClose()
+		menuBar.onClose(nil)
 	}
 }
 
-func (menuBar *MenuBar) SetOnClose(callback func()) {
+func (menuBar *MenuBar) SetOnClose(callback func(nextFocus nuview.Primitive)) {
 	menuBar.onClose = callback
 }

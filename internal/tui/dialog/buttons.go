@@ -10,6 +10,7 @@ func createButtonsRow(buttonsFlex *nuview.Flex, buttons []string, onButtonClick 
 	if len(buttons) == 1 {
 		// If it is just one button, then center it.
 		btn := nuview.NewButton(buttons[0])
+		btn.SetName(buttons[0])
 		nuviewButtons[0] = btn
 		btn.SetSelectedFunc(func() {
 			if onButtonClick != nil {

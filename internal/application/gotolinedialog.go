@@ -6,15 +6,19 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/pgavlin/femto"
+	"github.com/sedwards2009/nuview"
 )
 
 var inputDialog *dialog.InputDialog
 
 const inputDialogName = "inputdialog"
 
-func ShowGoToLineDialog(title string, message string, defaultValue string, onCancel func(), onAccept func(value string, index int)) {
+func ShowGoToLineDialog(title string, message string, defaultValue string, onCancel func(), onAccept func(value string,
+	index int)) nuview.Primitive {
+
 	if inputDialog == nil {
 		inputDialog = dialog.NewInputDialog(app)
+		inputDialog.SetName("GoToLineDialog")
 	}
 
 	width := 50
@@ -61,7 +65,7 @@ func ShowGoToLineDialog(title string, message string, defaultValue string, onCan
 	}
 
 	inputDialog.Open(options)
-	app.SetFocus(inputDialog)
+	return inputDialog
 }
 
 func CloseGoToLineDialog() {
@@ -71,8 +75,8 @@ func CloseGoToLineDialog() {
 	}
 }
 
-func handleGoToLine() {
-	ShowGoToLineDialog("Go to Line", "Enter line number (or line:column):", "",
+func handleGoToLine() nuview.Primitive {
+	return ShowGoToLineDialog("Go to Line", "Enter line number (or line:column):", "",
 		func() {
 			// On cancel
 			CloseGoToLineDialog()

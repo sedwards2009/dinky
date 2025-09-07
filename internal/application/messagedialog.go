@@ -3,6 +3,8 @@ package application
 import (
 	"dinky/internal/tui/dialog"
 	"strings"
+
+	"github.com/sedwards2009/nuview"
 )
 
 var messageDialog *dialog.MessageDialog
@@ -49,7 +51,7 @@ func MessageButtonsSize(buttons []string) int {
 }
 
 func ShowMessageDialog(title string, message string, buttons []string, OnClose func(),
-	OnButtonClick func(button string, index int)) {
+	OnButtonClick func(button string, index int)) nuview.Primitive {
 
 	width, height := MeasureStringDimensions(message)
 	height += 6
@@ -67,7 +69,7 @@ func ShowMessageDialog(title string, message string, buttons []string, OnClose f
 	messageDialog.OnClose = OnClose
 	messageDialog.OnButtonClick = OnButtonClick
 	messageDialog.Open(title, message, buttons, width, height)
-	messageDialog.FocusButton(0)
+	return messageDialog
 }
 
 func CloseMessageDialog() {
@@ -77,8 +79,8 @@ func CloseMessageDialog() {
 	}
 }
 
-func ShowConfirmDialog(message string, onConfirm func(), onCancel func()) {
-	ShowMessageDialog("Confirm", message, []string{"OK", "Cancel"},
+func ShowConfirmDialog(message string, onConfirm func(), onCancel func()) nuview.Primitive {
+	return ShowMessageDialog("Confirm", message, []string{"OK", "Cancel"},
 		func() {
 			CloseMessageDialog()
 			onCancel()
@@ -93,8 +95,8 @@ func ShowConfirmDialog(message string, onConfirm func(), onCancel func()) {
 		})
 }
 
-func ShowOkDialog(title string, message string, onClose func()) {
-	ShowMessageDialog(title, message, []string{"OK"},
+func ShowOkDialog(title string, message string, onClose func()) nuview.Primitive {
+	return ShowMessageDialog(title, message, []string{"OK"},
 		func() {
 			CloseMessageDialog()
 			if onClose != nil {

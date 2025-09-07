@@ -268,8 +268,12 @@ func Main() {
 	app.SetRoot(modalPages, true)
 	app.SetAfterDrawFunc(menuBar.AfterDraw())
 
-	menuBar.SetOnClose(func() {
-		app.SetFocus(editor)
+	menuBar.SetOnClose(func(nextFocus nuview.Primitive) {
+		if nextFocus != nil {
+			app.SetFocus(nextFocus)
+		} else {
+			app.SetFocus(editor)
+		}
 	})
 
 	errorMessages := []string{}
