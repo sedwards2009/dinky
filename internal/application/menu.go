@@ -32,7 +32,7 @@ func createMenus() []*menu.Menu {
 			{ID: ACTION_SET_LINE_ENDINGS, Title: "Line Endings…", Callback: handleDinkyAction},
 		}},
 		{Title: "View", Items: []*menu.MenuItem{
-			{ID: ACTION_TOGGLE_LINE_NUMBERS, Title: "Line Numbers", Callback: handleDinkyAction},
+			{ID: femto.ActionToggleRuler, Title: "Line Numbers", Callback: handleFemtoAction},
 			{ID: ACTION_TOGGLE_SOFT_WRAP, Title: "Soft Wrap", Callback: handleDinkyAction},
 			{ID: ACTION_TOGGLE_MATCH_BRACKET, Title: "Match Brackets", Callback: handleDinkyAction},
 			{ID: ACTION_SET_TAB_SIZE, Title: "Tab Size…", Callback: handleDinkyAction},
@@ -78,7 +78,7 @@ func syncSoftWrap(menus []*menu.Menu, on bool) {
 }
 
 func syncLineNumbers(menus []*menu.Menu, on bool) {
-	syncToggleMenuItem(menus, ACTION_TOGGLE_LINE_NUMBERS, "Line Numbers", on)
+	syncToggleMenuItem(menus, femto.ActionToggleRuler, "Line Numbers", on)
 }
 
 func syncMatchBracket(menus []*menu.Menu, on bool) {

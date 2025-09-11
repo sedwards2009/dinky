@@ -21,7 +21,6 @@ const (
 	ACTION_SAVE_FILE_AS            = "SaveFileAs"
 	ACTION_OPEN_MENU               = "OpenMenu"
 	ACTION_TOGGLE_SOFT_WRAP        = "ToggleSoftWrap"
-	ACTION_TOGGLE_LINE_NUMBERS     = "ToggleLineNumbers"
 	ACTION_TOGGLE_MATCH_BRACKET    = "ToggleMatchBracket"
 	ACTION_SET_TAB_SIZE            = "SetTabSize"
 	ACTION_SET_TAB_CHARACTER       = "SetTabCharacter"
@@ -42,7 +41,6 @@ func init() {
 		ACTION_OPEN_MENU:               handleOpenMenu,
 		ACTION_SAVE_FILE:               handleSaveFile,
 		ACTION_SAVE_FILE_AS:            handleSaveFileAs,
-		ACTION_TOGGLE_LINE_NUMBERS:     handleLineNumbers,
 		ACTION_TOGGLE_SOFT_WRAP:        handleSoftWrap,
 		ACTION_TOGGLE_MATCH_BRACKET:    handleMatchBracket,
 		ACTION_SET_TAB_SIZE:            handleSetTabSize,
@@ -216,13 +214,6 @@ func handleOpenMenu() nuview.Primitive {
 	return nil
 }
 
-func handleLineNumbers() nuview.Primitive {
-	on := buffer.Settings["ruler"].(bool)
-	buffer.Settings["ruler"] = !on
-	syncLineNumbers(menus, !on)
-	return nil
-}
-
 func handleSoftWrap() nuview.Primitive {
 	on := buffer.Settings["softwrap"].(bool)
 	buffer.Settings["softwrap"] = !on
@@ -240,6 +231,9 @@ func handleMatchBracket() nuview.Primitive {
 func handleFemtoAction(id string) nuview.Primitive {
 	if f, ok := femto.BindingActionsMapping[id]; ok {
 		f(editor)
+		if id == femto.ActionToggleRuler {
+			syncMenuFromBuffer(buffer)
+		}
 	}
 	return nil
 }
