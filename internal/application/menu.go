@@ -26,10 +26,13 @@ func createMenus() []*menu.Menu {
 			{ID: femto.ActionCopy, Title: "Copy", Callback: handleFemtoAction},
 			{ID: femto.ActionPaste, Title: "Paste", Callback: handleFemtoAction},
 			{Title: "", Callback: nil}, // Separator
-			{ID: femto.ActionSelectAll, Title: "Select All", Callback: handleFemtoAction},
-			{Title: "", Callback: nil}, // Separator
 			{ID: ACTION_SET_TAB_CHARACTER, Title: "Tab Character…", Callback: handleDinkyAction},
 			{ID: ACTION_SET_LINE_ENDINGS, Title: "Line Endings…", Callback: handleDinkyAction},
+		}},
+		{Title: "Selection", Items: []*menu.MenuItem{
+			{ID: femto.ActionSelectAll, Title: "Select All", Callback: handleFemtoAction},
+			{Title: "", Callback: nil}, // Separator
+			{ID: ACTION_GO_TO_LINE, Title: "Go to Line…", Callback: handleDinkyAction},
 		}},
 		{Title: "View", Items: []*menu.MenuItem{
 			{ID: femto.ActionToggleRuler, Title: "Line Numbers", Callback: handleFemtoAction},
@@ -37,8 +40,6 @@ func createMenus() []*menu.Menu {
 			{ID: ACTION_TOGGLE_MATCH_BRACKET, Title: "Match Brackets", Callback: handleDinkyAction},
 			{ID: ACTION_SET_TAB_SIZE, Title: "Tab Size…", Callback: handleDinkyAction},
 			{ID: ACTION_SET_SYNTAX_HIGHLIGHTING, Title: "Syntax…", Callback: handleDinkyAction},
-			{Title: "", Callback: nil}, // Separator
-			{ID: ACTION_GO_TO_LINE, Title: "Go to Line…", Callback: handleDinkyAction},
 		}},
 		{Title: "Help", Items: []*menu.MenuItem{
 			{ID: ACTION_ABOUT, Title: "About", Callback: handleDinkyAction},
