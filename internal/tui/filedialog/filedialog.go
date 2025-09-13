@@ -174,6 +174,10 @@ func (fileDialog *FileDialog) InputHandler() func(event *tcell.EventKey, setFocu
 	})
 }
 
+func (fileDialog *FileDialog) Focus(delegate func(p nuview.Primitive)) {
+	delegate(fileDialog.filenameField)
+}
+
 func (fileDialog *FileDialog) handleDirectoryDone(key tcell.Key) {
 	if key != tcell.KeyEnter {
 		return
