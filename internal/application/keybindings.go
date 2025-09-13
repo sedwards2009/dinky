@@ -61,7 +61,7 @@ func initKeyBindings() {
 		"Ctrl-c": femto.ActionCopy,
 		"Ctrl-x": femto.ActionCut,
 		"Ctrl-k": femto.ActionCutLine,
-		"Ctrl-d": femto.ActionDuplicateLine,
+		// "Ctrl-d": femto.ActionDuplicateLine,
 		"Ctrl-v": femto.ActionPaste,
 		"Ctrl-a": femto.ActionSelectAll,
 		// "Ctrl-t": femto.ActionAddTab,
@@ -103,13 +103,16 @@ func initKeyBindings() {
 		// "MouseMiddle":      femto.ActionPastePrimary,
 		// "Ctrl-MouseLeft":   femto.ActionMouseMultiCursor,
 
-		"Alt-n": femto.ActionSpawnMultiCursor,
-		"Alt-m": femto.ActionSpawnMultiCursorSelect,
+		// "Alt-n": femto.ActionSpawnMultiCursor,
+		"Ctrl-d": femto.ActionSpawnMultiCursor,
+		"Alt-m":  femto.ActionSpawnMultiCursorSelect,
+
 		//"AltShiftUp":   femto.ActionSpawnMultiCursorUp,
 		// "AltShiftDown": femto.ActionSpawnMultiCursorDown,
-		"Alt-p": femto.ActionRemoveMultiCursor,
-		"Alt-c": femto.ActionRemoveAllMultiCursors,
-		"Alt-x": femto.ActionSkipMultiCursor,
+		"Alt-p":  femto.ActionRemoveMultiCursor,
+		"Alt-c":  femto.ActionRemoveAllMultiCursors,
+		"Alt-x":  femto.ActionSkipMultiCursor,
+		"Ctrl-j": femto.ActionJumpToMatchingBrace,
 	}
 
 	dinkyKeyToActionMapping = map[string]string{

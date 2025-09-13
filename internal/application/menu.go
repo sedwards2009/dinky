@@ -33,6 +33,12 @@ func createMenus() []*menu.Menu {
 			{ID: femto.ActionSelectAll, Title: "Select All", Callback: handleFemtoAction},
 			{Title: "", Callback: nil}, // Separator
 			{ID: ACTION_GO_TO_LINE, Title: "Go to Line…", Callback: handleDinkyAction},
+			{ID: femto.ActionJumpToMatchingBrace, Title: "Go to Bracket", Callback: handleFemtoAction},
+			{Title: "", Callback: nil}, // Separator
+			{ID: femto.ActionSpawnMultiCursor, Title: "Add Next Occurrence", Callback: handleFemtoAction},
+			{ID: femto.ActionSpawnMultiCursorSelect, Title: "Add Cursors to Selection", Callback: handleFemtoAction},
+			{ID: femto.ActionRemoveMultiCursor, Title: "Remove Last Cursor", Callback: handleFemtoAction},
+			{ID: femto.ActionRemoveAllMultiCursors, Title: "Remove All Cursors", Callback: handleFemtoAction},
 		}},
 		{Title: "View", Items: []*menu.MenuItem{
 			{ID: femto.ActionToggleRuler, Title: "Line Numbers", Callback: handleFemtoAction},
