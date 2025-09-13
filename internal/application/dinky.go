@@ -127,6 +127,7 @@ func syncStatusBarFromFileBuffer(statusBar *statusbar.StatusBar) {
 
 	tabSize := int(fileBuffer.buffer.Settings["tabsize"].(float64))
 	statusBar.TabSize = tabSize
+	statusBar.IsOverwriteMode = fileBuffer.editor.IsOverwriteMode()
 
 	lineEndings := "LF"
 	if isBufferCRLF(fileBuffer.buffer) {

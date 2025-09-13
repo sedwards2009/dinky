@@ -18,19 +18,20 @@ const (
 
 type StatusBar struct {
 	*nuview.Box
-	app          *nuview.Application
-	Style        tcell.Style
-	MessageStyle tcell.Style
-	ErrorStyle   tcell.Style
-	Filename     string
-	IsModified   bool
-	Line         int
-	Col          int
-	LineEndings  string
-	TabSize      int
-	message      string
-	errorMessage string
-	UpdateHook   func(statusBar *StatusBar) // Hook for updating the status bar
+	app             *nuview.Application
+	Style           tcell.Style
+	MessageStyle    tcell.Style
+	ErrorStyle      tcell.Style
+	Filename        string
+	IsModified      bool
+	Line            int
+	Col             int
+	LineEndings     string
+	TabSize         int
+	message         string
+	errorMessage    string
+	IsOverwriteMode bool
+	UpdateHook      func(statusBar *StatusBar) // Hook for updating the status bar
 }
 
 func NewStatusBar(app *nuview.Application) *StatusBar {
@@ -91,8 +92,12 @@ func (statusBar *StatusBar) Draw(screen tcell.Screen) {
 
 	utils.DrawText(screen, x+2, y, leftMessage, style)
 
-	cursorMessage := fmt.Sprintf("Ln %d, Col %d", statusBar.Line, statusBar.Col)
-	padding := 19 - runewidth.StringWidth(cursorMessage)
+	overwrite := "    "
+	if statusBar.IsOverwriteMode {
+		overwrite = "OVR "
+	}
+	cursorMessage := fmt.Sprintf("%sLn %d, Col %d", overwrite, statusBar.Line, statusBar.Col)
+	padding := 15 - runewidth.StringWidth(cursorMessage)
 	for i := 0; i < padding; i++ {
 		cursorMessage += " "
 	}
