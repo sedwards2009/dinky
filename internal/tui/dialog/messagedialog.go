@@ -74,7 +74,6 @@ func (d *MessageDialog) Open(title string, message string, buttons []string, wid
 	d.innerFlex.ResizeItem(d.verticalContentsFlex, width, 0)
 
 	d.app.SetInputCapture(d.inputFilter)
-	d.FocusButton(0)
 }
 
 func (d *MessageDialog) Close() {
@@ -114,6 +113,14 @@ func (d *MessageDialog) inputFilter(event *tcell.EventKey) *tcell.EventKey {
 		}
 	}
 	return event
+}
+
+// Focus is called when this primitive receives focus.
+func (d *MessageDialog) Focus(delegate func(p nuview.Primitive)) {
+	if len(d.buttons) == 0 {
+		return
+	}
+	delegate(d.buttons[0])
 }
 
 func (d *MessageDialog) FocusButton(index int) {

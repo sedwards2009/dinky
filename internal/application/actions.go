@@ -239,12 +239,11 @@ func handleFemtoAction(id string) nuview.Primitive {
 }
 
 func handleAbout() nuview.Primitive {
-	ShowOkDialog("About", "Dinky - A little text editor\nVersion "+Version+"\n"+
+	return ShowOkDialog("About", "Dinky - A little text editor\nVersion "+Version+"\n"+
 		"\n"+
 		"Website: https://github.com/sedwards2009/dinky\n"+
 		"(c) 2025 Simon Edwards",
 		nil)
-	return nil
 }
 
 func handleSetTabSize() nuview.Primitive {
