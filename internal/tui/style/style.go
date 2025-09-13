@@ -33,8 +33,8 @@ func Install() {
 	nuview.Styles.ButtonLabelFocusedColor = black
 	nuview.Styles.ButtonBackgroundColor = white
 	nuview.Styles.ButtonBackgroundFocusedColor = blue
-	nuview.Styles.ButtonBackgroundDisabledColor = darkGray
-	nuview.Styles.ButtonLabelDisabledColor = black
+	nuview.Styles.ButtonBackgroundDisabledColor = white
+	nuview.Styles.ButtonLabelDisabledColor = lightGray
 
 	nuview.Styles.CheckboxLabelStyle = blackOnGrayStyle
 	nuview.Styles.CheckboxUncheckedStyle = blackOnGrayStyle
