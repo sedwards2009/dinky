@@ -169,17 +169,17 @@ func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action nuview.MouseAct
 		// Handle scroll events
 		if action == nuview.MouseScrollUp {
 			pos := scrollbarTrack.Position() - max(scrollbarTrack.ThumbSize()/2, 1)
-			scrollbarTrack.SetPosition(pos)
+			newPos := scrollbarTrack.SetPosition(pos)
 			if scrollbarTrack.changedFunc != nil {
-				scrollbarTrack.changedFunc(pos)
+				scrollbarTrack.changedFunc(newPos)
 			}
 			return true, nil // Consumed the event
 		}
 		if action == nuview.MouseScrollDown {
 			pos := scrollbarTrack.Position() + max(scrollbarTrack.ThumbSize()/2, 1)
-			scrollbarTrack.SetPosition(pos)
+			newPos := scrollbarTrack.SetPosition(pos)
 			if scrollbarTrack.changedFunc != nil {
-				scrollbarTrack.changedFunc(pos)
+				scrollbarTrack.changedFunc(newPos)
 			}
 			return true, nil // Consumed the event
 		}
@@ -188,8 +188,8 @@ func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action nuview.MouseAct
 	})
 }
 
-// SetPosition sets the position of the scrollbar thumb.
-func (scrollbarTrack *ScrollbarTrack) SetPosition(position int) {
+// SetPosition sets the position of the scrollbar thumb. It returns the actual new position.
+func (scrollbarTrack *ScrollbarTrack) SetPosition(position int) int {
 	if position < 0 {
 		scrollbarTrack.position = 0
 	} else if position > scrollbarTrack.max-scrollbarTrack.thumbSize {
@@ -197,6 +197,7 @@ func (scrollbarTrack *ScrollbarTrack) SetPosition(position int) {
 	} else {
 		scrollbarTrack.position = position
 	}
+	return scrollbarTrack.position
 }
 
 // GetPosition returns the current position of the scrollbar thumb.

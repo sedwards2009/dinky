@@ -1,6 +1,7 @@
 package scrollbar
 
 import (
+	"github.com/gdamore/tcell/v2"
 	"github.com/sedwards2009/nuview"
 )
 
@@ -11,7 +12,8 @@ type Scrollbar struct {
 	downButton  *nuview.Button
 	changedFunc func(position int)
 
-	isHorizontal bool // Indicates if the scrollbar is horizontal instead of vertical
+	isHorizontal bool                // Indicates if the scrollbar is horizontal instead of vertical
+	UpdateHook   func(sb *Scrollbar) // Hook for updating the scrollbar just before it is drawn
 }
 
 func NewScrollbar() *Scrollbar {
@@ -36,17 +38,17 @@ func NewScrollbar() *Scrollbar {
 
 	upButton.SetSelectedFunc(func() {
 		pos := scrollbar.Track.Position() - max(scrollbar.Track.ThumbSize()/2, 1)
-		scrollbar.Track.SetPosition(pos)
+		newPos := scrollbar.Track.SetPosition(pos)
 		if scrollbar.changedFunc != nil {
-			scrollbar.changedFunc(pos)
+			scrollbar.changedFunc(newPos)
 		}
 	})
 
 	downButton.SetSelectedFunc(func() {
 		pos := scrollbar.Track.Position() + max(scrollbar.Track.ThumbSize()/2, 1)
-		scrollbar.Track.SetPosition(pos)
+		newPos := scrollbar.Track.SetPosition(pos)
 		if scrollbar.changedFunc != nil {
-			scrollbar.changedFunc(pos)
+			scrollbar.changedFunc(newPos)
 		}
 	})
 
@@ -71,4 +73,11 @@ func (scrollbar *Scrollbar) SetHorizontal(isHorizontal bool) {
 func (scrollbar *Scrollbar) SetChangedFunc(changedFunc func(position int)) {
 	scrollbar.changedFunc = changedFunc
 	scrollbar.Track.SetChangedFunc(changedFunc)
+}
+
+func (scrollbar *Scrollbar) Draw(screen tcell.Screen) {
+	if scrollbar.UpdateHook != nil {
+		scrollbar.UpdateHook(scrollbar)
+	}
+	scrollbar.Flex.Draw(screen)
 }

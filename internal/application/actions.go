@@ -215,6 +215,7 @@ func handleOpenMenu() nuview.Primitive {
 }
 
 func handleSoftWrap() nuview.Primitive {
+	buffer := currentFileBuffer.buffer
 	on := buffer.Settings["softwrap"].(bool)
 	buffer.Settings["softwrap"] = !on
 	syncSoftWrap(menus, !on)
@@ -222,6 +223,7 @@ func handleSoftWrap() nuview.Primitive {
 }
 
 func handleMatchBracket() nuview.Primitive {
+	buffer := currentFileBuffer.buffer
 	on := buffer.Settings["matchbrace"].(bool)
 	buffer.Settings["matchbrace"] = !on
 	syncMatchBracket(menus, !on)
@@ -230,9 +232,9 @@ func handleMatchBracket() nuview.Primitive {
 
 func handleFemtoAction(id string) nuview.Primitive {
 	if f, ok := femto.BindingActionsMapping[id]; ok {
-		f(editor)
+		f(currentFileBuffer.editor)
 		if id == femto.ActionToggleRuler {
-			syncMenuFromBuffer(buffer)
+			syncMenuFromBuffer(currentFileBuffer.buffer)
 		}
 	}
 	return nil
@@ -266,13 +268,14 @@ func handleSetTabSize() nuview.Primitive {
 				case 3:
 					tabSize = 16
 				}
-				buffer.Settings["tabsize"] = tabSize
+				currentFileBuffer.buffer.Settings["tabsize"] = tabSize
 				statusBar.ShowMessage("Tab size set to " + button)
 			}
 		})
 }
 
 func handleSetTabCharacter() nuview.Primitive {
+	buffer := currentFileBuffer.buffer
 	buttons := []string{"Tab", "Space", "Cancel"}
 	return ShowMessageDialog("Tab Character", "Select tab character:", buttons,
 		func() {
@@ -295,6 +298,7 @@ func handleSetTabCharacter() nuview.Primitive {
 }
 
 func handleSetLineEndings() nuview.Primitive {
+	buffer := currentFileBuffer.buffer
 	buttons := []string{"LF (Unix)", "CRLF (DOS)", "Cancel"}
 	return ShowMessageDialog("Line Endings", "Select line ending style:", buttons,
 		func() {
@@ -317,6 +321,11 @@ func handleSetLineEndings() nuview.Primitive {
 }
 
 func handleSetSyntaxHighlighting() nuview.Primitive {
+	var buffer *femto.Buffer
+	if currentFileBuffer.buffer != nil {
+		buffer = currentFileBuffer.buffer
+	}
+
 	if buffer == nil {
 		statusBar.ShowMessage("No file open")
 		return nil
@@ -362,12 +371,12 @@ func handleSetSyntaxHighlighting() nuview.Primitive {
 			if value == "" {
 				// Auto-detect - reset filetype and trigger detection
 				buffer.Settings["filetype"] = "Unknown"
-				editor.SetRuntimeFiles(runtime.Files)
+				currentFileBuffer.editor.SetRuntimeFiles(runtime.Files)
 				statusBar.ShowMessage("Syntax highlighting set to auto-detect")
 			} else {
 				// Set specific syntax
 				buffer.Settings["filetype"] = value
-				editor.SetRuntimeFiles(runtime.Files)
+				currentFileBuffer.editor.SetRuntimeFiles(runtime.Files)
 				statusBar.ShowMessage("Syntax highlighting set to " + strings.Title(value))
 			}
 			syncMenuFromBuffer(buffer)

@@ -137,13 +137,13 @@ func parseAndGoToLine(input string) {
 	colNum--
 
 	// Validate line number
-	if lineNum < 0 || lineNum >= buffer.NumLines {
+	if lineNum < 0 || lineNum >= currentFileBuffer.buffer.NumLines {
 		statusBar.ShowError("Line number out of range")
 		return
 	}
 
 	// Validate column number
-	lineLength := len([]rune(buffer.Line(lineNum)))
+	lineLength := len([]rune(currentFileBuffer.buffer.Line(lineNum)))
 	if colNum < 0 {
 		colNum = 0
 	} else if colNum > lineLength {
@@ -151,8 +151,8 @@ func parseAndGoToLine(input string) {
 	}
 
 	// Move cursor to the specified location
-	editor.Cursor.GotoLoc(femto.Loc{X: colNum, Y: lineNum})
-	editor.Relocate()
+	currentFileBuffer.editor.Cursor.GotoLoc(femto.Loc{X: colNum, Y: lineNum})
+	currentFileBuffer.editor.Relocate()
 
 	statusBar.ShowMessage("Jumped to line " + strconv.Itoa(lineNum+1))
 }

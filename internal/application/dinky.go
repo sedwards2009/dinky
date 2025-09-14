@@ -2,6 +2,7 @@ package application
 
 import (
 	"dinky/internal/tui/menu"
+	"dinky/internal/tui/scrollbar"
 	"dinky/internal/tui/statusbar"
 	"dinky/internal/tui/style"
 	"dinky/internal/tui/tabbar"
@@ -26,10 +27,9 @@ var app *nuview.Application
 var enableLogging bool
 var menus []*menu.Menu
 var fileBufferID string
-var buffer *femto.Buffer
 var tabBarLine *tabbar.TabBar
 var menuBar *menu.MenuBar
-var editor *femto.View
+
 var modalPages *nuview.Panels
 var editorPages *nuview.Panels
 var statusBar *statusbar.StatusBar
@@ -37,6 +37,10 @@ var statusBar *statusbar.StatusBar
 var colorscheme femto.Colorscheme
 
 type FileBuffer struct {
+	panelVFlex *nuview.Flex
+	panelHFlex *nuview.Flex
+	scrollbar  *scrollbar.Scrollbar
+
 	buffer   *femto.Buffer
 	editor   *femto.View
 	uuid     string
@@ -44,6 +48,7 @@ type FileBuffer struct {
 }
 
 var fileBuffers []*FileBuffer
+var currentFileBuffer *FileBuffer
 
 // -----------------------------------------------------------------
 func initEditorColorScheme() {
@@ -55,8 +60,8 @@ func initEditorColorScheme() {
 }
 
 func newFile(contents string, filename string) {
-	buffer = femto.NewBufferFromString(contents, "")
-	editor = femto.NewView(buffer)
+	buffer := femto.NewBufferFromString(contents, "")
+	editor := femto.NewView(buffer)
 	buffer.Path = filename // femto uses this to determine the file type
 	editor.SetRuntimeFiles(runtime.Files)
 	editor.SetColorscheme(colorscheme)
@@ -65,25 +70,47 @@ func newFile(contents string, filename string) {
 	buffer.Settings["matchbrace"] = true
 	buffer.Settings["tabstospaces"] = false // Default to using tab character
 
+	panelHFlex := nuview.NewFlex()
+	panelHFlex.SetDirection(nuview.FlexColumn)
+	panelHFlex.AddItem(editor, 0, 1, true)
+	vScrollbar := scrollbar.NewScrollbar()
+	panelHFlex.AddItem(vScrollbar, 1, 0, false)
+
+	panelVFlex := nuview.NewFlex()
+	panelVFlex.SetDirection(nuview.FlexRow)
+	panelVFlex.AddItem(panelHFlex, 0, 1, true)
+
 	fileBuffer := &FileBuffer{
-		buffer:   buffer,
+		panelVFlex: panelVFlex,
+		panelHFlex: panelHFlex,
+		scrollbar:  vScrollbar,
+		buffer:     buffer,
+
 		editor:   editor,
 		uuid:     uuid.New().String(),
 		filename: filename,
 	}
 
+	vScrollbar.UpdateHook = func(sb *scrollbar.Scrollbar) {
+		// Update the scrollbar's position and size based on the content
+		_, _, _, height := editor.GetRect()
+		sb.Track.SetThumbSize(height)
+		sb.Track.SetMax(buffer.NumLines)
+		sb.Track.SetPosition(editor.Topline)
+	}
+	vScrollbar.SetChangedFunc(func(position int) {
+		editor.Topline = position
+	})
+
 	fileBuffers = append(fileBuffers, fileBuffer)
-	editorPages.AddPanel(fileBuffer.uuid, editor, true, false)
+
+	editorPages.AddPanel(fileBuffer.uuid, panelVFlex, true, false)
 	tabName := "[Untitled]"
 	if filename != "" {
 		tabName = path.Base(filename)
 	}
 	tabBarLine.AddTab(tabName, fileBuffer.uuid)
 	tabBarLine.SetActive(fileBuffer.uuid)
-	if buffer == nil {
-		buffer = fileBuffer.buffer
-		editor = fileBuffer.editor
-	}
 
 	selectTab(fileBuffer.uuid)
 	app.SetFocus(editor)
@@ -112,9 +139,8 @@ func selectTab(id string) {
 	fileBuffer := getFileBufferByID(id)
 	fileBufferID = id
 	editorPages.SetCurrentPanel(id)
-	buffer = fileBuffer.buffer
-	editor = fileBuffer.editor
-	syncMenuFromBuffer(buffer)
+	currentFileBuffer = fileBuffer
+	syncMenuFromBuffer(currentFileBuffer.buffer)
 }
 
 func syncStatusBarFromFileBuffer(statusBar *statusbar.StatusBar) {
@@ -274,7 +300,7 @@ func Main() {
 		if nextFocus != nil {
 			app.SetFocus(nextFocus)
 		} else {
-			app.SetFocus(editor)
+			app.SetFocus(currentFileBuffer.editor)
 		}
 	})
 
