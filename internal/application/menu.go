@@ -26,6 +26,8 @@ func createMenus() []*menu.Menu {
 			{ID: femto.ActionCopy, Title: "Copy", Callback: handleFemtoAction},
 			{ID: femto.ActionPaste, Title: "Paste", Callback: handleFemtoAction},
 			{Title: "", Callback: nil}, // Separator
+			{ID: ACTION_FIND, Title: "Find", Callback: handleDinkyAction},
+			{Title: "", Callback: nil}, // Separator
 			{ID: ACTION_SET_TAB_CHARACTER, Title: "Tab Character…", Callback: handleDinkyAction},
 			{ID: ACTION_SET_LINE_ENDINGS, Title: "Line Endings…", Callback: handleDinkyAction},
 		}},

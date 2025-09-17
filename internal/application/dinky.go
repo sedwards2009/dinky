@@ -1,6 +1,7 @@
 package application
 
 import (
+	"dinky/internal/tui/findbar"
 	"dinky/internal/tui/menu"
 	"dinky/internal/tui/scrollbar"
 	"dinky/internal/tui/statusbar"
@@ -11,6 +12,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/google/uuid"
@@ -37,9 +39,12 @@ var statusBar *statusbar.StatusBar
 var colorscheme femto.Colorscheme
 
 type FileBuffer struct {
-	panelVFlex *nuview.Flex
-	panelHFlex *nuview.Flex
-	scrollbar  *scrollbar.Scrollbar
+	panelVFlex    *nuview.Flex
+	panelHFlex    *nuview.Flex
+	scrollbar     *scrollbar.Scrollbar
+	findbar       *findbar.Findbar
+	isFindbarOpen bool
+	openFindbar   func()
 
 	buffer   *femto.Buffer
 	editor   *femto.View
@@ -80,15 +85,43 @@ func newFile(contents string, filename string) {
 	panelVFlex.SetDirection(nuview.FlexRow)
 	panelVFlex.AddItem(panelHFlex, 0, 1, true)
 
+	bufferFindbar := findbar.NewFindbar(app, editor)
+
 	fileBuffer := &FileBuffer{
-		panelVFlex: panelVFlex,
-		panelHFlex: panelHFlex,
-		scrollbar:  vScrollbar,
-		buffer:     buffer,
+		panelVFlex:    panelVFlex,
+		panelHFlex:    panelHFlex,
+		scrollbar:     vScrollbar,
+		buffer:        buffer,
+		findbar:       bufferFindbar,
+		isFindbarOpen: false,
 
 		editor:   editor,
 		uuid:     uuid.New().String(),
 		filename: filename,
+	}
+
+	fileBuffer.openFindbar = func() {
+		if !fileBuffer.isFindbarOpen {
+			fileBuffer.panelVFlex.AddItem(fileBuffer.findbar, 2, 0, false)
+			fileBuffer.isFindbarOpen = true
+		}
+
+		selectionText := editor.Cursor.GetSelection()
+		if selectionText != "" {
+			// Split the text into lines and use the first line only
+			// (as the findbar is a single line input)
+			if idx := strings.IndexByte(selectionText, '\n'); idx > 0 {
+				selectionText = selectionText[:idx]
+			}
+			fileBuffer.findbar.SetSearchText(selectionText)
+		}
+	}
+	bufferFindbar.OnClose = func() {
+		if fileBuffer.isFindbarOpen {
+			fileBuffer.isFindbarOpen = false
+			fileBuffer.panelVFlex.RemoveItem(fileBuffer.findbar)
+			app.SetFocus(editor)
+		}
 	}
 
 	vScrollbar.UpdateHook = func(sb *scrollbar.Scrollbar) {
@@ -174,7 +207,10 @@ func editorInputCapture(event *tcell.EventKey) *tcell.EventKey {
 			}
 
 			if keyDesc.Modifiers == event.Modifiers() {
-				dinkyActionMapping[action]()
+				p := dinkyActionMapping[action]()
+				if p != nil {
+					app.SetFocus(p)
+				}
 				return nil
 			}
 		}

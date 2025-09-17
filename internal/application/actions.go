@@ -28,6 +28,7 @@ const (
 	ACTION_SET_SYNTAX_HIGHLIGHTING = "SetSyntaxHighlighting"
 	ACTION_GO_TO_LINE              = "GoToLine"
 	ACTION_QUIT                    = "Quit"
+	ACTION_FIND                    = "Find"
 	ACTION_ABOUT                   = "About"
 )
 
@@ -50,6 +51,7 @@ func init() {
 		ACTION_GO_TO_LINE:              handleGoToLine,
 		ACTION_QUIT:                    handleQuit,
 		ACTION_ABOUT:                   handleAbout,
+		ACTION_FIND:                    handleFind,
 	}
 }
 
@@ -387,4 +389,9 @@ func handleSetSyntaxHighlighting() nuview.Primitive {
 func handleQuit() nuview.Primitive {
 	app.Stop()
 	return nil
+}
+
+func handleFind() nuview.Primitive {
+	currentFileBuffer.openFindbar()
+	return currentFileBuffer.findbar
 }
