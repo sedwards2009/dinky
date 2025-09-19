@@ -132,8 +132,7 @@ func handleOpenFile() nuview.Primitive {
 }
 
 func bufferToBytes(buffer *femto.Buffer) []byte {
-	str := buffer.LineArray.SaveString(isBufferCRLF(buffer))
-	return []byte(str)
+	return buffer.LineArray.Bytes(isBufferCRLF(buffer))
 }
 
 func writeFile(filename string, buffer *femto.Buffer) (ok bool, message string) {
