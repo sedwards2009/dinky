@@ -2,7 +2,7 @@ package findbar
 
 import (
 	"github.com/gdamore/tcell/v2"
-	"github.com/pgavlin/femto"
+	"github.com/sedwards2009/femto"
 	"github.com/sedwards2009/nuview"
 )
 

@@ -1,7 +1,7 @@
 package application
 
 import (
-	"github.com/pgavlin/femto"
+	"github.com/sedwards2009/femto"
 )
 
 var femtoDefaultKeyBindings femto.KeyBindings

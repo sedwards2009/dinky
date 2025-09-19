@@ -4,7 +4,7 @@ import (
 	"dinky/internal/tui/menu"
 	"strings"
 
-	"github.com/pgavlin/femto"
+	"github.com/sedwards2009/femto"
 )
 
 func createMenus() []*menu.Menu {

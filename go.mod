@@ -7,14 +7,9 @@ require (
 	github.com/google/renameio/v2 v2.0.0
 	github.com/google/uuid v1.6.0
 	github.com/mattn/go-runewidth v0.0.16
-	github.com/pgavlin/femto v0.0.0-20201224065653-0c9d20f9cac4
-	github.com/rivo/tview v0.0.0-20201204190810-5406288b8e4e
+	github.com/sedwards2009/femto v0.0.0-20250919182514-9acc35d1c716
 	github.com/sedwards2009/nuview v0.0.0-20250606184736-088c7d160a08
 )
-
-replace github.com/sedwards2009/nuview => /home/sbe/devel/nuview
-
-replace github.com/pgavlin/femto => /home/sbe/devel/femto
 
 require (
 	codeberg.org/tslocum/cbind v0.1.6 // indirect
