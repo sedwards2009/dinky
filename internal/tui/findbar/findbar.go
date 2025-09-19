@@ -40,7 +40,7 @@ func NewFindbar(app *nuview.Application, editor *femto.View) *Findbar {
 			return nil
 		case tcell.KeyEnter:
 			if searchStringField.GetText() != "" {
-				editor.Search(searchStringField.GetText(), true)
+				editor.Search(searchStringField.GetText(), false, true)
 			}
 			return nil
 		}
@@ -53,7 +53,7 @@ func NewFindbar(app *nuview.Application, editor *femto.View) *Findbar {
 	searchUpButton := nuview.NewButton("↑") // U+2191 UPWARDS ARROW
 	searchUpButton.SetSelectedFunc(func() {
 		if searchStringField.GetText() != "" {
-			editor.Search(searchStringField.GetText(), false)
+			editor.Search(searchStringField.GetText(), false, false)
 		}
 	})
 	hFlex.AddItem(searchUpButton, 3, 0, false)
@@ -63,7 +63,7 @@ func NewFindbar(app *nuview.Application, editor *femto.View) *Findbar {
 	searchDownButton := nuview.NewButton("↓") // U+2193 DOWNWARDS ARROW
 	searchDownButton.SetSelectedFunc(func() {
 		if searchStringField.GetText() != "" {
-			editor.Search(searchStringField.GetText(), true)
+			editor.Search(searchStringField.GetText(), false, true)
 		}
 	})
 	hFlex.AddItem(searchDownButton, 3, 0, false)
