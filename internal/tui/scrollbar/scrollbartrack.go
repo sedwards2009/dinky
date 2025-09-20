@@ -94,6 +94,9 @@ func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
 	// Calculate the position and size of the scrollbar thumb.
 	doubleThumbSizeFloat := float64(doubleMajorLength) * float64(thumbSize) / float64(scrollbarTrack.max)
 	doubleThumbSize := int(doubleThumbSizeFloat + 0.5) // Round to nearest integer
+	if doubleThumbSize < 1 {
+		doubleThumbSize = 1
+	}
 
 	doubleThumbMajor := doubleMajorLength * position / scrollbarTrack.max
 	thumbStyle := tcell.StyleDefault.Foreground(scrollbarTrack.trackColor).Background(scrollbarTrack.thumbColor)
