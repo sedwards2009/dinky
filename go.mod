@@ -7,8 +7,8 @@ require (
 	github.com/google/renameio/v2 v2.0.0
 	github.com/google/uuid v1.6.0
 	github.com/mattn/go-runewidth v0.0.16
-	github.com/sedwards2009/femto v0.0.0-20250919182514-9acc35d1c716
-	github.com/sedwards2009/nuview v0.0.0-20250606184736-088c7d160a08
+	github.com/sedwards2009/femto v0.0.0-20250919190409-1dab912f70cd
+	github.com/sedwards2009/nuview v0.0.0-20250908191525-297f49935065
 )
 
 require (
