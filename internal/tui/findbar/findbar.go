@@ -9,14 +9,16 @@ import (
 type Findbar struct {
 	*nuview.Flex
 	app               *nuview.Application
+	editor            *femto.View
 	searchStringField *nuview.InputField
 	OnClose           func()
 }
 
 func NewFindbar(app *nuview.Application, editor *femto.View) *Findbar {
 	fb := &Findbar{
-		Flex: nuview.NewFlex(),
-		app:  app,
+		Flex:   nuview.NewFlex(),
+		app:    app,
+		editor: editor,
 	}
 	fb.SetDirection(nuview.FlexRow)
 	fb.SetPadding(0, 0, 0, 0)
@@ -51,21 +53,13 @@ func NewFindbar(app *nuview.Application, editor *femto.View) *Findbar {
 	hFlex.AddItem(nil, 1, 0, false)
 
 	searchUpButton := nuview.NewButton("↑") // U+2191 UPWARDS ARROW
-	searchUpButton.SetSelectedFunc(func() {
-		if searchStringField.GetText() != "" {
-			editor.Search(searchStringField.GetText(), false, false)
-		}
-	})
+	searchUpButton.SetSelectedFunc(fb.SearchUp)
 	hFlex.AddItem(searchUpButton, 3, 0, false)
 
 	hFlex.AddItem(nil, 1, 0, false)
 
 	searchDownButton := nuview.NewButton("↓") // U+2193 DOWNWARDS ARROW
-	searchDownButton.SetSelectedFunc(func() {
-		if searchStringField.GetText() != "" {
-			editor.Search(searchStringField.GetText(), false, true)
-		}
-	})
+	searchDownButton.SetSelectedFunc(fb.SearchDown)
 	hFlex.AddItem(searchDownButton, 3, 0, false)
 
 	hFlex.AddItem(nil, 1, 0, false)
@@ -90,4 +84,16 @@ func (f *Findbar) Focus(delegate func(p nuview.Primitive)) {
 
 func (f *Findbar) SetSearchText(text string) {
 	f.searchStringField.SetText(text)
+}
+
+func (f *Findbar) SearchUp() {
+	if f.searchStringField.GetText() != "" {
+		f.editor.Search(f.searchStringField.GetText(), false, false)
+	}
+}
+
+func (f *Findbar) SearchDown() {
+	if f.searchStringField.GetText() != "" {
+		f.editor.Search(f.searchStringField.GetText(), false, true)
+	}
 }

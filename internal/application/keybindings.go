@@ -116,6 +116,8 @@ func initKeyBindings() {
 		"F12":    ACTION_OPEN_MENU,
 		"Ctrl-q": ACTION_QUIT,
 		"Ctrl-f": ACTION_FIND,
+		"F3":     ACTION_FIND_NEXT,
+		"F2":     ACTION_FIND_PREVIOUS,
 	}
 
 	actionToKeyMapping = make(map[string]string)

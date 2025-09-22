@@ -29,6 +29,8 @@ const (
 	ACTION_GO_TO_LINE              = "GoToLine"
 	ACTION_QUIT                    = "Quit"
 	ACTION_FIND                    = "Find"
+	ACTION_FIND_NEXT               = "FindNext"
+	ACTION_FIND_PREVIOUS           = "FindPrevious"
 	ACTION_ABOUT                   = "About"
 )
 
@@ -52,6 +54,8 @@ func init() {
 		ACTION_QUIT:                    handleQuit,
 		ACTION_ABOUT:                   handleAbout,
 		ACTION_FIND:                    handleFind,
+		ACTION_FIND_NEXT:               handleFindNext,
+		ACTION_FIND_PREVIOUS:           handleFindPrevious,
 	}
 }
 
@@ -393,4 +397,18 @@ func handleQuit() nuview.Primitive {
 func handleFind() nuview.Primitive {
 	currentFileBuffer.openFindbar()
 	return currentFileBuffer.findbar
+}
+
+// Find Next: open findbar if needed, then search forward
+func handleFindNext() nuview.Primitive {
+	currentFileBuffer.openFindbar()
+	currentFileBuffer.findbar.SearchDown()
+	return nil
+}
+
+// Find Previous: open findbar if needed, then search backward
+func handleFindPrevious() nuview.Primitive {
+	currentFileBuffer.openFindbar()
+	currentFileBuffer.findbar.SearchUp()
+	return nil
 }
