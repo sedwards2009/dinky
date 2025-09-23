@@ -161,6 +161,7 @@ func handleSaveFile() nuview.Primitive {
 func writeCurrentFileBuffer() {
 	fileBuffer := getFileBufferByID(fileBufferID)
 	ok, message := writeFile(fileBuffer.filename, fileBuffer.buffer)
+	fileBuffer.buffer.IsModified = false
 	if ok {
 		statusBar.ShowMessage(message)
 	} else {
@@ -170,7 +171,7 @@ func writeCurrentFileBuffer() {
 
 func handleSaveFileAs() nuview.Primitive {
 	fileBuffer := getFileBufferByID(fileBufferID)
-	showFileDialog("Save File As", filedialog.SAVE_FILE_MODE, fileBuffer.filename, func(accepted bool, filePath string) {
+	return showFileDialog("Save File As", filedialog.SAVE_FILE_MODE, fileBuffer.filename, func(accepted bool, filePath string) {
 		hideFileDialog()
 		if !accepted {
 			return
@@ -179,13 +180,12 @@ func handleSaveFileAs() nuview.Primitive {
 		tabBarLine.SetTabTitle(fileBufferID, filepath.Base(fileBuffer.filename))
 		writeCurrentFileBuffer()
 	})
-	return nil
 }
 
 func handleCloseFile() nuview.Primitive {
 	fileBuffer := getFileBufferByID(fileBufferID)
 	if fileBuffer.buffer.IsModified {
-		ShowConfirmDialog("File has unsaved changes. Close anyway?", func() {
+		return ShowConfirmDialog("File has unsaved changes. Close anyway?", func() {
 			closeFile(fileBufferID)
 			if len(fileBuffers) == 0 {
 				handleQuit()
