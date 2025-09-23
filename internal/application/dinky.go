@@ -14,15 +14,14 @@ import (
 	"path"
 	"strings"
 
+	"runtime/debug"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/google/uuid"
 	"github.com/sedwards2009/femto"
 	"github.com/sedwards2009/femto/runtime"
 	"github.com/sedwards2009/nuview"
 )
-
-// Version information
-const Version = "0.1.0"
 
 // -----------------------------------------------------------------
 var app *nuview.Application
@@ -234,7 +233,50 @@ func showHelp() {
 }
 
 func showVersion() {
-	fmt.Printf("Dinky version %s\n", Version)
+	fmt.Printf("Version: %s\n", getDinkyVersion())
+	fmt.Printf("Version time: %s\n", getDinkyVersionTime())
+}
+
+func getDinkyVersion() string {
+	info, ok := debug.ReadBuildInfo()
+	if !ok || info == nil {
+		return "unknown"
+	}
+	var tag, commit string
+	for _, s := range info.Settings {
+		if s.Key == "vcs.revision" {
+			commit = s.Value
+		} else if s.Key == "vcs.tag" {
+			tag = s.Value
+		}
+	}
+	if tag == "" {
+		tag = "untagged"
+	}
+	if commit == "" {
+		commit = "unknown"
+	}
+	if len(commit) > 7 {
+		commit = commit[:7]
+	}
+	return tag + " (" + commit + ")"
+}
+
+func getDinkyVersionTime() string {
+	info, ok := debug.ReadBuildInfo()
+	if !ok || info == nil {
+		return "unknown"
+	}
+	var buildTime string
+	for _, s := range info.Settings {
+		if s.Key == "vcs.time" {
+			buildTime = s.Value
+		}
+	}
+	if buildTime == "" {
+		buildTime = "unknown"
+	}
+	return buildTime
 }
 
 func parseCommandLine() bool {

@@ -1,7 +1,7 @@
 .PHONY: all build test filedialogdemo scrollbardemo filelistdemo
 
 build:
-	go build -v dinky.go
+	go build -buildvcs=true -v dinky.go
 
 test:
 	go test -v ./...
