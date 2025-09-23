@@ -22,6 +22,7 @@ var blackOnGrayStyle = tcell.StyleDefault.Foreground(black).Background(lightGray
 var whiteOnBlueStyle = tcell.StyleDefault.Foreground(white).Background(blue)
 
 func Install() {
+	nuview.Styles.ButtonCursorRune = 0
 	nuview.Styles.TitleColor = black
 	nuview.Styles.BorderColor = black
 
