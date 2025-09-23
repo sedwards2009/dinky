@@ -187,9 +187,15 @@ func handleCloseFile() nuview.Primitive {
 	if fileBuffer.buffer.IsModified {
 		ShowConfirmDialog("File has unsaved changes. Close anyway?", func() {
 			closeFile(fileBufferID)
+			if len(fileBuffers) == 0 {
+				handleQuit()
+			}
 		}, func() {})
 	} else {
 		closeFile(fileBufferID)
+		if len(fileBuffers) == 0 {
+			handleQuit()
+		}
 	}
 	return nil
 }
@@ -207,7 +213,6 @@ func closeFile(fileBufferID string) {
 
 	if len(fileBuffers) == 0 {
 		fileBufferID = ""
-		handleQuit()
 	} else {
 		selectTab(fileBuffers[0].uuid)
 	}
@@ -390,7 +395,24 @@ func handleSetSyntaxHighlighting() nuview.Primitive {
 }
 
 func handleQuit() nuview.Primitive {
-	app.Stop()
+	var closeNextFileBuffer func()
+	closeNextFileBuffer = func() {
+		if len(fileBuffers) > 0 {
+			fileBuffer := fileBuffers[0]
+			if fileBuffer.buffer.IsModified {
+				ShowConfirmDialog("File has unsaved changes. Close anyway?", func() {
+					closeFile(fileBuffer.uuid)
+					app.QueueUpdateDraw(closeNextFileBuffer)
+				}, func() {})
+			} else {
+				closeFile(fileBuffer.uuid)
+				app.QueueUpdateDraw(closeNextFileBuffer)
+			}
+		} else {
+			app.Stop()
+		}
+	}
+	closeNextFileBuffer()
 	return nil
 }
 

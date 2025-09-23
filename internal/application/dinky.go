@@ -178,6 +178,9 @@ func selectTab(id string) {
 
 func syncStatusBarFromFileBuffer(statusBar *statusbar.StatusBar) {
 	fileBuffer := getFileBufferByID(fileBufferID)
+	if fileBuffer == nil {
+		return
+	}
 	statusBar.Filename = fileBuffer.filename
 	statusBar.Line = fileBuffer.editor.Cursor.Y + 1
 	statusBar.Col = fileBuffer.editor.Cursor.X + 1
