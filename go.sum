@@ -33,6 +33,8 @@ github.com/sedwards2009/femto v0.0.0-20250919182514-9acc35d1c716 h1:9RPeoIWAR7Ku
 github.com/sedwards2009/femto v0.0.0-20250919182514-9acc35d1c716/go.mod h1:6E+rjxCisGvr+PIBfPvh6LZ5Oqs611Wi5LM8r57DM3I=
 github.com/sedwards2009/femto v0.0.0-20250919190409-1dab912f70cd h1:C6+Ze5YkGasNMVOoI7tgf+w828QNjnWsXEY0DIzKFbg=
 github.com/sedwards2009/femto v0.0.0-20250919190409-1dab912f70cd/go.mod h1:6E+rjxCisGvr+PIBfPvh6LZ5Oqs611Wi5LM8r57DM3I=
+github.com/sedwards2009/femto v0.0.0-20250924183745-59296e5bfebb h1:AWmA6on4PRKmrAj35ccjB2k0oLX1fu9dwX6AQH3RYaM=
+github.com/sedwards2009/femto v0.0.0-20250924183745-59296e5bfebb/go.mod h1:6E+rjxCisGvr+PIBfPvh6LZ5Oqs611Wi5LM8r57DM3I=
 github.com/sedwards2009/nuview v0.0.0-20250606184736-088c7d160a08 h1:uEAKeOKCPw0f23IYSY75Y5+HKqU8EKFzGRFFeftyg7k=
 github.com/sedwards2009/nuview v0.0.0-20250606184736-088c7d160a08/go.mod h1:ktNFOaeFvt4k4Cn9sQ8TxOwJQImHwDQ1k1Te07f2ObE=
 github.com/sedwards2009/nuview v0.0.0-20250908191525-297f49935065 h1:tIs1PRMIIfhct9Ef0PVK0BOZGJI5zycL/KjIRCIovm4=
