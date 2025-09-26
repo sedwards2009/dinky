@@ -167,12 +167,17 @@ func getFileBufferByID(id string) *FileBuffer {
 	return nil
 }
 
-func selectTab(id string) {
+func showTabPage(id string) {
 	fileBuffer := getFileBufferByID(id)
 	fileBufferID = id
 	editorPages.SetCurrentPanel(id)
 	currentFileBuffer = fileBuffer
 	syncMenuFromBuffer(currentFileBuffer.buffer)
+}
+
+func selectTab(id string) {
+	showTabPage(id)
+	tabBarLine.SetActive(id)
 }
 
 func syncStatusBarFromFileBuffer(statusBar *statusbar.StatusBar) {
@@ -352,7 +357,7 @@ func Main() {
 	tabBarLine = tabbar.NewTabBar()
 	style.StyleTabBar(tabBarLine)
 	tabBarLine.OnActive = func(id string, index int) {
-		selectTab(id)
+		showTabPage(id)
 	}
 	tabBarLine.OnTabCloseClick = func(id string, index int) {
 		fileBufferID = id
