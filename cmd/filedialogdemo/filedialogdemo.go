@@ -2,26 +2,23 @@ package main
 
 import (
 	"dinky/internal/tui/filedialog"
-	"dinky/internal/tui/style"
 	"log"
 	"os"
 
-	"github.com/sedwards2009/nuview"
+	nuview "github.com/rivo/tview"
 )
 
 func main() {
 	logFile := setupLogging()
 	defer logFile.Close()
 
-	style.Install()
-
 	app := nuview.NewApplication()
 	app.EnableMouse(true)
 
 	workspace := nuview.NewBox()
 
-	modalPages := nuview.NewPanels()
-	modalPages.AddPanel("workspace", workspace, true, true)
+	modalPages := nuview.NewPages()
+	modalPages.AddPage("workspace", workspace, true, true)
 
 	fileDialog := filedialog.NewFileDialog(app)
 	fileDialog.SetPath("/home/sbe")
@@ -33,7 +30,7 @@ func main() {
 		}
 		app.Stop()
 	})
-	modalPages.AddPanel("fileDialog", fileDialog, true, true)
+	modalPages.AddPage("fileDialog", fileDialog, true, true)
 
 	app.SetRoot(modalPages, true)
 

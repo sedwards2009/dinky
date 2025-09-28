@@ -1,16 +1,18 @@
 package dialog
 
-import "github.com/sedwards2009/nuview"
+import (
+	nuview "github.com/rivo/tview"
+)
 
 // createButtonsRow creates and configures the buttons for the message dialog
 func createButtonsRow(buttonsFlex *nuview.Flex, buttons []string, onButtonClick func(button string, index int)) []*nuview.Button {
-	buttonsFlex.ClearItems()
+	buttonsFlex.Clear()
 	nuviewButtons := make([]*nuview.Button, len(buttons))
 
 	if len(buttons) == 1 {
 		// If it is just one button, then center it.
 		btn := nuview.NewButton(buttons[0])
-		btn.SetName(buttons[0])
+		// btn.SetName(buttons[0])
 		nuviewButtons[0] = btn
 		btn.SetSelectedFunc(func() {
 			if onButtonClick != nil {

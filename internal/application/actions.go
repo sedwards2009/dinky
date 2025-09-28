@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"github.com/google/renameio/v2"
+	nuview "github.com/rivo/tview"
 	"github.com/sedwards2009/femto"
 	"github.com/sedwards2009/femto/runtime"
-	"github.com/sedwards2009/nuview"
 )
 
 const (
@@ -80,7 +80,6 @@ func showFileDialog(title string, mode filedialog.FileDialogMode, defaultPath st
 
 	if fileDialog == nil {
 		fileDialog = filedialog.NewFileDialog(app)
-		fileDialog.SetName(fileDialogName)
 	}
 	fileDialog.SetTitle(title)
 	if defaultPath == "" {
@@ -94,13 +93,13 @@ func showFileDialog(title string, mode filedialog.FileDialogMode, defaultPath st
 	}
 	fileDialog.SetMode(mode)
 	fileDialog.SetCompletedFunc(completedFunc)
-	modalPages.AddPanel(fileDialogName, fileDialog, true, true)
+	modalPages.AddPage(fileDialogName, fileDialog, true, true)
 	return fileDialog
 }
 
 func hideFileDialog() {
 	if fileDialog != nil {
-		modalPages.RemovePanel(fileDialogName)
+		modalPages.RemovePage(fileDialogName)
 	}
 }
 
@@ -111,9 +110,8 @@ const listDialogName = "listDialog"
 func ShowListDialog(options dialog.ListDialogOptions) nuview.Primitive {
 	if listDialog == nil {
 		listDialog = dialog.NewListDialog(app)
-		listDialog.SetName(listDialogName)
 	}
-	modalPages.AddPanel(listDialogName, listDialog, true, true)
+	modalPages.AddPage(listDialogName, listDialog, true, true)
 	listDialog.Open(options)
 	return listDialog
 }
@@ -121,7 +119,7 @@ func ShowListDialog(options dialog.ListDialogOptions) nuview.Primitive {
 func hideListDialog() {
 	if listDialog != nil {
 		listDialog.Close()
-		modalPages.RemovePanel(listDialogName)
+		modalPages.RemovePage(listDialogName)
 	}
 }
 
@@ -202,7 +200,7 @@ func handleCloseFile() nuview.Primitive {
 
 func closeFile(fileBufferID string) {
 	tabBarLine.RemoveTab(fileBufferID)
-	editorPages.RemovePanel(fileBufferID)
+	editorPages.RemovePage(fileBufferID)
 
 	for i, fileBuffer := range fileBuffers {
 		if fileBuffer.uuid == fileBufferID {

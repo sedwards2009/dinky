@@ -5,7 +5,7 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/mattn/go-runewidth"
-	"github.com/sedwards2009/nuview"
+	nuview "github.com/rivo/tview"
 )
 
 type MenuBar struct {

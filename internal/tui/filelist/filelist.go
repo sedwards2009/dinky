@@ -2,6 +2,7 @@ package filelist
 
 import (
 	"dinky/internal/tui/scrollbar"
+	"dinky/internal/tui/stylecolor"
 	"dinky/internal/tui/table2"
 	"os"
 	"path/filepath"
@@ -9,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/sedwards2009/nuview"
+	nuview "github.com/rivo/tview"
 )
 
 type FileList struct {
@@ -140,8 +141,8 @@ func NewFileList(app *nuview.Application) *FileList {
 		textColor:               nuview.Styles.PrimaryTextColor,
 		backgroundColor:         nuview.Styles.PrimitiveBackgroundColor,
 		selectedBackgroundColor: nuview.Styles.ContrastBackgroundColor,
-		headerLabelColor:        nuview.Styles.ButtonLabelColor,
-		headerBackgroundColor:   nuview.Styles.ButtonBackgroundColor,
+		headerLabelColor:        stylecolor.ButtonLabelColor,
+		headerBackgroundColor:   stylecolor.ButtonBackgroundColor,
 	}
 	fileList.table.SetXScroll(0)
 

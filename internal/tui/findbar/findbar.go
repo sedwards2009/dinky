@@ -2,8 +2,8 @@ package findbar
 
 import (
 	"github.com/gdamore/tcell/v2"
+	nuview "github.com/rivo/tview"
 	"github.com/sedwards2009/femto"
-	"github.com/sedwards2009/nuview"
 )
 
 type Findbar struct {
@@ -21,13 +21,13 @@ func NewFindbar(app *nuview.Application, editor *femto.View) *Findbar {
 		editor: editor,
 	}
 	f.SetDirection(nuview.FlexRow)
-	f.SetPadding(0, 0, 0, 0)
-	f.SetBackgroundTransparent(false)
+	f.SetBorderPadding(0, 0, 0, 0)
+	// f.SetBackgroundTransparent(false)
 	f.SetBorder(false)
 
 	hFlex := nuview.NewFlex()
 	hFlex.SetDirection(nuview.FlexColumn)
-	hFlex.SetBackgroundTransparent(false)
+	// hFlex.SetBackgroundTransparent(false)
 	hFlex.SetBorder(false)
 
 	searchStringField := nuview.NewInputField()

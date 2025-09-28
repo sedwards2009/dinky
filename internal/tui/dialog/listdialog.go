@@ -6,7 +6,7 @@ import (
 	"dinky/internal/tui/table2"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/sedwards2009/nuview"
+	nuview "github.com/rivo/tview"
 )
 
 type ListDialog struct {
@@ -50,8 +50,8 @@ func NewListDialog(app *nuview.Application) *ListDialog {
 
 	verticalContentsFlex := nuview.NewFlex()
 	verticalContentsFlex.SetDirection(nuview.FlexRow)
-	verticalContentsFlex.SetPadding(1, 1, 1, 1)
-	verticalContentsFlex.SetBackgroundTransparent(false)
+	verticalContentsFlex.SetBorderPadding(1, 1, 1, 1)
+	// verticalContentsFlex.SetBackgroundTransparent(false)
 	verticalContentsFlex.SetBorder(true)
 	verticalContentsFlex.SetTitleAlign(nuview.AlignLeft)
 
@@ -76,7 +76,7 @@ func NewListDialog(app *nuview.Application) *ListDialog {
 
 	buttonsFlex := nuview.NewFlex()
 	buttonsFlex.SetDirection(nuview.FlexColumn)
-	buttonsFlex.SetBackgroundTransparent(false)
+	// buttonsFlex.SetBackgroundTransparent(false)
 	buttonsFlex.SetBorder(false)
 	verticalContentsFlex.AddItem(buttonsFlex, 1, 0, false)
 
@@ -231,7 +231,7 @@ func (d *ListDialog) handleTab(direction int) {
 	widgets = append(widgets, d.tableField)
 
 	for i := 0; i < len(widgets); i++ {
-		if widgets[i].GetFocusable().HasFocus() {
+		if widgets[i].HasFocus() {
 			x := i + direction
 			if x < 0 {
 				x = len(widgets) - 1

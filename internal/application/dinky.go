@@ -18,9 +18,9 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/google/uuid"
+	nuview "github.com/rivo/tview"
 	"github.com/sedwards2009/femto"
 	"github.com/sedwards2009/femto/runtime"
-	"github.com/sedwards2009/nuview"
 )
 
 // -----------------------------------------------------------------
@@ -31,8 +31,8 @@ var fileBufferID string
 var tabBarLine *tabbar.TabBar
 var menuBar *menu.MenuBar
 
-var modalPages *nuview.Panels
-var editorPages *nuview.Panels
+var modalPages *nuview.Pages
+var editorPages *nuview.Pages
 var statusBar *statusbar.StatusBar
 
 var colorscheme femto.Colorscheme
@@ -70,7 +70,7 @@ func newFile(contents string, filename string) {
 	editor.SetRuntimeFiles(runtime.Files)
 	editor.SetColorscheme(colorscheme)
 	editor.SetKeybindings(femtoDefaultKeyBindings)
-	editor.SetInputCapture(editorInputCapture)
+	//editor.SetInputCapture(editorInputCapture)	// TODO
 	buffer.Settings["matchbrace"] = true
 	buffer.Settings["tabstospaces"] = false // Default to using tab character
 
@@ -136,7 +136,7 @@ func newFile(contents string, filename string) {
 
 	fileBuffers = append(fileBuffers, fileBuffer)
 
-	editorPages.AddPanel(fileBuffer.uuid, panelVFlex, true, false)
+	editorPages.AddPage(fileBuffer.uuid, panelVFlex, true, false)
 	tabName := "[Untitled]"
 	if filename != "" {
 		tabName = path.Base(filename)
@@ -170,7 +170,7 @@ func getFileBufferByID(id string) *FileBuffer {
 func showTabPage(id string) {
 	fileBuffer := getFileBufferByID(id)
 	fileBufferID = id
-	editorPages.SetCurrentPanel(id)
+	editorPages.SwitchToPage(id)
 	currentFileBuffer = fileBuffer
 	syncMenuFromBuffer(currentFileBuffer.buffer)
 }
@@ -332,16 +332,14 @@ func Main() {
 		log.SetOutput(io.Discard)
 	}
 
-	style.Install()
-
 	initEditorColorScheme()
 	initKeyBindings()
 
 	app = nuview.NewApplication()
 	app.EnableMouse(true)
-	app.EnableCtrlCQuit(false)
+	// app.EnableCtrlCQuit(false)	// TODO
 
-	modalPages = nuview.NewPanels()
+	modalPages = nuview.NewPages()
 
 	mainUiFlex := nuview.NewFlex()
 	mainUiFlex.SetDirection(nuview.FlexRow)
@@ -370,14 +368,14 @@ func Main() {
 
 	mainUiFlex.AddItem(tabBarLine, 1, 0, false)
 
-	editorPages = nuview.NewPanels()
+	editorPages = nuview.NewPages()
 	mainUiFlex.AddItem(editorPages, 0, 1, true)
 
 	statusBar = statusbar.NewStatusBar(app)
 	statusBar.UpdateHook = syncStatusBarFromFileBuffer
 	mainUiFlex.AddItem(statusBar, 1, 0, false)
 
-	modalPages.AddPanel("workspace", mainUiFlex, true, true)
+	modalPages.AddPage("workspace", mainUiFlex, true, true)
 
 	app.SetRoot(modalPages, true)
 	app.SetAfterDrawFunc(menuBar.AfterDraw())

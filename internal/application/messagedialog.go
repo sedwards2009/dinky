@@ -4,7 +4,7 @@ import (
 	"dinky/internal/tui/dialog"
 	"strings"
 
-	"github.com/sedwards2009/nuview"
+	nuview "github.com/rivo/tview"
 )
 
 var messageDialog *dialog.MessageDialog
@@ -65,7 +65,7 @@ func ShowMessageDialog(title string, message string, buttons []string, OnClose f
 	if messageDialog == nil {
 		messageDialog = dialog.NewMessageDialog(app)
 	}
-	modalPages.AddPanel(messageDialogName, messageDialog, true, true)
+	modalPages.AddPage(messageDialogName, messageDialog, true, true)
 	messageDialog.OnClose = OnClose
 	messageDialog.OnButtonClick = OnButtonClick
 	messageDialog.Open(title, message, buttons, width, height)
@@ -75,7 +75,7 @@ func ShowMessageDialog(title string, message string, buttons []string, OnClose f
 func CloseMessageDialog() {
 	if messageDialog != nil {
 		messageDialog.Close()
-		modalPages.RemovePanel("messagedialog")
+		modalPages.RemovePage("messagedialog")
 	}
 }
 

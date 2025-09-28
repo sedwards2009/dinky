@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/sedwards2009/nuview"
+	nuview "github.com/rivo/tview"
 )
 
 type FileDialogMode int
@@ -35,7 +35,7 @@ type FileDialog struct {
 
 func NewFileDialog(app *nuview.Application) *FileDialog {
 	vertContentsFlex := nuview.NewFlex()
-	vertContentsFlex.SetBackgroundTransparent(false)
+	// vertContentsFlex.SetBackgroundTransparent(false)
 	vertContentsFlex.SetTitle("Open File")
 	vertContentsFlex.SetTitleAlign(nuview.AlignLeft)
 	vertContentsFlex.SetBorder(true)
@@ -74,7 +74,7 @@ func NewFileDialog(app *nuview.Application) *FileDialog {
 	buttonFlex.SetDirection(nuview.FlexColumn)
 
 	showHiddenCheckbox := nuview.NewCheckbox()
-	showHiddenCheckbox.SetLabelRight(" Show Hidden Files")
+	// showHiddenCheckbox.SetLabelRight(" Show Hidden Files") // TODO
 	buttonFlex.AddItem(showHiddenCheckbox, 0, 1, false)
 
 	actionButton := nuview.NewButton("Open")
@@ -298,21 +298,21 @@ func (fileDialog *FileDialog) syncActionButton() {
 		if info, err := os.Stat(fullpath); err == nil && !info.IsDir() {
 			enabled = true
 		}
-		fileDialog.actionButton.SetEnabled(enabled)
+		fileDialog.actionButton.SetDisabled(!enabled)
 		return
 	}
 
 	if fileDialog.mode == SAVE_FILE_MODE {
 		if filename == "" {
-			fileDialog.actionButton.SetEnabled(false)
+			fileDialog.actionButton.SetDisabled(true)
 			return
 		}
 
 		if info, err := os.Stat(directory); err == nil {
 			if !info.IsDir() {
-				fileDialog.actionButton.SetEnabled(false)
+				fileDialog.actionButton.SetDisabled(true)
 			} else {
-				fileDialog.actionButton.SetEnabled(true)
+				fileDialog.actionButton.SetDisabled(false)
 			}
 		}
 		return

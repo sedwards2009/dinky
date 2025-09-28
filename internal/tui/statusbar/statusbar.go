@@ -6,9 +6,9 @@ import (
 	"time"
 
 	runewidth "github.com/mattn/go-runewidth"
+	nuview "github.com/rivo/tview"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/sedwards2009/nuview"
 )
 
 const (

@@ -6,14 +6,12 @@ import (
 	"log"
 	"os"
 
-	"github.com/sedwards2009/nuview"
+	nuview "github.com/rivo/tview"
 )
 
 func main() {
 	logFile := setupLogging()
 	defer logFile.Close()
-
-	style.Install()
 
 	app := nuview.NewApplication()
 	app.EnableMouse(true)

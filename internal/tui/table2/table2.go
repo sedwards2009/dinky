@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/sedwards2009/nuview"
+	nuview "github.com/rivo/tview"
 )
 
 // TableCell represents one cell inside a Table. You can instantiate this type
@@ -74,6 +74,8 @@ type TableCell struct {
 
 	sync.RWMutex
 }
+
+const StandardDoubleClick = 500
 
 // NewTableCell returns a new table cell with sensible defaults. That is, left
 // aligned text with the primary text color (see Styles) and a transparent
@@ -535,7 +537,7 @@ func NewTable() *Table {
 		Box:                 nuview.NewBox(),
 		bordersColor:        nuview.Styles.GraphicsColor,
 		separator:           ' ',
-		doubleClickDuration: nuview.StandardDoubleClick,
+		doubleClickDuration: StandardDoubleClick,
 		content: &tableDefaultContent{
 			lastColumn: -1,
 		},
@@ -1059,11 +1061,11 @@ func (t *Table) drawCellColumn(screenWriter TranslateScreenWriter, rows []int, c
 
 		t.drawRectangleColorScreenWriter(screenWriter, 0, rowY, columnWidth+1, 1, style)
 
-		start, end := nuview.PrintStyle(screenWriter, []byte(cell.Text), 0, rowY, columnWidth, cell.Align, style)
+		start, end := printStyle(screenWriter, []byte(cell.Text), 0, rowY, columnWidth, cell.Align, style)
 		printed := end - start
 		if nuview.TaggedStringWidth(cell.Text)-printed > 0 && printed > 0 {
 			_, _, style, _ := screenWriter.GetContent(cell.width-1, rowY)
-			nuview.PrintStyle(screenWriter, []byte(string(nuview.SemigraphicsHorizontalEllipsis)), cell.width-1, rowY, 1, nuview.AlignLeft, style)
+			printStyle(screenWriter, []byte(string(nuview.SemigraphicsHorizontalEllipsis)), cell.width-1, rowY, 1, nuview.AlignLeft, style)
 		}
 	}
 }
@@ -1777,4 +1779,168 @@ func (t *Table) MouseHandler() func(action nuview.MouseAction, event *tcell.Even
 
 		return
 	})
+}
+
+// PrintStyle works like Print() but it takes a style instead of just a
+// foreground color.
+func printStyle(screen ScreenWriter, text []byte, x, y, maxWidth, align int, style tcell.Style) (int, int) {
+	if maxWidth <= 0 || len(text) == 0 {
+		return 0, 0
+	}
+
+	// Decompose the text.
+	colorIndices, colors, _, _, escapeIndices, strippedText, strippedWidth := decomposeText(text, true, false)
+
+	// We want to reduce all alignments to AlignLeft.
+	if align == nuview.AlignRight {
+		if strippedWidth <= maxWidth {
+			// There's enough space for the entire text.
+			return printStyle(screen, text, x+maxWidth-strippedWidth, y, maxWidth, nuview.AlignLeft, style)
+		}
+		// Trim characters off the beginning.
+		var (
+			bytes, width, colorPos, escapePos, tagOffset int
+			foregroundColor, backgroundColor, attributes string
+		)
+		_, originalBackground, _ := style.Decompose()
+		iterateString(string(strippedText), func(main rune, comb []rune, textPos, textWidth, screenPos, screenWidth int) bool {
+			// Update color/escape tag offset and style.
+			if colorPos < len(colorIndices) && textPos+tagOffset >= colorIndices[colorPos][0] && textPos+tagOffset < colorIndices[colorPos][1] {
+				foregroundColor, backgroundColor, attributes = styleFromTag(foregroundColor, backgroundColor, attributes, colors[colorPos])
+				style = overlayStyle(originalBackground, style, foregroundColor, backgroundColor, attributes)
+				tagOffset += colorIndices[colorPos][1] - colorIndices[colorPos][0]
+				colorPos++
+			}
+			if escapePos < len(escapeIndices) && textPos+tagOffset >= escapeIndices[escapePos][0] && textPos+tagOffset < escapeIndices[escapePos][1] {
+				tagOffset++
+				escapePos++
+			}
+			if strippedWidth-screenPos < maxWidth {
+				// We chopped off enough.
+				if escapePos > 0 && textPos+tagOffset-1 >= escapeIndices[escapePos-1][0] && textPos+tagOffset-1 < escapeIndices[escapePos-1][1] {
+					// Unescape open escape sequences.
+					escapeCharPos := escapeIndices[escapePos-1][1] - 2
+					text = append(text[:escapeCharPos], text[escapeCharPos+1:]...)
+				}
+				// Print and return.
+				bytes, width = printStyle(screen, text[textPos+tagOffset:], x, y, maxWidth, nuview.AlignLeft, style)
+				return true
+			}
+			return false
+		})
+		return bytes, width
+	} else if align == nuview.AlignCenter {
+		if strippedWidth == maxWidth {
+			// Use the exact space.
+			return printStyle(screen, text, x, y, maxWidth, nuview.AlignLeft, style)
+		} else if strippedWidth < maxWidth {
+			// We have more space than we need.
+			half := (maxWidth - strippedWidth) / 2
+			return printStyle(screen, text, x+half, y, maxWidth-half, nuview.AlignLeft, style)
+		} else {
+			// Chop off runes until we have a perfect fit.
+			var choppedLeft, choppedRight, leftIndex, rightIndex int
+			rightIndex = len(strippedText)
+			for rightIndex-1 > leftIndex && strippedWidth-choppedLeft-choppedRight > maxWidth {
+				if choppedLeft < choppedRight {
+					// Iterate on the left by one character.
+					iterateString(string(strippedText[leftIndex:]), func(main rune, comb []rune, textPos, textWidth, screenPos, screenWidth int) bool {
+						choppedLeft += screenWidth
+						leftIndex += textWidth
+						return true
+					})
+				} else {
+					// Iterate on the right by one character.
+					iterateStringReverse(string(strippedText[leftIndex:rightIndex]), func(main rune, comb []rune, textPos, textWidth, screenPos, screenWidth int) bool {
+						choppedRight += screenWidth
+						rightIndex -= textWidth
+						return true
+					})
+				}
+			}
+
+			// Add tag offsets and determine start style.
+			var (
+				colorPos, escapePos, tagOffset               int
+				foregroundColor, backgroundColor, attributes string
+			)
+			_, originalBackground, _ := style.Decompose()
+			for index := range strippedText {
+				// We only need the offset of the left index.
+				if index > leftIndex {
+					// We're done.
+					if escapePos > 0 && leftIndex+tagOffset-1 >= escapeIndices[escapePos-1][0] && leftIndex+tagOffset-1 < escapeIndices[escapePos-1][1] {
+						// Unescape open escape sequences.
+						escapeCharPos := escapeIndices[escapePos-1][1] - 2
+						text = append(text[:escapeCharPos], text[escapeCharPos+1:]...)
+					}
+					break
+				}
+
+				// Update color/escape tag offset.
+				if colorPos < len(colorIndices) && index+tagOffset >= colorIndices[colorPos][0] && index+tagOffset < colorIndices[colorPos][1] {
+					if index <= leftIndex {
+						foregroundColor, backgroundColor, attributes = styleFromTag(foregroundColor, backgroundColor, attributes, colors[colorPos])
+						style = overlayStyle(originalBackground, style, foregroundColor, backgroundColor, attributes)
+					}
+					tagOffset += colorIndices[colorPos][1] - colorIndices[colorPos][0]
+					colorPos++
+				}
+				if escapePos < len(escapeIndices) && index+tagOffset >= escapeIndices[escapePos][0] && index+tagOffset < escapeIndices[escapePos][1] {
+					tagOffset++
+					escapePos++
+				}
+			}
+			return printStyle(screen, text[leftIndex+tagOffset:], x, y, maxWidth, nuview.AlignLeft, style)
+		}
+	}
+
+	// Draw text.
+	var (
+		drawn, drawnWidth, colorPos, escapePos, tagOffset int
+		foregroundColor, backgroundColor, attributes      string
+	)
+	iterateString(string(strippedText), func(main rune, comb []rune, textPos, length, screenPos, screenWidth int) bool {
+		// Only continue if there is still space.
+		if drawnWidth+screenWidth > maxWidth {
+			return true
+		}
+
+		// Handle color tags.
+		for colorPos < len(colorIndices) && textPos+tagOffset >= colorIndices[colorPos][0] && textPos+tagOffset < colorIndices[colorPos][1] {
+			foregroundColor, backgroundColor, attributes = styleFromTag(foregroundColor, backgroundColor, attributes, colors[colorPos])
+			tagOffset += colorIndices[colorPos][1] - colorIndices[colorPos][0]
+			colorPos++
+		}
+
+		// Handle scape tags.
+		if escapePos < len(escapeIndices) && textPos+tagOffset >= escapeIndices[escapePos][0] && textPos+tagOffset < escapeIndices[escapePos][1] {
+			if textPos+tagOffset == escapeIndices[escapePos][1]-2 {
+				tagOffset++
+				escapePos++
+			}
+		}
+
+		// Print the rune sequence.
+		finalX := x + drawnWidth
+		_, _, finalStyle, _ := screen.GetContent(finalX, y)
+		_, background, _ := finalStyle.Decompose()
+		finalStyle = overlayStyle(background, style, foregroundColor, backgroundColor, attributes)
+		for offset := screenWidth - 1; offset >= 0; offset-- {
+			// To avoid undesired effects, we populate all cells.
+			if offset == 0 {
+				screen.SetContent(finalX+offset, y, main, comb, finalStyle)
+			} else {
+				screen.SetContent(finalX+offset, y, ' ', nil, finalStyle)
+			}
+		}
+
+		// Advance.
+		drawn += length
+		drawnWidth += screenWidth
+
+		return false
+	})
+
+	return drawn + tagOffset + len(escapeIndices), drawnWidth
 }

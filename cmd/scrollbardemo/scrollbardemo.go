@@ -2,18 +2,15 @@ package main
 
 import (
 	"dinky/internal/tui/scrollbar"
-	"dinky/internal/tui/style"
 	"log"
 	"os"
 
-	"github.com/sedwards2009/nuview"
+	nuview "github.com/rivo/tview"
 )
 
 func main() {
 	logFile := setupLogging()
 	defer logFile.Close()
-
-	style.Install()
 
 	app := nuview.NewApplication()
 	app.EnableMouse(true)

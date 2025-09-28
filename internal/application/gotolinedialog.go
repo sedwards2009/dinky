@@ -5,8 +5,8 @@ import (
 	"strconv"
 
 	"github.com/gdamore/tcell/v2"
+	nuview "github.com/rivo/tview"
 	"github.com/sedwards2009/femto"
-	"github.com/sedwards2009/nuview"
 )
 
 var inputDialog *dialog.InputDialog
@@ -18,7 +18,7 @@ func ShowGoToLineDialog(title string, message string, defaultValue string, onCan
 
 	if inputDialog == nil {
 		inputDialog = dialog.NewInputDialog(app)
-		inputDialog.SetName("GoToLineDialog")
+		// inputDialog.SetName("GoToLineDialog")
 	}
 
 	width := 50
@@ -34,7 +34,7 @@ func ShowGoToLineDialog(title string, message string, defaultValue string, onCan
 		width = messageWidth
 	}
 
-	modalPages.AddPanel(inputDialogName, inputDialog, true, true)
+	modalPages.AddPage(inputDialogName, inputDialog, true, true)
 
 	options := dialog.InputDialogOptions{
 		Title:        title,
@@ -71,7 +71,7 @@ func ShowGoToLineDialog(title string, message string, defaultValue string, onCan
 func CloseGoToLineDialog() {
 	if inputDialog != nil {
 		inputDialog.Close()
-		modalPages.RemovePanel(inputDialogName)
+		modalPages.RemovePage(inputDialogName)
 	}
 }
 

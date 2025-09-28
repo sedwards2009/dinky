@@ -2,7 +2,7 @@ package scrollbar
 
 import (
 	"github.com/gdamore/tcell/v2"
-	"github.com/sedwards2009/nuview"
+	nuview "github.com/rivo/tview"
 )
 
 type Scrollbar struct {

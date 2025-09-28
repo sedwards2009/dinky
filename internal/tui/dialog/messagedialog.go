@@ -2,7 +2,7 @@ package dialog
 
 import (
 	"github.com/gdamore/tcell/v2"
-	"github.com/sedwards2009/nuview"
+	nuview "github.com/rivo/tview"
 )
 
 type MessageDialog struct {
@@ -28,8 +28,8 @@ func NewMessageDialog(app *nuview.Application) *MessageDialog {
 
 	verticalContentsFlex := nuview.NewFlex()
 	verticalContentsFlex.SetDirection(nuview.FlexRow)
-	verticalContentsFlex.SetPadding(1, 1, 1, 1)
-	verticalContentsFlex.SetBackgroundTransparent(false)
+	verticalContentsFlex.SetBorderPadding(1, 1, 1, 1)
+	// verticalContentsFlex.SetBackgroundTransparent(false)
 	verticalContentsFlex.SetBorder(true)
 	verticalContentsFlex.SetTitleAlign(nuview.AlignLeft)
 
@@ -38,7 +38,7 @@ func NewMessageDialog(app *nuview.Application) *MessageDialog {
 
 	buttonsFlex := nuview.NewFlex()
 	buttonsFlex.SetDirection(nuview.FlexColumn)
-	buttonsFlex.SetBackgroundTransparent(false)
+	// buttonsFlex.SetBackgroundTransparent(false)
 	buttonsFlex.SetBorder(false)
 	verticalContentsFlex.AddItem(buttonsFlex, 1, 0, false)
 
