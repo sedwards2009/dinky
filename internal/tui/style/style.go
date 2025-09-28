@@ -5,6 +5,7 @@ import (
 	"dinky/internal/tui/menu"
 	"dinky/internal/tui/scrollbar"
 	"dinky/internal/tui/tabbar"
+	"dinky/internal/tui/table2"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/sedwards2009/nuview"
@@ -99,11 +100,11 @@ func StyleMenuBar(menuBar *menu.MenuBar) {
 	menuBar.MenuSelectedStyle = tcell.StyleDefault.Foreground(white).Background(blue)
 }
 
-func StyleTable(table *nuview.Table) {
+func StyleTable(table *table2.Table) {
 	table.SetBackgroundColor(black)
 	table.SetSelectedStyle(tcell.StyleDefault.Background(blue).Foreground(white))
 }
 
-func StyleTableCell(cell *nuview.TableCell) {
+func StyleTableCell(cell *table2.TableCell) {
 	cell.SetStyle(tcell.StyleDefault.Foreground(white).Background(black))
 }

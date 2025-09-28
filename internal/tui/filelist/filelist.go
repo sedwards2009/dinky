@@ -2,6 +2,7 @@ package filelist
 
 import (
 	"dinky/internal/tui/scrollbar"
+	"dinky/internal/tui/table2"
 	"os"
 	"path/filepath"
 	"slices"
@@ -14,7 +15,7 @@ import (
 type FileList struct {
 	*nuview.Flex
 	app                 *nuview.Application
-	table               *nuview.Table
+	table               *table2.Table
 	VerticalScrollbar   *scrollbar.Scrollbar
 	HorizontalScrollbar *scrollbar.Scrollbar
 	path                string
@@ -104,7 +105,7 @@ func NewFileList(app *nuview.Application) *FileList {
 	topFlex.SetDirection(nuview.FlexColumn)
 	topFlex.SetBorder(false)
 
-	table := nuview.NewTable()
+	table := table2.NewTable()
 	table.SetSelectable(true, false)
 	table.SetBorder(false)
 	table.SetFixed(1, 0)
@@ -189,7 +190,7 @@ func NewFileList(app *nuview.Application) *FileList {
 
 func (fileList *FileList) loadColumnHeaders() {
 	for i, desc := range fileList.columnDescriptors {
-		cell := &nuview.TableCell{
+		cell := &table2.TableCell{
 			Text:          desc.name,
 			NotSelectable: true,
 			Clicked: func() bool {
@@ -309,7 +310,7 @@ func (fileList *FileList) loadEntries(entries []os.DirEntry) {
 
 	for i, entry := range entries {
 		for j, desc := range fileList.columnDescriptors {
-			cell := &nuview.TableCell{
+			cell := &table2.TableCell{
 				Text:  desc.formatFunc(entry),
 				Style: tcell.StyleDefault.Foreground(fileList.textColor).Background(fileList.backgroundColor),
 				Align: desc.align,

@@ -3,6 +3,7 @@ package dialog
 import (
 	"dinky/internal/tui/scrollbar"
 	"dinky/internal/tui/style"
+	"dinky/internal/tui/table2"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/sedwards2009/nuview"
@@ -15,7 +16,7 @@ type ListDialog struct {
 	messageView          *nuview.TextView
 	verticalContentsFlex *nuview.Flex
 	buttonsFlex          *nuview.Flex
-	tableField           *nuview.Table
+	tableField           *table2.Table
 	tableFlex            *nuview.Flex
 	VerticalScrollbar    *scrollbar.Scrollbar
 	innerFlex            *nuview.Flex
@@ -58,7 +59,7 @@ func NewListDialog(app *nuview.Application) *ListDialog {
 	verticalContentsFlex.AddItem(messageView, 1, 0, false)
 	verticalContentsFlex.AddItem(nil, 1, 0, false)
 
-	tableField := nuview.NewTable()
+	tableField := table2.NewTable()
 	style.StyleTable(tableField)
 
 	tableFlex := nuview.NewFlex()
@@ -136,7 +137,7 @@ func (d *ListDialog) Open(options ListDialogOptions) {
 	// Fill in the table with items
 	d.tableField.Clear()
 	for rowIndex, item := range options.Items {
-		cell := &nuview.TableCell{
+		cell := &table2.TableCell{
 			Text: item.Text,
 		}
 		style.StyleTableCell(cell)
