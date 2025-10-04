@@ -2,6 +2,7 @@ package application
 
 import (
 	"dinky/internal/tui/dialog"
+	"dinky/internal/tui/style"
 	"strconv"
 
 	"github.com/gdamore/tcell/v2"
@@ -18,7 +19,6 @@ func ShowGoToLineDialog(title string, message string, defaultValue string, onCan
 
 	if inputDialog == nil {
 		inputDialog = dialog.NewInputDialog(app)
-		// inputDialog.SetName("GoToLineDialog")
 	}
 
 	width := 50
@@ -65,6 +65,7 @@ func ShowGoToLineDialog(title string, message string, defaultValue string, onCan
 	}
 
 	inputDialog.Open(options)
+	style.StyleInputDialog(inputDialog)
 	return inputDialog
 }
 

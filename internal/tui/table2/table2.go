@@ -75,7 +75,7 @@ type TableCell struct {
 	sync.RWMutex
 }
 
-const StandardDoubleClick = 500
+const StandardDoubleClick = 500 * time.Millisecond
 
 // NewTableCell returns a new table cell with sensible defaults. That is, left
 // aligned text with the primary text color (see Styles) and a transparent

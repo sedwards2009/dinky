@@ -11,9 +11,9 @@ type InputDialog struct {
 
 	verticalContentsFlex *nuview.Flex
 	buttonsFlex          *nuview.Flex
-	inputField           *nuview.InputField
+	InputField           *nuview.InputField
 	innerFlex            *nuview.Flex
-	buttons              []*nuview.Button
+	Buttons              []*nuview.Button
 	options              InputDialogOptions
 }
 
@@ -31,15 +31,19 @@ type InputDialogOptions struct {
 
 func NewInputDialog(app *nuview.Application) *InputDialog {
 	topLayout := nuview.NewFlex()
+
 	topLayout.AddItem(nil, 0, 1, false)
 
 	innerFlex := nuview.NewFlex()
 	innerFlex.AddItem(nil, 0, 1, false)
 
 	verticalContentsFlex := nuview.NewFlex()
+
+	verticalContentsFlex.Box = nuview.NewBox() // Nasty hack to clear the `dontClear` flag inside Box.
+	verticalContentsFlex.Box.Primitive = topLayout
+
 	verticalContentsFlex.SetDirection(nuview.FlexRow)
 	verticalContentsFlex.SetBorderPadding(1, 1, 1, 1)
-	// verticalContentsFlex.SetBackgroundTransparent(false)
 	verticalContentsFlex.SetBorder(true)
 	verticalContentsFlex.SetTitleAlign(nuview.AlignLeft)
 
@@ -66,7 +70,7 @@ func NewInputDialog(app *nuview.Application) *InputDialog {
 		verticalContentsFlex: verticalContentsFlex,
 		innerFlex:            innerFlex,
 		buttonsFlex:          buttonsFlex,
-		inputField:           inputField,
+		InputField:           inputField,
 	}
 	return result
 }
@@ -74,19 +78,19 @@ func NewInputDialog(app *nuview.Application) *InputDialog {
 func (d *InputDialog) Open(options InputDialogOptions) {
 	d.options = options
 	d.verticalContentsFlex.SetTitle(options.Title)
-	d.inputField.SetLabel(options.Message)
-	d.inputField.SetText(options.DefaultValue)
+	d.InputField.SetLabel(options.Message)
+	d.InputField.SetText(options.DefaultValue)
 
 	onButtonClick := func(button string, index int) {
-		d.options.OnAccept(d.inputField.GetText(), index)
+		d.options.OnAccept(d.InputField.GetText(), index)
 	}
 
-	d.buttons = createButtonsRow(d.buttonsFlex, options.Buttons, onButtonClick)
+	d.Buttons = createButtonsRow(d.buttonsFlex, options.Buttons, onButtonClick)
 	d.ResizeItem(d.innerFlex, options.Height, 0)
 	d.innerFlex.ResizeItem(d.verticalContentsFlex, options.Width, 0)
 
 	d.app.SetInputCapture(d.inputFilter)
-	d.app.SetFocus(d.inputField)
+	d.app.SetFocus(d.InputField)
 }
 
 func (d *InputDialog) Close() {
@@ -104,38 +108,38 @@ func (d *InputDialog) inputFilter(event *tcell.EventKey) *tcell.EventKey {
 		return nil
 
 	case tcell.KeyLeft:
-		for i := 1; i < len(d.buttons); i++ {
-			if d.buttons[i].HasFocus() {
-				d.app.SetFocus(d.buttons[i-1])
+		for i := 1; i < len(d.Buttons); i++ {
+			if d.Buttons[i].HasFocus() {
+				d.app.SetFocus(d.Buttons[i-1])
 				return nil
 			}
 		}
 
 	case tcell.KeyRight:
-		for i := 0; i < len(d.buttons)-1; i++ {
-			if d.buttons[i].HasFocus() {
-				d.app.SetFocus(d.buttons[i+1])
+		for i := 0; i < len(d.Buttons)-1; i++ {
+			if d.Buttons[i].HasFocus() {
+				d.app.SetFocus(d.Buttons[i+1])
 				return nil
 			}
 		}
 
 	case tcell.KeyTab:
 		if event.Modifiers() == tcell.ModNone {
-			d.handleTab(1)
+			d.handleTabKey(1)
 		} else if event.Modifiers() == tcell.ModShift {
-			d.handleTab(-1)
+			d.handleTabKey(-1)
 		}
 
 	case tcell.KeyEnter:
-		if d.inputField.HasFocus() {
+		if d.InputField.HasFocus() {
 			if d.options.OnAccept != nil {
-				d.options.OnAccept(d.inputField.GetText(), -1)
+				d.options.OnAccept(d.InputField.GetText(), -1)
 			}
 		}
 		return nil
 	}
 
-	if d.inputField.HasFocus() && d.options.FieldKeyFilter != nil {
+	if d.InputField.HasFocus() && d.options.FieldKeyFilter != nil {
 		if !d.options.FieldKeyFilter(event) {
 			return nil
 		}
@@ -153,15 +157,15 @@ func (d *InputDialog) MouseHandler() func(action nuview.MouseAction, event *tcel
 
 // Focus is called when this primitive receives focus.
 func (d *InputDialog) Focus(delegate func(p nuview.Primitive)) {
-	delegate(d.inputField)
+	delegate(d.InputField)
 }
 
-func (d *InputDialog) handleTab(direction int) {
+func (d *InputDialog) handleTabKey(direction int) {
 	widgets := []nuview.Primitive{}
-	for _, btn := range d.buttons {
+	for _, btn := range d.Buttons {
 		widgets = append(widgets, btn)
 	}
-	widgets = append(widgets, d.inputField)
+	widgets = append(widgets, d.InputField)
 
 	for i := 0; i < len(widgets); i++ {
 		if widgets[i].HasFocus() {

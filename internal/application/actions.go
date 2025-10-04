@@ -3,6 +3,7 @@ package application
 import (
 	"dinky/internal/tui/dialog"
 	"dinky/internal/tui/filedialog"
+	"dinky/internal/tui/style"
 	"os"
 	"path/filepath"
 	"strings"
@@ -80,6 +81,7 @@ func showFileDialog(title string, mode filedialog.FileDialogMode, defaultPath st
 
 	if fileDialog == nil {
 		fileDialog = filedialog.NewFileDialog(app)
+		style.StyleFileDialog(fileDialog)
 	}
 	fileDialog.SetTitle(title)
 	if defaultPath == "" {
@@ -110,9 +112,11 @@ const listDialogName = "listDialog"
 func ShowListDialog(options dialog.ListDialogOptions) nuview.Primitive {
 	if listDialog == nil {
 		listDialog = dialog.NewListDialog(app)
+		style.StyleListDialog(listDialog)
 	}
 	modalPages.AddPage(listDialogName, listDialog, true, true)
 	listDialog.Open(options)
+	style.StyleListDialog(listDialog)
 	return listDialog
 }
 
@@ -403,21 +407,17 @@ func handleQuit() nuview.Primitive {
 				selectTab(fileBuffer.uuid)
 				return ShowConfirmDialog("File has unsaved changes. Close anyway?", func() {
 					closeFile(fileBuffer.uuid)
-					app.QueueUpdateDraw(func() {
-						nextFocus := closeNextFileBuffer()
-						if nextFocus != nil {
-							app.SetFocus(nextFocus)
-						}
-					})
-				}, func() {})
-			} else {
-				closeFile(fileBuffer.uuid)
-				app.QueueUpdateDraw(func() {
 					nextFocus := closeNextFileBuffer()
 					if nextFocus != nil {
 						app.SetFocus(nextFocus)
 					}
-				})
+				}, func() {})
+			} else {
+				closeFile(fileBuffer.uuid)
+				nextFocus := closeNextFileBuffer()
+				if nextFocus != nil {
+					app.SetFocus(nextFocus)
+				}
 			}
 		} else {
 			app.Stop()

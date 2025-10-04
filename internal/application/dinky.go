@@ -70,7 +70,7 @@ func newFile(contents string, filename string) {
 	editor.SetRuntimeFiles(runtime.Files)
 	editor.SetColorscheme(colorscheme)
 	editor.SetKeybindings(femtoDefaultKeyBindings)
-	//editor.SetInputCapture(editorInputCapture)	// TODO
+	editor.SetInputCapture(editorInputCapture)
 	buffer.Settings["matchbrace"] = true
 	buffer.Settings["tabstospaces"] = false // Default to using tab character
 
@@ -78,6 +78,7 @@ func newFile(contents string, filename string) {
 	panelHFlex.SetDirection(nuview.FlexColumn)
 	panelHFlex.AddItem(editor, 0, 1, true)
 	vScrollbar := scrollbar.NewScrollbar()
+	style.StyleScrollbar(vScrollbar)
 	panelHFlex.AddItem(vScrollbar, 1, 0, false)
 
 	panelVFlex := nuview.NewFlex()
@@ -85,6 +86,7 @@ func newFile(contents string, filename string) {
 	panelVFlex.AddItem(panelHFlex, 0, 1, true)
 
 	bufferFindbar := findbar.NewFindbar(app, editor)
+	style.StyleFindbar(bufferFindbar)
 
 	fileBuffer := &FileBuffer{
 		panelVFlex:    panelVFlex,
@@ -336,8 +338,16 @@ func Main() {
 	initKeyBindings()
 
 	app = nuview.NewApplication()
+	nuview.DoubleClickInterval = 0 // Disable tview's double-click handling
 	app.EnableMouse(true)
-	// app.EnableCtrlCQuit(false)	// TODO
+
+	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		// Disable Ctrl-C quitting the app
+		if event.Key() == tcell.KeyCtrlC {
+			return tcell.NewEventKey(tcell.KeyCtrlC, event.Rune(), event.Modifiers())
+		}
+		return event
+	})
 
 	modalPages = nuview.NewPages()
 
@@ -405,7 +415,7 @@ func Main() {
 			ShowOkDialog("Error loading file", errorMessage, showLoadingError)
 		}
 	}
-	app.QueueUpdateDraw(showLoadingError)
+	showLoadingError()
 
 	if len(fileBuffers) == 0 {
 		newFile("", "")

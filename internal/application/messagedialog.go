@@ -2,6 +2,7 @@ package application
 
 import (
 	"dinky/internal/tui/dialog"
+	"dinky/internal/tui/style"
 	"strings"
 
 	nuview "github.com/rivo/tview"
@@ -69,6 +70,8 @@ func ShowMessageDialog(title string, message string, buttons []string, OnClose f
 	messageDialog.OnClose = OnClose
 	messageDialog.OnButtonClick = OnButtonClick
 	messageDialog.Open(title, message, buttons, width, height)
+	style.StyleMessageDialog(messageDialog)
+
 	return messageDialog
 }
 

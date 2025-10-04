@@ -10,7 +10,10 @@ type Findbar struct {
 	*nuview.Flex
 	app               *nuview.Application
 	editor            *femto.View
-	searchStringField *nuview.InputField
+	SearchStringField *nuview.InputField
+	SearchUpButton    *nuview.Button
+	SearchDownButton  *nuview.Button
+	CloseButton       *nuview.Button
 	OnClose           func()
 }
 
@@ -22,7 +25,6 @@ func NewFindbar(app *nuview.Application, editor *femto.View) *Findbar {
 	}
 	f.SetDirection(nuview.FlexRow)
 	f.SetBorderPadding(0, 0, 0, 0)
-	// f.SetBackgroundTransparent(false)
 	f.SetBorder(false)
 
 	hFlex := nuview.NewFlex()
@@ -52,17 +54,20 @@ func NewFindbar(app *nuview.Application, editor *femto.View) *Findbar {
 
 	searchUpButton := nuview.NewButton("↑") // U+2191 UPWARDS ARROW
 	searchUpButton.SetSelectedFunc(f.SearchUp)
+	f.SearchUpButton = searchUpButton
 	hFlex.AddItem(searchUpButton, 3, 0, false)
 
 	hFlex.AddItem(nil, 1, 0, false)
 
 	searchDownButton := nuview.NewButton("↓") // U+2193 DOWNWARDS ARROW
+	f.SearchDownButton = searchDownButton
 	searchDownButton.SetSelectedFunc(f.SearchDown)
 	hFlex.AddItem(searchDownButton, 3, 0, false)
 
 	hFlex.AddItem(nil, 1, 0, false)
 
 	closeButton := nuview.NewButton("✕")
+	f.CloseButton = closeButton
 	closeButton.SetSelectedFunc(func() {
 		if f.OnClose != nil {
 			f.OnClose()
@@ -72,28 +77,28 @@ func NewFindbar(app *nuview.Application, editor *femto.View) *Findbar {
 
 	f.AddItem(hFlex, 1, 0, true)
 
-	f.searchStringField = searchStringField
+	f.SearchStringField = searchStringField
 	return f
 }
 
 func (f *Findbar) Focus(delegate func(p nuview.Primitive)) {
-	delegate(f.searchStringField)
+	delegate(f.SearchStringField)
 }
 
 func (f *Findbar) SetSearchText(text string) {
-	f.searchStringField.SetText(text)
+	f.SearchStringField.SetText(text)
 }
 
 func (f *Findbar) SearchUp() {
-	if f.searchStringField.GetText() != "" {
-		f.editor.Search(f.searchStringField.GetText(), false, false)
+	if f.SearchStringField.GetText() != "" {
+		f.editor.Search(f.SearchStringField.GetText(), false, false)
 		f.editor.Relocate()
 	}
 }
 
 func (f *Findbar) SearchDown() {
-	if f.searchStringField.GetText() != "" {
-		f.editor.Search(f.searchStringField.GetText(), false, true)
+	if f.SearchStringField.GetText() != "" {
+		f.editor.Search(f.SearchStringField.GetText(), false, true)
 		f.editor.Relocate()
 	}
 }

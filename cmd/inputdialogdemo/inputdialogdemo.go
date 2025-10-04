@@ -2,6 +2,7 @@ package main
 
 import (
 	"dinky/internal/tui/dialog"
+	"dinky/internal/tui/style"
 	"log"
 	"os"
 
@@ -43,6 +44,7 @@ func main() {
 		},
 		FieldKeyFilter: numberInputFilter,
 	})
+	style.StyleInputDialog(messageDialog)
 
 	if err := app.Run(); err != nil {
 		log.Fatalf("Application error: %v", err)

@@ -13,7 +13,7 @@ type MessageDialog struct {
 	verticalContentsFlex *nuview.Flex
 	buttonsFlex          *nuview.Flex
 	innerFlex            *nuview.Flex
-	buttons              []*nuview.Button
+	Buttons              []*nuview.Button
 
 	OnClose       func()
 	OnButtonClick func(button string, index int)
@@ -21,6 +21,7 @@ type MessageDialog struct {
 
 func NewMessageDialog(app *nuview.Application) *MessageDialog {
 	topLayout := nuview.NewFlex()
+
 	topLayout.AddItem(nil, 0, 1, false)
 
 	innerFlex := nuview.NewFlex()
@@ -28,6 +29,10 @@ func NewMessageDialog(app *nuview.Application) *MessageDialog {
 
 	verticalContentsFlex := nuview.NewFlex()
 	verticalContentsFlex.SetDirection(nuview.FlexRow)
+
+	verticalContentsFlex.Box = nuview.NewBox() // Nasty hack to clear the `dontClear` flag inside Box.
+	verticalContentsFlex.Box.Primitive = verticalContentsFlex
+
 	verticalContentsFlex.SetBorderPadding(1, 1, 1, 1)
 	// verticalContentsFlex.SetBackgroundTransparent(false)
 	verticalContentsFlex.SetBorder(true)
@@ -69,7 +74,7 @@ func (d *MessageDialog) Open(title string, message string, buttons []string, wid
 	d.verticalContentsFlex.SetTitle(title)
 	d.messageView.SetText(message)
 
-	d.buttons = createButtonsRow(d.buttonsFlex, buttons, d.OnButtonClick)
+	d.Buttons = createButtonsRow(d.buttonsFlex, buttons, d.OnButtonClick)
 	d.ResizeItem(d.innerFlex, height, 0)
 	d.innerFlex.ResizeItem(d.verticalContentsFlex, width, 0)
 
@@ -97,17 +102,17 @@ func (d *MessageDialog) inputFilter(event *tcell.EventKey) *tcell.EventKey {
 		}
 		return nil
 	case tcell.KeyLeft:
-		for i := 1; i < len(d.buttons); i++ {
-			if d.buttons[i].HasFocus() {
-				d.app.SetFocus(d.buttons[i-1])
+		for i := 1; i < len(d.Buttons); i++ {
+			if d.Buttons[i].HasFocus() {
+				d.app.SetFocus(d.Buttons[i-1])
 				return nil
 			}
 		}
 	case tcell.KeyRight:
 	case tcell.KeyTab:
-		for i := 0; i < len(d.buttons)-1; i++ {
-			if d.buttons[i].HasFocus() {
-				d.app.SetFocus(d.buttons[i+1])
+		for i := 0; i < len(d.Buttons)-1; i++ {
+			if d.Buttons[i].HasFocus() {
+				d.app.SetFocus(d.Buttons[i+1])
 				return nil
 			}
 		}
@@ -117,14 +122,14 @@ func (d *MessageDialog) inputFilter(event *tcell.EventKey) *tcell.EventKey {
 
 // Focus is called when this primitive receives focus.
 func (d *MessageDialog) Focus(delegate func(p nuview.Primitive)) {
-	if len(d.buttons) == 0 {
+	if len(d.Buttons) == 0 {
 		return
 	}
-	delegate(d.buttons[0])
+	delegate(d.Buttons[0])
 }
 
 func (d *MessageDialog) FocusButton(index int) {
-	d.app.SetFocus(d.buttons[index])
+	d.app.SetFocus(d.Buttons[index])
 }
 
 func (d *MessageDialog) MouseHandler() func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {

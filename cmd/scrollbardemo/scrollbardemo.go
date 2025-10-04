@@ -2,6 +2,7 @@ package main
 
 import (
 	"dinky/internal/tui/scrollbar"
+	"dinky/internal/tui/style"
 	"log"
 	"os"
 
@@ -16,6 +17,7 @@ func main() {
 	app.EnableMouse(true)
 	log.Println("Starting Scrollbar Demo...")
 	verticalScrollbarWidget := scrollbar.NewScrollbar()
+	style.StyleScrollbar(verticalScrollbarWidget)
 
 	layout := nuview.NewFlex()
 	layout.AddItem(nil, 0, 1, false)
@@ -29,6 +31,7 @@ func main() {
 	layout.AddItem(innerLayout, 0, 10, true)
 
 	horizontalScrollbarWidget := scrollbar.NewScrollbar()
+	style.StyleScrollbar(horizontalScrollbarWidget)
 	horizontalScrollbarWidget.SetHorizontal(true)
 
 	layout.AddItem(horizontalScrollbarWidget, 1, 0, false)

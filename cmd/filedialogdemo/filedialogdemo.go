@@ -2,6 +2,7 @@ package main
 
 import (
 	"dinky/internal/tui/filedialog"
+	"dinky/internal/tui/style"
 	"log"
 	"os"
 
@@ -21,6 +22,7 @@ func main() {
 	modalPages.AddPage("workspace", workspace, true, true)
 
 	fileDialog := filedialog.NewFileDialog(app)
+	style.StyleFileDialog(fileDialog)
 	fileDialog.SetPath("/home/sbe")
 	fileDialog.SetCompletedFunc(func(accepted bool, path string) {
 		if accepted {

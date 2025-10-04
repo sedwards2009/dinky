@@ -8,8 +8,8 @@ import (
 type Scrollbar struct {
 	*nuview.Flex
 	Track       *ScrollbarTrack
-	upButton    *nuview.Button
-	downButton  *nuview.Button
+	UpButton    *nuview.Button
+	DownButton  *nuview.Button
 	changedFunc func(position int)
 
 	isHorizontal bool                // Indicates if the scrollbar is horizontal instead of vertical
@@ -32,8 +32,8 @@ func NewScrollbar() *Scrollbar {
 	scrollbar := &Scrollbar{
 		Flex:       flex,
 		Track:      scrollbarTrack,
-		upButton:   upButton,
-		downButton: downButton,
+		UpButton:   upButton,
+		DownButton: downButton,
 	}
 
 	upButton.SetSelectedFunc(func() {
@@ -61,12 +61,12 @@ func (scrollbar *Scrollbar) SetHorizontal(isHorizontal bool) {
 
 	if isHorizontal {
 		scrollbar.Flex.SetDirection(nuview.FlexColumn)
-		scrollbar.upButton.SetLabel("\u25c4")
-		scrollbar.downButton.SetLabel("\u25ba")
+		scrollbar.UpButton.SetLabel("\u25c4")
+		scrollbar.DownButton.SetLabel("\u25ba")
 	} else {
 		scrollbar.Flex.SetDirection(nuview.FlexRow)
-		scrollbar.upButton.SetLabel("\u25b2")
-		scrollbar.downButton.SetLabel("\u25bc")
+		scrollbar.UpButton.SetLabel("\u25b2")
+		scrollbar.DownButton.SetLabel("\u25bc")
 	}
 }
 
