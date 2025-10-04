@@ -161,18 +161,19 @@ func (d *ListDialog) Open(options ListDialogOptions) {
 	d.ResizeItem(d.innerFlex, options.Height, 0)
 	d.innerFlex.ResizeItem(d.verticalContentsFlex, options.Width, 0)
 
-	d.app.SetInputCapture(d.inputFilter)
+	for _, btn := range d.Buttons {
+		btn.SetInputCapture(d.inputFilter)
+	}
+	d.TableField.SetInputCapture(d.inputFilter)
+
 	d.app.SetFocus(d.TableField)
 }
 
 func (d *ListDialog) Close() {
-	d.app.SetInputCapture(nil)
 }
 
 func (d *ListDialog) inputFilter(event *tcell.EventKey) *tcell.EventKey {
-	key := event.Key()
-
-	switch key {
+	switch event.Key() {
 	case tcell.KeyEscape:
 		if d.options.OnCancel != nil {
 			d.options.OnCancel()
@@ -236,14 +237,7 @@ func (d *ListDialog) handleTabKey(direction int) {
 
 	for i := 0; i < len(widgets); i++ {
 		if widgets[i].HasFocus() {
-			x := i + direction
-			if x < 0 {
-				x = len(widgets) - 1
-			} else if x >= len(widgets) {
-				x = 0
-			} else {
-			}
-			d.app.SetFocus(widgets[x])
+			d.app.SetFocus(widgets[(i+direction)%len(widgets)])
 			return
 		}
 	}

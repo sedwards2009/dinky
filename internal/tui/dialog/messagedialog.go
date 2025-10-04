@@ -75,27 +75,18 @@ func (d *MessageDialog) Open(title string, message string, buttons []string, wid
 	d.messageView.SetText(message)
 
 	d.Buttons = createButtonsRow(d.buttonsFlex, buttons, d.OnButtonClick)
+	for _, btn := range d.Buttons {
+		btn.SetInputCapture(d.inputFilter)
+	}
 	d.ResizeItem(d.innerFlex, height, 0)
 	d.innerFlex.ResizeItem(d.verticalContentsFlex, width, 0)
-
-	d.app.SetInputCapture(d.inputFilter)
 }
 
 func (d *MessageDialog) Close() {
-	d.app.SetInputCapture(nil)
 }
 
 func (d *MessageDialog) inputFilter(event *tcell.EventKey) *tcell.EventKey {
-	key := event.Key()
-	if key == tcell.KeyTab {
-		if event.Modifiers() == tcell.ModNone {
-			key = tcell.KeyRight
-		} else if event.Modifiers() == tcell.ModShift {
-			key = tcell.KeyLeft
-		}
-	}
-
-	switch key {
+	switch event.Key() {
 	case tcell.KeyEscape:
 		if d.OnClose != nil {
 			d.OnClose()
@@ -109,13 +100,20 @@ func (d *MessageDialog) inputFilter(event *tcell.EventKey) *tcell.EventKey {
 			}
 		}
 	case tcell.KeyRight:
-	case tcell.KeyTab:
 		for i := 0; i < len(d.Buttons)-1; i++ {
 			if d.Buttons[i].HasFocus() {
 				d.app.SetFocus(d.Buttons[i+1])
 				return nil
 			}
 		}
+	case tcell.KeyTab:
+		for i := 0; i < len(d.Buttons); i++ {
+			if d.Buttons[i].HasFocus() {
+				d.app.SetFocus(d.Buttons[(i+1)%len(d.Buttons)])
+				return nil
+			}
+		}
+	default:
 	}
 	return event
 }

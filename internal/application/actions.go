@@ -266,7 +266,7 @@ func handleSetTabSize() tview.Primitive {
 	buttons := []string{"2", "4", "8", "16", "Cancel"}
 	return ShowMessageDialog("Tab Size", "Select tab size:", buttons,
 		func() {
-			// On close (do nothing)
+			CloseMessageDialog()
 		},
 		func(button string, index int) {
 			CloseMessageDialog()
@@ -293,7 +293,7 @@ func handleSetTabCharacter() tview.Primitive {
 	buttons := []string{"Tab", "Space", "Cancel"}
 	return ShowMessageDialog("Tab Character", "Select tab character:", buttons,
 		func() {
-			// On close (do nothing)
+			CloseMessageDialog()
 		},
 		func(button string, index int) {
 			CloseMessageDialog()
@@ -316,7 +316,7 @@ func handleSetLineEndings() tview.Primitive {
 	buttons := []string{"LF (Unix)", "CRLF (DOS)", "Cancel"}
 	return ShowMessageDialog("Line Endings", "Select line ending style:", buttons,
 		func() {
-			// On close (do nothing)
+			CloseMessageDialog()
 		},
 		func(button string, index int) {
 			CloseMessageDialog()

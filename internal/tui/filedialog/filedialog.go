@@ -46,7 +46,7 @@ func NewFileDialog(app *tview.Application) *FileDialog {
 	vertContentsFlex.SetBorder(true)
 	vertContentsFlex.SetDirection(tview.FlexRow)
 
-	vertContentsFlex.AddItem(nil, 1, 0, false)
+	vertContentsFlex.SetBorderPadding(1, 1, 1, 1)
 
 	directoryFlex := tview.NewFlex()
 	directoryFlex.SetDirection(tview.FlexColumn)
@@ -88,7 +88,6 @@ func NewFileDialog(app *tview.Application) *FileDialog {
 	buttonFlex.AddItem(cancelButton, 10, 1, false)
 
 	vertContentsFlex.AddItem(buttonFlex, 1, 0, false)
-	vertContentsFlex.AddItem(nil, 1, 0, false)
 
 	dirRequestsChan := make(chan string, 10)
 
