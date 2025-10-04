@@ -2,14 +2,14 @@ package scrollbar
 
 import (
 	"github.com/gdamore/tcell/v2"
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 )
 
 type Scrollbar struct {
-	*nuview.Flex
+	*tview.Flex
 	Track       *ScrollbarTrack
-	UpButton    *nuview.Button
-	DownButton  *nuview.Button
+	UpButton    *tview.Button
+	DownButton  *tview.Button
 	changedFunc func(position int)
 
 	isHorizontal bool                // Indicates if the scrollbar is horizontal instead of vertical
@@ -18,13 +18,13 @@ type Scrollbar struct {
 
 func NewScrollbar() *Scrollbar {
 	scrollbarTrack := NewScrollbarTrack()
-	upButton := nuview.NewButton("▲")
+	upButton := tview.NewButton("▲")
 	upButton.SetRect(0, 0, 1, 1)
-	downButton := nuview.NewButton("▼")
+	downButton := tview.NewButton("▼")
 	downButton.SetRect(0, 0, 1, 1)
 
-	flex := nuview.NewFlex()
-	flex.SetDirection(nuview.FlexRow)
+	flex := tview.NewFlex()
+	flex.SetDirection(tview.FlexRow)
 	flex.AddItem(scrollbarTrack, 0, 1, false)
 	flex.AddItem(upButton, 1, 0, false)
 	flex.AddItem(downButton, 1, 0, false)
@@ -60,11 +60,11 @@ func (scrollbar *Scrollbar) SetHorizontal(isHorizontal bool) {
 	scrollbar.Track.SetHorizontal(isHorizontal)
 
 	if isHorizontal {
-		scrollbar.Flex.SetDirection(nuview.FlexColumn)
+		scrollbar.Flex.SetDirection(tview.FlexColumn)
 		scrollbar.UpButton.SetLabel("\u25c4")
 		scrollbar.DownButton.SetLabel("\u25ba")
 	} else {
-		scrollbar.Flex.SetDirection(nuview.FlexRow)
+		scrollbar.Flex.SetDirection(tview.FlexRow)
 		scrollbar.UpButton.SetLabel("\u25b2")
 		scrollbar.DownButton.SetLabel("\u25bc")
 	}

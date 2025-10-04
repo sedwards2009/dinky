@@ -5,21 +5,21 @@ import (
 	"log"
 	"os"
 
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 )
 
 func main() {
 	logFile := setupLogging()
 	defer logFile.Close()
 
-	app := nuview.NewApplication()
+	app := tview.NewApplication()
 	app.EnableMouse(true)
 	log.Println("Starting ListDialog Demo...")
 
 	listDialog := dialog.NewListDialog(app)
 	// style.StyleListDialog(listDialog)
 
-	topLayout := nuview.NewFlex()
+	topLayout := tview.NewFlex()
 	topLayout.AddItem(nil, 0, 1, false)
 	topLayout.AddItem(listDialog, 80, 0, false)
 	topLayout.AddItem(nil, 0, 1, false)

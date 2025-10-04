@@ -5,13 +5,13 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/mattn/go-runewidth"
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 )
 
 const tabNamePadding = 1
 
 type TabBar struct {
-	*nuview.Box
+	*tview.Box
 	BackgroundStyle  tcell.Style
 	ActiveTabStyle   tcell.Style
 	InactiveTabStyle tcell.Style
@@ -33,7 +33,7 @@ func NewTabBar() *TabBar {
 	tabBg := tcell.NewHexColor(0x000000)
 	inactiveTabBg := tcell.NewHexColor(0x404040)
 	return &TabBar{
-		Box:              nuview.NewBox(),
+		Box:              tview.NewBox(),
 		BackgroundStyle:  tcell.StyleDefault.Foreground(fg).Background(bg).Bold(true),
 		ActiveTabStyle:   tcell.StyleDefault.Foreground(fg).Background(tabBg).Bold(true),
 		InactiveTabStyle: tcell.StyleDefault.Foreground(fg).Background(inactiveTabBg).Bold(false),
@@ -162,13 +162,13 @@ func (tabBar *TabBar) Draw(screen tcell.Screen) {
 	}
 }
 
-func (tabBar *TabBar) MouseHandler() func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {
-	return tabBar.WrapMouseHandler(func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {
+func (tabBar *TabBar) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
+	return tabBar.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
 		rx, ry, _, _ := tabBar.GetRect()
 		x, y := event.Position()
 
 		if y == ry {
-			if action == nuview.MouseLeftDown {
+			if action == tview.MouseLeftDown {
 				index, _, closeClick := tabBar.tabIndexAtX(x - rx)
 				if index != -1 {
 					tabBar.active = index

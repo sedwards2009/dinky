@@ -2,11 +2,11 @@ package scrollbar
 
 import (
 	"github.com/gdamore/tcell/v2"
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 )
 
 type ScrollbarTrack struct {
-	*nuview.Box
+	*tview.Box
 
 	// position of the scrollbar thumb.
 	position int
@@ -29,7 +29,7 @@ type ScrollbarTrack struct {
 
 func NewScrollbarTrack() *ScrollbarTrack {
 	return &ScrollbarTrack{
-		Box:        nuview.NewBox(),
+		Box:        tview.NewBox(),
 		position:   0,
 		thumbSize:  10,
 		max:        100,
@@ -129,8 +129,8 @@ func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
 	}
 }
 
-func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {
-	return scrollbarTrack.WrapMouseHandler(func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {
+func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
+	return scrollbarTrack.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
 		rx, ry, width, height := scrollbarTrack.GetInnerRect()
 		absEventX, absEventY := event.Position()
 		eventX := absEventX - rx
@@ -153,7 +153,7 @@ func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action nuview.MouseAct
 			return false, nil
 		}
 
-		if action == nuview.MouseLeftDown || (action == nuview.MouseMove && event.Buttons() == tcell.Button1) {
+		if action == tview.MouseLeftDown || (action == tview.MouseMove && event.Buttons() == tcell.Button1) {
 			// Calculate the new position based on the click
 			// Assuming the scrollbar is vertical, we calculate the position based on the y coordinate
 			newPosition := eventMajorAxis*scrollbarTrack.max/majorLength - scrollbarTrack.thumbSize/2
@@ -170,7 +170,7 @@ func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action nuview.MouseAct
 		}
 
 		// Handle scroll events
-		if action == nuview.MouseScrollUp {
+		if action == tview.MouseScrollUp {
 			pos := scrollbarTrack.Position() - max(scrollbarTrack.ThumbSize()/2, 1)
 			newPos := scrollbarTrack.SetPosition(pos)
 			if scrollbarTrack.changedFunc != nil {
@@ -178,7 +178,7 @@ func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action nuview.MouseAct
 			}
 			return true, nil // Consumed the event
 		}
-		if action == nuview.MouseScrollDown {
+		if action == tview.MouseScrollDown {
 			pos := scrollbarTrack.Position() + max(scrollbarTrack.ThumbSize()/2, 1)
 			newPos := scrollbarTrack.SetPosition(pos)
 			if scrollbarTrack.changedFunc != nil {

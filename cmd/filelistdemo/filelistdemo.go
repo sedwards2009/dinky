@@ -6,33 +6,33 @@ import (
 	"log"
 	"os"
 
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 )
 
 func main() {
 	logFile := setupLogging()
 	defer logFile.Close()
 
-	app := nuview.NewApplication()
+	app := tview.NewApplication()
 	app.EnableMouse(true)
 	log.Println("Starting Filelist Demo...")
 
 	realFileList := filelist.NewFileList(app)
 	style.StyleFileList(realFileList)
 
-	layout := nuview.NewFlex()
+	layout := tview.NewFlex()
 	layout.AddItem(nil, 0, 1, false)
 
-	innerFlex := nuview.NewFlex()
+	innerFlex := tview.NewFlex()
 	innerFlex.AddItem(nil, 0, 1, false)
 	innerFlex.AddItem(realFileList, 80, 0, true)
 	innerFlex.AddItem(nil, 0, 1, false)
-	innerFlex.SetDirection(nuview.FlexColumn)
+	innerFlex.SetDirection(tview.FlexColumn)
 
 	layout.AddItem(innerFlex, 20, 0, true)
 
 	layout.AddItem(nil, 0, 1, false)
-	layout.SetDirection(nuview.FlexRow)
+	layout.SetDirection(tview.FlexRow)
 
 	app.SetRoot(layout, true)
 

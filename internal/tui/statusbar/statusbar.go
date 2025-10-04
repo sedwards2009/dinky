@@ -6,7 +6,7 @@ import (
 	"time"
 
 	runewidth "github.com/mattn/go-runewidth"
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 
 	"github.com/gdamore/tcell/v2"
 )
@@ -17,8 +17,8 @@ const (
 )
 
 type StatusBar struct {
-	*nuview.Box
-	app             *nuview.Application
+	*tview.Box
+	app             *tview.Application
 	Style           tcell.Style
 	MessageStyle    tcell.Style
 	ErrorStyle      tcell.Style
@@ -34,13 +34,13 @@ type StatusBar struct {
 	UpdateHook      func(statusBar *StatusBar) // Hook for updating the status bar
 }
 
-func NewStatusBar(app *nuview.Application) *StatusBar {
+func NewStatusBar(app *tview.Application) *StatusBar {
 	fg := tcell.NewHexColor(0xf3f3f3)
 	bg := tcell.NewHexColor(0x007ace)
 	messageBg := tcell.NewHexColor(0x0b835c)
 	errorBg := tcell.NewHexColor(0xa4090c)
 	return &StatusBar{
-		Box:          nuview.NewBox(),
+		Box:          tview.NewBox(),
 		app:          app,
 		Style:        tcell.StyleDefault.Foreground(fg).Background(bg),
 		MessageStyle: tcell.StyleDefault.Foreground(fg).Background(messageBg),

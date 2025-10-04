@@ -5,21 +5,21 @@ import (
 	"dinky/internal/tui/table2"
 
 	"github.com/gdamore/tcell/v2"
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 )
 
 type ListDialog struct {
-	*nuview.Flex
-	app *nuview.Application
+	*tview.Flex
+	app *tview.Application
 
-	messageView                 *nuview.TextView
-	verticalContentsFlex        *nuview.Flex
-	buttonsFlex                 *nuview.Flex
+	messageView                 *tview.TextView
+	verticalContentsFlex        *tview.Flex
+	buttonsFlex                 *tview.Flex
 	TableField                  *table2.Table
-	tableFlex                   *nuview.Flex
+	tableFlex                   *tview.Flex
 	VerticalScrollbar           *scrollbar.Scrollbar
-	innerFlex                   *nuview.Flex
-	Buttons                     []*nuview.Button
+	innerFlex                   *tview.Flex
+	Buttons                     []*tview.Button
 	options                     ListDialogOptions
 	itemTextColor               tcell.Color
 	itemBackgroundColor         tcell.Color
@@ -43,32 +43,32 @@ type ListItem struct {
 	Value string
 }
 
-func NewListDialog(app *nuview.Application) *ListDialog {
-	topLayout := nuview.NewFlex()
+func NewListDialog(app *tview.Application) *ListDialog {
+	topLayout := tview.NewFlex()
 	topLayout.AddItem(nil, 0, 1, false)
 
-	innerFlex := nuview.NewFlex()
+	innerFlex := tview.NewFlex()
 	innerFlex.AddItem(nil, 0, 1, false)
 
-	verticalContentsFlex := nuview.NewFlex()
+	verticalContentsFlex := tview.NewFlex()
 
-	verticalContentsFlex.Box = nuview.NewBox() // Nasty hack to clear the `dontClear` flag inside Box.
+	verticalContentsFlex.Box = tview.NewBox() // Nasty hack to clear the `dontClear` flag inside Box.
 	verticalContentsFlex.Box.Primitive = verticalContentsFlex
 
-	verticalContentsFlex.SetDirection(nuview.FlexRow)
+	verticalContentsFlex.SetDirection(tview.FlexRow)
 	verticalContentsFlex.SetBorderPadding(1, 1, 1, 1)
 	// verticalContentsFlex.SetBackgroundTransparent(false)
 	verticalContentsFlex.SetBorder(true)
-	verticalContentsFlex.SetTitleAlign(nuview.AlignLeft)
+	verticalContentsFlex.SetTitleAlign(tview.AlignLeft)
 
-	messageView := nuview.NewTextView()
+	messageView := tview.NewTextView()
 	verticalContentsFlex.AddItem(messageView, 1, 0, false)
 	verticalContentsFlex.AddItem(nil, 1, 0, false)
 
 	tableField := table2.NewTable()
 
-	tableFlex := nuview.NewFlex()
-	tableFlex.SetDirection(nuview.FlexColumn)
+	tableFlex := tview.NewFlex()
+	tableFlex.SetDirection(tview.FlexColumn)
 	tableFlex.SetBorder(false)
 	tableFlex.AddItem(tableField, 0, 1, false)
 
@@ -78,19 +78,19 @@ func NewListDialog(app *nuview.Application) *ListDialog {
 	verticalContentsFlex.AddItem(tableFlex, 0, 1, false)
 	verticalContentsFlex.AddItem(nil, 1, 0, false)
 
-	buttonsFlex := nuview.NewFlex()
-	buttonsFlex.SetDirection(nuview.FlexColumn)
+	buttonsFlex := tview.NewFlex()
+	buttonsFlex.SetDirection(tview.FlexColumn)
 	// buttonsFlex.SetBackgroundTransparent(false)
 	buttonsFlex.SetBorder(false)
 	verticalContentsFlex.AddItem(buttonsFlex, 1, 0, false)
 
 	innerFlex.AddItem(verticalContentsFlex, 80, 0, true)
 	innerFlex.AddItem(nil, 0, 1, false)
-	innerFlex.SetDirection(nuview.FlexColumn)
+	innerFlex.SetDirection(tview.FlexColumn)
 
 	topLayout.AddItem(innerFlex, 20, 0, true)
 	topLayout.AddItem(nil, 0, 1, false)
-	topLayout.SetDirection(nuview.FlexRow)
+	topLayout.SetDirection(tview.FlexRow)
 
 	d := &ListDialog{
 		Flex:                 topLayout,
@@ -215,20 +215,20 @@ func (d *ListDialog) inputFilter(event *tcell.EventKey) *tcell.EventKey {
 	return event
 }
 
-func (d *ListDialog) MouseHandler() func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {
-	return d.WrapMouseHandler(func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {
+func (d *ListDialog) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
+	return d.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
 		d.verticalContentsFlex.MouseHandler()(action, event, setFocus)
 		return true, nil
 	})
 }
 
 // Focus is called when this primitive receives focus.
-func (d *ListDialog) Focus(delegate func(p nuview.Primitive)) {
+func (d *ListDialog) Focus(delegate func(p tview.Primitive)) {
 	delegate(d.TableField)
 }
 
 func (d *ListDialog) handleTabKey(direction int) {
-	widgets := []nuview.Primitive{}
+	widgets := []tview.Primitive{}
 	for _, btn := range d.Buttons {
 		widgets = append(widgets, btn)
 	}

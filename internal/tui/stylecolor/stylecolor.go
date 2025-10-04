@@ -2,7 +2,7 @@ package stylecolor
 
 import (
 	"github.com/gdamore/tcell/v2"
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 )
 
 var White = tcell.NewHexColor(0xffffff).TrueColor() // White foreground
@@ -45,12 +45,12 @@ var ListSelectedTextColor tcell.Color
 var ListSelectedBackgroundColor tcell.Color
 
 func init() {
-	nuview.Styles.TitleColor = Black
-	nuview.Styles.BorderColor = Black
+	tview.Styles.TitleColor = Black
+	tview.Styles.BorderColor = Black
 
-	nuview.Styles.PrimitiveBackgroundColor = LightGray
-	nuview.Styles.PrimaryTextColor = Black
-	nuview.Styles.SecondaryTextColor = Black
+	tview.Styles.PrimitiveBackgroundColor = LightGray
+	tview.Styles.PrimaryTextColor = Black
+	tview.Styles.SecondaryTextColor = Black
 
 	ButtonLabelColor = Black
 	ButtonLabelFocusedColor = Black

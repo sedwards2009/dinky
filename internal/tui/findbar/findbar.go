@@ -2,37 +2,37 @@ package findbar
 
 import (
 	"github.com/gdamore/tcell/v2"
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 	"github.com/sedwards2009/femto"
 )
 
 type Findbar struct {
-	*nuview.Flex
-	app               *nuview.Application
+	*tview.Flex
+	app               *tview.Application
 	editor            *femto.View
-	SearchStringField *nuview.InputField
-	SearchUpButton    *nuview.Button
-	SearchDownButton  *nuview.Button
-	CloseButton       *nuview.Button
+	SearchStringField *tview.InputField
+	SearchUpButton    *tview.Button
+	SearchDownButton  *tview.Button
+	CloseButton       *tview.Button
 	OnClose           func()
 }
 
-func NewFindbar(app *nuview.Application, editor *femto.View) *Findbar {
+func NewFindbar(app *tview.Application, editor *femto.View) *Findbar {
 	f := &Findbar{
-		Flex:   nuview.NewFlex(),
+		Flex:   tview.NewFlex(),
 		app:    app,
 		editor: editor,
 	}
-	f.SetDirection(nuview.FlexRow)
+	f.SetDirection(tview.FlexRow)
 	f.SetBorderPadding(0, 0, 0, 0)
 	f.SetBorder(false)
 
-	hFlex := nuview.NewFlex()
-	hFlex.SetDirection(nuview.FlexColumn)
+	hFlex := tview.NewFlex()
+	hFlex.SetDirection(tview.FlexColumn)
 	// hFlex.SetBackgroundTransparent(false)
 	hFlex.SetBorder(false)
 
-	searchStringField := nuview.NewInputField()
+	searchStringField := tview.NewInputField()
 	searchStringField.SetLabel("Find: ")
 	searchStringField.SetLabelWidth(6)
 	searchStringField.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -52,21 +52,21 @@ func NewFindbar(app *nuview.Application, editor *femto.View) *Findbar {
 	hFlex.AddItem(searchStringField, 0, 1, true)
 	hFlex.AddItem(nil, 1, 0, false)
 
-	searchUpButton := nuview.NewButton("↑") // U+2191 UPWARDS ARROW
+	searchUpButton := tview.NewButton("↑") // U+2191 UPWARDS ARROW
 	searchUpButton.SetSelectedFunc(f.SearchUp)
 	f.SearchUpButton = searchUpButton
 	hFlex.AddItem(searchUpButton, 3, 0, false)
 
 	hFlex.AddItem(nil, 1, 0, false)
 
-	searchDownButton := nuview.NewButton("↓") // U+2193 DOWNWARDS ARROW
+	searchDownButton := tview.NewButton("↓") // U+2193 DOWNWARDS ARROW
 	f.SearchDownButton = searchDownButton
 	searchDownButton.SetSelectedFunc(f.SearchDown)
 	hFlex.AddItem(searchDownButton, 3, 0, false)
 
 	hFlex.AddItem(nil, 1, 0, false)
 
-	closeButton := nuview.NewButton("✕")
+	closeButton := tview.NewButton("✕")
 	f.CloseButton = closeButton
 	closeButton.SetSelectedFunc(func() {
 		if f.OnClose != nil {
@@ -81,7 +81,7 @@ func NewFindbar(app *nuview.Application, editor *femto.View) *Findbar {
 	return f
 }
 
-func (f *Findbar) Focus(delegate func(p nuview.Primitive)) {
+func (f *Findbar) Focus(delegate func(p tview.Primitive)) {
 	delegate(f.SearchStringField)
 }
 

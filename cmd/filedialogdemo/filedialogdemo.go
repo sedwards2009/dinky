@@ -6,19 +6,19 @@ import (
 	"log"
 	"os"
 
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 )
 
 func main() {
 	logFile := setupLogging()
 	defer logFile.Close()
 
-	app := nuview.NewApplication()
+	app := tview.NewApplication()
 	app.EnableMouse(true)
 
-	workspace := nuview.NewBox()
+	workspace := tview.NewBox()
 
-	modalPages := nuview.NewPages()
+	modalPages := tview.NewPages()
 	modalPages.AddPage("workspace", workspace, true, true)
 
 	fileDialog := filedialog.NewFileDialog(app)

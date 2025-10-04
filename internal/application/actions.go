@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/google/renameio/v2"
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 	"github.com/sedwards2009/femto"
 	"github.com/sedwards2009/femto/runtime"
 )
@@ -35,10 +35,10 @@ const (
 	ACTION_ABOUT                   = "About"
 )
 
-var dinkyActionMapping map[string]func() nuview.Primitive
+var dinkyActionMapping map[string]func() tview.Primitive
 
 func init() {
-	dinkyActionMapping = map[string]func() nuview.Primitive{
+	dinkyActionMapping = map[string]func() tview.Primitive{
 		ACTION_NEW:                     handleNewFile,
 		ACTION_CLOSE_FILE:              handleCloseFile,
 		ACTION_OPEN_FILE:               handleOpenFile,
@@ -60,14 +60,14 @@ func init() {
 	}
 }
 
-func handleDinkyAction(id string) nuview.Primitive {
+func handleDinkyAction(id string) tview.Primitive {
 	if f, ok := dinkyActionMapping[id]; ok {
 		return f()
 	}
 	return nil
 }
 
-func handleNewFile() nuview.Primitive {
+func handleNewFile() tview.Primitive {
 	newFile("", "")
 	return nil
 }
@@ -77,7 +77,7 @@ var fileDialog *filedialog.FileDialog
 const fileDialogName = "fileDialog"
 
 func showFileDialog(title string, mode filedialog.FileDialogMode, defaultPath string, completedFunc func(accepted bool,
-	filePath string)) nuview.Primitive {
+	filePath string)) tview.Primitive {
 
 	if fileDialog == nil {
 		fileDialog = filedialog.NewFileDialog(app)
@@ -109,7 +109,7 @@ var listDialog *dialog.ListDialog
 
 const listDialogName = "listDialog"
 
-func ShowListDialog(options dialog.ListDialogOptions) nuview.Primitive {
+func ShowListDialog(options dialog.ListDialogOptions) tview.Primitive {
 	if listDialog == nil {
 		listDialog = dialog.NewListDialog(app)
 		style.StyleListDialog(listDialog)
@@ -127,7 +127,7 @@ func hideListDialog() {
 	}
 }
 
-func handleOpenFile() nuview.Primitive {
+func handleOpenFile() tview.Primitive {
 	return showFileDialog("Open File", filedialog.OPEN_FILE_MODE, "", func(accepted bool, filePath string) {
 		hideFileDialog()
 		if !accepted {
@@ -150,7 +150,7 @@ func writeFile(filename string, buffer *femto.Buffer) (ok bool, message string) 
 	return true, "Wrote file " + filename
 }
 
-func handleSaveFile() nuview.Primitive {
+func handleSaveFile() tview.Primitive {
 	fileBuffer := getFileBufferByID(fileBufferID)
 	if fileBuffer.filename == "" {
 		return handleSaveFileAs()
@@ -171,7 +171,7 @@ func writeCurrentFileBuffer() {
 	}
 }
 
-func handleSaveFileAs() nuview.Primitive {
+func handleSaveFileAs() tview.Primitive {
 	fileBuffer := getFileBufferByID(fileBufferID)
 	return showFileDialog("Save File As", filedialog.SAVE_FILE_MODE, fileBuffer.filename, func(accepted bool, filePath string) {
 		hideFileDialog()
@@ -184,7 +184,7 @@ func handleSaveFileAs() nuview.Primitive {
 	})
 }
 
-func handleCloseFile() nuview.Primitive {
+func handleCloseFile() tview.Primitive {
 	fileBuffer := getFileBufferByID(fileBufferID)
 	if fileBuffer.buffer.IsModified {
 		return ShowConfirmDialog("File has unsaved changes. Close anyway?", func() {
@@ -220,13 +220,13 @@ func closeFile(fileBufferID string) {
 	}
 }
 
-func handleOpenMenu() nuview.Primitive {
+func handleOpenMenu() tview.Primitive {
 	menuBar.Open()
 	app.SetFocus(menuBar)
 	return nil
 }
 
-func handleSoftWrap() nuview.Primitive {
+func handleSoftWrap() tview.Primitive {
 	buffer := currentFileBuffer.buffer
 	on := buffer.Settings["softwrap"].(bool)
 	buffer.Settings["softwrap"] = !on
@@ -234,7 +234,7 @@ func handleSoftWrap() nuview.Primitive {
 	return nil
 }
 
-func handleMatchBracket() nuview.Primitive {
+func handleMatchBracket() tview.Primitive {
 	buffer := currentFileBuffer.buffer
 	on := buffer.Settings["matchbrace"].(bool)
 	buffer.Settings["matchbrace"] = !on
@@ -242,7 +242,7 @@ func handleMatchBracket() nuview.Primitive {
 	return nil
 }
 
-func handleFemtoAction(id string) nuview.Primitive {
+func handleFemtoAction(id string) tview.Primitive {
 	if f, ok := femto.BindingActionsMapping[id]; ok {
 		f(currentFileBuffer.editor)
 		if id == femto.ActionToggleRuler {
@@ -252,7 +252,7 @@ func handleFemtoAction(id string) nuview.Primitive {
 	return nil
 }
 
-func handleAbout() nuview.Primitive {
+func handleAbout() tview.Primitive {
 	return ShowOkDialog("About", "Dinky - A little text editor\n"+
 		"\n"+
 		"Version: "+getDinkyVersion()+"\n"+
@@ -262,7 +262,7 @@ func handleAbout() nuview.Primitive {
 		nil)
 }
 
-func handleSetTabSize() nuview.Primitive {
+func handleSetTabSize() tview.Primitive {
 	buttons := []string{"2", "4", "8", "16", "Cancel"}
 	return ShowMessageDialog("Tab Size", "Select tab size:", buttons,
 		func() {
@@ -288,7 +288,7 @@ func handleSetTabSize() nuview.Primitive {
 		})
 }
 
-func handleSetTabCharacter() nuview.Primitive {
+func handleSetTabCharacter() tview.Primitive {
 	buffer := currentFileBuffer.buffer
 	buttons := []string{"Tab", "Space", "Cancel"}
 	return ShowMessageDialog("Tab Character", "Select tab character:", buttons,
@@ -311,7 +311,7 @@ func handleSetTabCharacter() nuview.Primitive {
 		})
 }
 
-func handleSetLineEndings() nuview.Primitive {
+func handleSetLineEndings() tview.Primitive {
 	buffer := currentFileBuffer.buffer
 	buttons := []string{"LF (Unix)", "CRLF (DOS)", "Cancel"}
 	return ShowMessageDialog("Line Endings", "Select line ending style:", buttons,
@@ -334,7 +334,7 @@ func handleSetLineEndings() nuview.Primitive {
 		})
 }
 
-func handleSetSyntaxHighlighting() nuview.Primitive {
+func handleSetSyntaxHighlighting() tview.Primitive {
 	var buffer *femto.Buffer
 	if currentFileBuffer.buffer != nil {
 		buffer = currentFileBuffer.buffer
@@ -398,9 +398,9 @@ func handleSetSyntaxHighlighting() nuview.Primitive {
 	})
 }
 
-func handleQuit() nuview.Primitive {
-	var closeNextFileBuffer func() nuview.Primitive
-	closeNextFileBuffer = func() nuview.Primitive {
+func handleQuit() tview.Primitive {
+	var closeNextFileBuffer func() tview.Primitive
+	closeNextFileBuffer = func() tview.Primitive {
 		if len(fileBuffers) > 0 {
 			fileBuffer := fileBuffers[0]
 			if fileBuffer.buffer.IsModified {
@@ -427,20 +427,20 @@ func handleQuit() nuview.Primitive {
 	return closeNextFileBuffer()
 }
 
-func handleFind() nuview.Primitive {
+func handleFind() tview.Primitive {
 	currentFileBuffer.openFindbar()
 	return currentFileBuffer.findbar
 }
 
 // Find Next: open findbar if needed, then search forward
-func handleFindNext() nuview.Primitive {
+func handleFindNext() tview.Primitive {
 	currentFileBuffer.openFindbar()
 	currentFileBuffer.findbar.SearchDown()
 	return nil
 }
 
 // Find Previous: open findbar if needed, then search backward
-func handleFindPrevious() nuview.Primitive {
+func handleFindPrevious() tview.Primitive {
 	currentFileBuffer.openFindbar()
 	currentFileBuffer.findbar.SearchUp()
 	return nil

@@ -10,12 +10,12 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 )
 
 type FileList struct {
-	*nuview.Flex
-	app                 *nuview.Application
+	*tview.Flex
+	app                 *tview.Application
 	table               *table2.Table
 	VerticalScrollbar   *scrollbar.Scrollbar
 	HorizontalScrollbar *scrollbar.Scrollbar
@@ -48,11 +48,11 @@ type columnDescriptor struct {
 	sortFunc   func(a os.DirEntry, b os.DirEntry) int
 }
 
-func NewFileList(app *nuview.Application) *FileList {
+func NewFileList(app *tview.Application) *FileList {
 	columnDescriptors := []columnDescriptor{
 		{
 			name:  "Name",
-			align: nuview.AlignLeft,
+			align: tview.AlignLeft,
 			formatFunc: func(entry os.DirEntry) string {
 				return emojiForFileType(entry) + " " + entry.Name()
 			},
@@ -60,7 +60,7 @@ func NewFileList(app *nuview.Application) *FileList {
 		},
 		{
 			name:  "Size",
-			align: nuview.AlignRight,
+			align: tview.AlignRight,
 			formatFunc: func(entry os.DirEntry) string {
 				info, err := entry.Info()
 				if err != nil {
@@ -72,7 +72,7 @@ func NewFileList(app *nuview.Application) *FileList {
 		},
 		{
 			name:  "Modified",
-			align: nuview.AlignLeft,
+			align: tview.AlignLeft,
 			formatFunc: func(entry os.DirEntry) string {
 				info, err := entry.Info()
 				if err != nil {
@@ -84,26 +84,26 @@ func NewFileList(app *nuview.Application) *FileList {
 		},
 		{
 			name:       "Permissions",
-			align:      nuview.AlignLeft,
+			align:      tview.AlignLeft,
 			formatFunc: permissions,
 			sortFunc:   sortPermissionsFunc,
 		},
 		{
 			name:       "Owner",
-			align:      nuview.AlignLeft,
+			align:      tview.AlignLeft,
 			formatFunc: ownerName,
 			sortFunc:   sortOwnerFunc,
 		},
 		{
 			name:       "Group",
-			align:      nuview.AlignLeft,
+			align:      tview.AlignLeft,
 			formatFunc: groupName,
 			sortFunc:   sortGroupFunc,
 		},
 	}
 
-	topFlex := nuview.NewFlex()
-	topFlex.SetDirection(nuview.FlexColumn)
+	topFlex := tview.NewFlex()
+	topFlex.SetDirection(tview.FlexColumn)
 	topFlex.SetBorder(false)
 
 	table := table2.NewTable()
@@ -111,8 +111,8 @@ func NewFileList(app *nuview.Application) *FileList {
 	table.SetBorder(false)
 	table.SetFixed(1, 0)
 
-	middleFlex := nuview.NewFlex()
-	middleFlex.SetDirection(nuview.FlexRow)
+	middleFlex := tview.NewFlex()
+	middleFlex.SetDirection(tview.FlexRow)
 	middleFlex.SetBorder(false)
 	middleFlex.AddItem(table, 0, 1, true)
 	horizontalScrollbar := scrollbar.NewScrollbar()
@@ -138,9 +138,9 @@ func NewFileList(app *nuview.Application) *FileList {
 		sortColumn:          0,
 		sortDirection:       1,
 
-		textColor:               nuview.Styles.PrimaryTextColor,
-		backgroundColor:         nuview.Styles.PrimitiveBackgroundColor,
-		selectedBackgroundColor: nuview.Styles.ContrastBackgroundColor,
+		textColor:               tview.Styles.PrimaryTextColor,
+		backgroundColor:         tview.Styles.PrimitiveBackgroundColor,
+		selectedBackgroundColor: tview.Styles.ContrastBackgroundColor,
 		headerLabelColor:        stylecolor.ButtonLabelColor,
 		headerBackgroundColor:   stylecolor.ButtonBackgroundColor,
 	}

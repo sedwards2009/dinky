@@ -8,7 +8,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/gdamore/tcell/v2"
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 	"github.com/rivo/uniseg"
 )
 
@@ -113,7 +113,7 @@ func step(str string, state *stepState, opts stepOptions) (cluster, rest string,
 	if state == nil {
 		state = &stepState{
 			unisegState: -1,
-			style:       tcell.StyleDefault.Background(nuview.Styles.PrimitiveBackgroundColor).Foreground(nuview.Styles.PrimaryTextColor),
+			style:       tcell.StyleDefault.Background(tview.Styles.PrimitiveBackgroundColor).Foreground(tview.Styles.PrimaryTextColor),
 		}
 	}
 	if state.unisegState < 0 {

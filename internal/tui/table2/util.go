@@ -9,7 +9,7 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/mattn/go-runewidth"
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 	"github.com/rivo/uniseg"
 )
 
@@ -611,7 +611,7 @@ func PrintStyle(screen ScreenWriter, text []byte, x, y, maxWidth, align int, sty
 
 // PrintSimple prints white text to the screen at the given position.
 func PrintSimple(screen tcell.Screen, text []byte, x, y int) {
-	Print(screen, text, x, y, math.MaxInt32, AlignLeft, nuview.Styles.PrimaryTextColor)
+	Print(screen, text, x, y, math.MaxInt32, AlignLeft, tview.Styles.PrimaryTextColor)
 }
 
 // TaggedTextWidth returns the width of the given string needed to print it on

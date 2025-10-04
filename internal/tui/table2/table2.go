@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gdamore/tcell/v2"
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 )
 
 // TableCell represents one cell inside a Table. You can instantiate this type
@@ -83,8 +83,8 @@ const StandardDoubleClick = 500 * time.Millisecond
 func NewTableCell(text string) *TableCell {
 	cell := &TableCell{
 		Text:        text,
-		Align:       nuview.AlignLeft,
-		Style:       tcell.StyleDefault.Foreground(nuview.Styles.PrimaryTextColor).Background(nuview.Styles.PrimitiveBackgroundColor),
+		Align:       tview.AlignLeft,
+		Style:       tcell.StyleDefault.Foreground(tview.Styles.PrimaryTextColor).Background(tview.Styles.PrimitiveBackgroundColor),
 		Transparent: true,
 	}
 	cell.updateWidth()
@@ -94,7 +94,7 @@ func NewTableCell(text string) *TableCell {
 // updateWidth calculates and sets the effective width of the cell based on
 // the text content and maximum width constraint.
 func (c *TableCell) updateWidth() {
-	textWidth := nuview.TaggedStringWidth(c.Text)
+	textWidth := tview.TaggedStringWidth(c.Text)
 	if c.MaxWidth > 0 && textWidth > c.MaxWidth {
 		c.width = c.MaxWidth
 	} else {
@@ -455,7 +455,7 @@ func (t *tableDefaultContent) GetColumnCount() int {
 //
 // See https://github.com/rivo/tview/wiki/Table for an example.
 type Table struct {
-	*nuview.Box
+	*tview.Box
 
 	// Whether or not this table has borders around each cell.
 	borders bool
@@ -534,8 +534,8 @@ type Table struct {
 // NewTable returns a new table.
 func NewTable() *Table {
 	t := &Table{
-		Box:                 nuview.NewBox(),
-		bordersColor:        nuview.Styles.GraphicsColor,
+		Box:                 tview.NewBox(),
+		bordersColor:        tview.Styles.GraphicsColor,
 		separator:           ' ',
 		doubleClickDuration: StandardDoubleClick,
 		content: &tableDefaultContent{
@@ -1063,9 +1063,9 @@ func (t *Table) drawCellColumn(screenWriter TranslateScreenWriter, rows []int, c
 
 		start, end := printStyle(screenWriter, []byte(cell.Text), 0, rowY, columnWidth, cell.Align, style)
 		printed := end - start
-		if nuview.TaggedStringWidth(cell.Text)-printed > 0 && printed > 0 {
+		if tview.TaggedStringWidth(cell.Text)-printed > 0 && printed > 0 {
 			_, _, style, _ := screenWriter.GetContent(cell.width-1, rowY)
-			printStyle(screenWriter, []byte(string(nuview.SemigraphicsHorizontalEllipsis)), cell.width-1, rowY, 1, nuview.AlignLeft, style)
+			printStyle(screenWriter, []byte(string(tview.SemigraphicsHorizontalEllipsis)), cell.width-1, rowY, 1, tview.AlignLeft, style)
 		}
 	}
 }
@@ -1075,9 +1075,9 @@ func (t *Table) drawColumnBorders(screenWriter ScreenWriter, rows []int, columnI
 
 	borderStyle := tcell.StyleDefault.Background(t.GetBackgroundColor()).Foreground(t.bordersColor)
 
-	leftJointRune := nuview.Borders.Cross
+	leftJointRune := tview.Borders.Cross
 	if columnIndex == 0 {
-		leftJointRune = nuview.Borders.LeftT
+		leftJointRune = tview.Borders.LeftT
 	}
 
 	_, height := screenWriter.Size()
@@ -1087,27 +1087,27 @@ func (t *Table) drawColumnBorders(screenWriter ScreenWriter, rows []int, columnI
 		topLeftJointRune := leftJointRune
 		if row == 0 {
 			if columnIndex == 0 {
-				topLeftJointRune = nuview.Borders.TopLeft
+				topLeftJointRune = tview.Borders.TopLeft
 			} else {
-				topLeftJointRune = nuview.Borders.TopT
+				topLeftJointRune = tview.Borders.TopT
 			}
 		}
 
 		screenWriter.SetContent(0, rowY, topLeftJointRune, nil, borderStyle)
 		for i := range columnWidth {
-			screenWriter.SetContent(i+1, rowY, nuview.Borders.Horizontal, nil, borderStyle)
+			screenWriter.SetContent(i+1, rowY, tview.Borders.Horizontal, nil, borderStyle)
 		}
 		if rowY+1 < height {
-			screenWriter.SetContent(0, rowY+1, nuview.Borders.Vertical, nil, borderStyle)
+			screenWriter.SetContent(0, rowY+1, tview.Borders.Vertical, nil, borderStyle)
 		}
 
 		if drawRightEdge {
-			rightJoint := nuview.Borders.RightT
+			rightJoint := tview.Borders.RightT
 			if row == 0 {
-				rightJoint = nuview.Borders.TopRight
+				rightJoint = tview.Borders.TopRight
 			}
 			screenWriter.SetContent(columnWidth+1, rowY, rightJoint, nil, borderStyle)
-			screenWriter.SetContent(columnWidth+1, rowY+1, nuview.Borders.Vertical, nil, borderStyle)
+			screenWriter.SetContent(columnWidth+1, rowY+1, tview.Borders.Vertical, nil, borderStyle)
 		}
 	}
 }
@@ -1663,8 +1663,8 @@ func (t *Table) navigatePageUp() {
 }
 
 // InputHandler returns the handler for this primitive.
-func (t *Table) InputHandler() func(event *tcell.EventKey, setFocus func(p nuview.Primitive)) {
-	return t.WrapInputHandler(func(event *tcell.EventKey, setFocus func(p nuview.Primitive)) {
+func (t *Table) InputHandler() func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
+	return t.WrapInputHandler(func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
 		key := event.Key()
 
 		if (!t.rowsSelectable && !t.columnsSelectable && key == tcell.KeyEnter) ||
@@ -1731,15 +1731,15 @@ func (t *Table) InputHandler() func(event *tcell.EventKey, setFocus func(p nuvie
 }
 
 // MouseHandler returns the mouse handler for this primitive.
-func (t *Table) MouseHandler() func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {
-	return t.WrapMouseHandler(func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {
+func (t *Table) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
+	return t.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
 		x, y := event.Position()
 		if !t.InRect(x, y) {
 			return false, nil
 		}
 
 		switch action {
-		case nuview.MouseLeftDown:
+		case tview.MouseLeftDown:
 			setFocus(t)
 
 			selectEvent := true
@@ -1767,12 +1767,12 @@ func (t *Table) MouseHandler() func(action nuview.MouseAction, event *tcell.Even
 			t.lastMouseDown = time.Now()
 			consumed = true
 
-		case nuview.MouseScrollUp:
+		case tview.MouseScrollUp:
 			t.trackEnd = false
 			t.rowOffset--
 			consumed = true
 
-		case nuview.MouseScrollDown:
+		case tview.MouseScrollDown:
 			t.rowOffset++
 			consumed = true
 		}
@@ -1792,10 +1792,10 @@ func printStyle(screen ScreenWriter, text []byte, x, y, maxWidth, align int, sty
 	colorIndices, colors, _, _, escapeIndices, strippedText, strippedWidth := decomposeText(text, true, false)
 
 	// We want to reduce all alignments to AlignLeft.
-	if align == nuview.AlignRight {
+	if align == tview.AlignRight {
 		if strippedWidth <= maxWidth {
 			// There's enough space for the entire text.
-			return printStyle(screen, text, x+maxWidth-strippedWidth, y, maxWidth, nuview.AlignLeft, style)
+			return printStyle(screen, text, x+maxWidth-strippedWidth, y, maxWidth, tview.AlignLeft, style)
 		}
 		// Trim characters off the beginning.
 		var (
@@ -1823,20 +1823,20 @@ func printStyle(screen ScreenWriter, text []byte, x, y, maxWidth, align int, sty
 					text = append(text[:escapeCharPos], text[escapeCharPos+1:]...)
 				}
 				// Print and return.
-				bytes, width = printStyle(screen, text[textPos+tagOffset:], x, y, maxWidth, nuview.AlignLeft, style)
+				bytes, width = printStyle(screen, text[textPos+tagOffset:], x, y, maxWidth, tview.AlignLeft, style)
 				return true
 			}
 			return false
 		})
 		return bytes, width
-	} else if align == nuview.AlignCenter {
+	} else if align == tview.AlignCenter {
 		if strippedWidth == maxWidth {
 			// Use the exact space.
-			return printStyle(screen, text, x, y, maxWidth, nuview.AlignLeft, style)
+			return printStyle(screen, text, x, y, maxWidth, tview.AlignLeft, style)
 		} else if strippedWidth < maxWidth {
 			// We have more space than we need.
 			half := (maxWidth - strippedWidth) / 2
-			return printStyle(screen, text, x+half, y, maxWidth-half, nuview.AlignLeft, style)
+			return printStyle(screen, text, x+half, y, maxWidth-half, tview.AlignLeft, style)
 		} else {
 			// Chop off runes until we have a perfect fit.
 			var choppedLeft, choppedRight, leftIndex, rightIndex int
@@ -1891,7 +1891,7 @@ func printStyle(screen ScreenWriter, text []byte, x, y, maxWidth, align int, sty
 					escapePos++
 				}
 			}
-			return printStyle(screen, text[leftIndex+tagOffset:], x, y, maxWidth, nuview.AlignLeft, style)
+			return printStyle(screen, text[leftIndex+tagOffset:], x, y, maxWidth, tview.AlignLeft, style)
 		}
 	}
 

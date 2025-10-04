@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gdamore/tcell/v2"
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 	"github.com/sedwards2009/femto"
 )
 
@@ -15,7 +15,7 @@ var inputDialog *dialog.InputDialog
 const inputDialogName = "inputdialog"
 
 func ShowGoToLineDialog(title string, message string, defaultValue string, onCancel func(), onAccept func(value string,
-	index int)) nuview.Primitive {
+	index int)) tview.Primitive {
 
 	if inputDialog == nil {
 		inputDialog = dialog.NewInputDialog(app)
@@ -76,7 +76,7 @@ func CloseGoToLineDialog() {
 	}
 }
 
-func handleGoToLine() nuview.Primitive {
+func handleGoToLine() tview.Primitive {
 	return ShowGoToLineDialog("Go to Line", "Enter line number (or line:column):", "",
 		func() {
 			// On cancel

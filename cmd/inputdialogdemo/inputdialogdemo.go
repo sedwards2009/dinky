@@ -7,21 +7,21 @@ import (
 	"os"
 
 	"github.com/gdamore/tcell/v2"
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 )
 
 func main() {
 	logFile := setupLogging()
 	defer logFile.Close()
 
-	app := nuview.NewApplication()
+	app := tview.NewApplication()
 	app.EnableMouse(true)
 	log.Println("Starting InputDialog Demo...")
 
 	messageDialog := dialog.NewInputDialog(app)
 	// style.StyleMessageDialog(messageDialog)
 
-	topLayout := nuview.NewFlex()
+	topLayout := tview.NewFlex()
 	topLayout.AddItem(nil, 0, 1, false)
 	topLayout.AddItem(messageDialog, 80, 0, false)
 	topLayout.AddItem(nil, 0, 1, false)

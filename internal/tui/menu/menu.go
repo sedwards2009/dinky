@@ -5,17 +5,17 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/mattn/go-runewidth"
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 )
 
 type MenuBar struct {
-	*nuview.Box
+	*tview.Box
 	MenuBarStyle      tcell.Style
 	MenuStyle         tcell.Style
 	MenuSelectedStyle tcell.Style
 	menus             []*Menu
 	selectedPath      []int
-	onClose           func(nextFocus nuview.Primitive)
+	onClose           func(nextFocus tview.Primitive)
 }
 
 type Menu struct {
@@ -32,7 +32,7 @@ type MenuItem struct {
 	// Called when the menu item is activated. ID is the ID of the menu item.
 	// The optional return value is the primative which should receive the
 	// focus once the menu closes.
-	Callback func(ID string) nuview.Primitive
+	Callback func(ID string) tview.Primitive
 }
 
 const (
@@ -45,7 +45,7 @@ func NewMenuBar() *MenuBar {
 	bg := tcell.NewHexColor(0x007ace)
 	defaultStyle := tcell.StyleDefault.Foreground(fg).Background(bg).Bold(true)
 	return &MenuBar{
-		Box: nuview.NewBox(),
+		Box: tview.NewBox(),
 
 		MenuBarStyle:      defaultStyle,
 		MenuStyle:         defaultStyle,
@@ -164,8 +164,8 @@ func measureWidths(items []*MenuItem) (int, int) {
 	return maxTitleWidth, maxShortcutWidth
 }
 
-func (menuBar *MenuBar) InputHandler() func(event *tcell.EventKey, setFocus func(p nuview.Primitive)) {
-	return menuBar.WrapInputHandler(func(event *tcell.EventKey, setFocus func(p nuview.Primitive)) {
+func (menuBar *MenuBar) InputHandler() func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
+	return menuBar.WrapInputHandler(func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
 		if menuBar.selectedPath[0] == -1 {
 			return
 		}
@@ -207,7 +207,7 @@ func (menuBar *MenuBar) InputHandler() func(event *tcell.EventKey, setFocus func
 
 func (menuBar *MenuBar) executeItem(item *MenuItem) {
 	if item.Title != "" {
-		var nextFocus nuview.Primitive
+		var nextFocus tview.Primitive
 		if item.Callback != nil {
 			nextFocus = item.Callback(item.ID)
 		}
@@ -237,13 +237,13 @@ func nextMenuItem(items []*MenuItem, selectedIndex int, direction int) int {
 	return selectedIndex
 }
 
-func (menuBar *MenuBar) MouseHandler() func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {
-	return menuBar.WrapMouseHandler(func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {
+func (menuBar *MenuBar) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
+	return menuBar.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
 		rx, ry, _, _ := menuBar.GetRect()
 		x, y := event.Position()
 
 		if y == ry {
-			if action == nuview.MouseLeftDown {
+			if action == tview.MouseLeftDown {
 				// Clicked on the menu bar itself
 				index, _ := menuBar.menuItemIndexAtX(x - rx)
 				if index != -1 {
@@ -275,7 +275,7 @@ func (menuBar *MenuBar) MouseHandler() func(action nuview.MouseAction, event *tc
 			selectedMenuItem = items[selectedMenuItemIndex]
 		}
 
-		if action == nuview.MouseLeftUp {
+		if action == tview.MouseLeftUp {
 			if selectedMenuItem != nil {
 				menuBar.executeItem(selectedMenuItem)
 			} else {
@@ -284,7 +284,7 @@ func (menuBar *MenuBar) MouseHandler() func(action nuview.MouseAction, event *tc
 			return true, nil
 		}
 
-		if action == nuview.MouseLeftDown && selectedMenuItem == nil {
+		if action == tview.MouseLeftDown && selectedMenuItem == nil {
 			menuBar.Close()
 			return true, nil
 		}
@@ -346,6 +346,6 @@ func (menuBar *MenuBar) Close() {
 	}
 }
 
-func (menuBar *MenuBar) SetOnClose(callback func(nextFocus nuview.Primitive)) {
+func (menuBar *MenuBar) SetOnClose(callback func(nextFocus tview.Primitive)) {
 	menuBar.onClose = callback
 }

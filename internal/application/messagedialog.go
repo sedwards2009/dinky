@@ -5,7 +5,7 @@ import (
 	"dinky/internal/tui/style"
 	"strings"
 
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 )
 
 var messageDialog *dialog.MessageDialog
@@ -52,7 +52,7 @@ func MessageButtonsSize(buttons []string) int {
 }
 
 func ShowMessageDialog(title string, message string, buttons []string, OnClose func(),
-	OnButtonClick func(button string, index int)) nuview.Primitive {
+	OnButtonClick func(button string, index int)) tview.Primitive {
 
 	width, height := MeasureStringDimensions(message)
 	height += 6
@@ -82,7 +82,7 @@ func CloseMessageDialog() {
 	}
 }
 
-func ShowConfirmDialog(message string, onConfirm func(), onCancel func()) nuview.Primitive {
+func ShowConfirmDialog(message string, onConfirm func(), onCancel func()) tview.Primitive {
 	return ShowMessageDialog("Confirm", message, []string{"OK", "Cancel"},
 		func() {
 			CloseMessageDialog()
@@ -98,7 +98,7 @@ func ShowConfirmDialog(message string, onConfirm func(), onCancel func()) nuview
 		})
 }
 
-func ShowOkDialog(title string, message string, onClose func()) nuview.Primitive {
+func ShowOkDialog(title string, message string, onClose func()) tview.Primitive {
 	return ShowMessageDialog(title, message, []string{"OK"},
 		func() {
 			CloseMessageDialog()

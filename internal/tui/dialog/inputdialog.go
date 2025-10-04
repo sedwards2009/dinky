@@ -2,18 +2,18 @@ package dialog
 
 import (
 	"github.com/gdamore/tcell/v2"
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 )
 
 type InputDialog struct {
-	*nuview.Flex
-	app *nuview.Application
+	*tview.Flex
+	app *tview.Application
 
-	verticalContentsFlex *nuview.Flex
-	buttonsFlex          *nuview.Flex
-	InputField           *nuview.InputField
-	innerFlex            *nuview.Flex
-	Buttons              []*nuview.Button
+	verticalContentsFlex *tview.Flex
+	buttonsFlex          *tview.Flex
+	InputField           *tview.InputField
+	innerFlex            *tview.Flex
+	Buttons              []*tview.Button
 	options              InputDialogOptions
 }
 
@@ -29,40 +29,40 @@ type InputDialogOptions struct {
 	FieldKeyFilter func(event *tcell.EventKey) bool // Returns true if the key permitted
 }
 
-func NewInputDialog(app *nuview.Application) *InputDialog {
-	topLayout := nuview.NewFlex()
+func NewInputDialog(app *tview.Application) *InputDialog {
+	topLayout := tview.NewFlex()
 
 	topLayout.AddItem(nil, 0, 1, false)
 
-	innerFlex := nuview.NewFlex()
+	innerFlex := tview.NewFlex()
 	innerFlex.AddItem(nil, 0, 1, false)
 
-	verticalContentsFlex := nuview.NewFlex()
+	verticalContentsFlex := tview.NewFlex()
 
-	verticalContentsFlex.Box = nuview.NewBox() // Nasty hack to clear the `dontClear` flag inside Box.
+	verticalContentsFlex.Box = tview.NewBox() // Nasty hack to clear the `dontClear` flag inside Box.
 	verticalContentsFlex.Box.Primitive = topLayout
 
-	verticalContentsFlex.SetDirection(nuview.FlexRow)
+	verticalContentsFlex.SetDirection(tview.FlexRow)
 	verticalContentsFlex.SetBorderPadding(1, 1, 1, 1)
 	verticalContentsFlex.SetBorder(true)
-	verticalContentsFlex.SetTitleAlign(nuview.AlignLeft)
+	verticalContentsFlex.SetTitleAlign(tview.AlignLeft)
 
-	inputField := nuview.NewInputField()
+	inputField := tview.NewInputField()
 	verticalContentsFlex.AddItem(inputField, 0, 1, false)
 
-	buttonsFlex := nuview.NewFlex()
-	buttonsFlex.SetDirection(nuview.FlexColumn)
+	buttonsFlex := tview.NewFlex()
+	buttonsFlex.SetDirection(tview.FlexColumn)
 	// buttonsFlex.SetBackgroundTransparent(false)
 	buttonsFlex.SetBorder(false)
 	verticalContentsFlex.AddItem(buttonsFlex, 1, 0, false)
 
 	innerFlex.AddItem(verticalContentsFlex, 80, 0, true)
 	innerFlex.AddItem(nil, 0, 1, false)
-	innerFlex.SetDirection(nuview.FlexColumn)
+	innerFlex.SetDirection(tview.FlexColumn)
 
 	topLayout.AddItem(innerFlex, 20, 0, true)
 	topLayout.AddItem(nil, 0, 1, false)
-	topLayout.SetDirection(nuview.FlexRow)
+	topLayout.SetDirection(tview.FlexRow)
 
 	result := &InputDialog{
 		Flex:                 topLayout,
@@ -148,20 +148,20 @@ func (d *InputDialog) inputFilter(event *tcell.EventKey) *tcell.EventKey {
 	return event
 }
 
-func (d *InputDialog) MouseHandler() func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {
-	return d.WrapMouseHandler(func(action nuview.MouseAction, event *tcell.EventMouse, setFocus func(p nuview.Primitive)) (consumed bool, capture nuview.Primitive) {
+func (d *InputDialog) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
+	return d.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
 		d.verticalContentsFlex.MouseHandler()(action, event, setFocus)
 		return true, nil
 	})
 }
 
 // Focus is called when this primitive receives focus.
-func (d *InputDialog) Focus(delegate func(p nuview.Primitive)) {
+func (d *InputDialog) Focus(delegate func(p tview.Primitive)) {
 	delegate(d.InputField)
 }
 
 func (d *InputDialog) handleTabKey(direction int) {
-	widgets := []nuview.Primitive{}
+	widgets := []tview.Primitive{}
 	for _, btn := range d.Buttons {
 		widgets = append(widgets, btn)
 	}

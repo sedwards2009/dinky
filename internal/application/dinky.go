@@ -18,28 +18,28 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/google/uuid"
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 	"github.com/sedwards2009/femto"
 	"github.com/sedwards2009/femto/runtime"
 )
 
 // -----------------------------------------------------------------
-var app *nuview.Application
+var app *tview.Application
 var enableLogging bool
 var menus []*menu.Menu
 var fileBufferID string
 var tabBarLine *tabbar.TabBar
 var menuBar *menu.MenuBar
 
-var modalPages *nuview.Pages
-var editorPages *nuview.Pages
+var modalPages *tview.Pages
+var editorPages *tview.Pages
 var statusBar *statusbar.StatusBar
 
 var colorscheme femto.Colorscheme
 
 type FileBuffer struct {
-	panelVFlex    *nuview.Flex
-	panelHFlex    *nuview.Flex
+	panelVFlex    *tview.Flex
+	panelHFlex    *tview.Flex
 	scrollbar     *scrollbar.Scrollbar
 	findbar       *findbar.Findbar
 	isFindbarOpen bool
@@ -74,15 +74,15 @@ func newFile(contents string, filename string) {
 	buffer.Settings["matchbrace"] = true
 	buffer.Settings["tabstospaces"] = false // Default to using tab character
 
-	panelHFlex := nuview.NewFlex()
-	panelHFlex.SetDirection(nuview.FlexColumn)
+	panelHFlex := tview.NewFlex()
+	panelHFlex.SetDirection(tview.FlexColumn)
 	panelHFlex.AddItem(editor, 0, 1, true)
 	vScrollbar := scrollbar.NewScrollbar()
 	style.StyleScrollbar(vScrollbar)
 	panelHFlex.AddItem(vScrollbar, 1, 0, false)
 
-	panelVFlex := nuview.NewFlex()
-	panelVFlex.SetDirection(nuview.FlexRow)
+	panelVFlex := tview.NewFlex()
+	panelVFlex.SetDirection(tview.FlexRow)
 	panelVFlex.AddItem(panelHFlex, 0, 1, true)
 
 	bufferFindbar := findbar.NewFindbar(app, editor)
@@ -337,8 +337,8 @@ func Main() {
 	initEditorColorScheme()
 	initKeyBindings()
 
-	app = nuview.NewApplication()
-	nuview.DoubleClickInterval = 0 // Disable tview's double-click handling
+	app = tview.NewApplication()
+	tview.DoubleClickInterval = 0 // Disable tview's double-click handling
 	app.EnableMouse(true)
 
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -349,10 +349,10 @@ func Main() {
 		return event
 	})
 
-	modalPages = nuview.NewPages()
+	modalPages = tview.NewPages()
 
-	mainUiFlex := nuview.NewFlex()
-	mainUiFlex.SetDirection(nuview.FlexRow)
+	mainUiFlex := tview.NewFlex()
+	mainUiFlex.SetDirection(tview.FlexRow)
 
 	menuBar = menu.NewMenuBar()
 	style.StyleMenuBar(menuBar)
@@ -378,7 +378,7 @@ func Main() {
 
 	mainUiFlex.AddItem(tabBarLine, 1, 0, false)
 
-	editorPages = nuview.NewPages()
+	editorPages = tview.NewPages()
 	mainUiFlex.AddItem(editorPages, 0, 1, true)
 
 	statusBar = statusbar.NewStatusBar(app)
@@ -390,7 +390,7 @@ func Main() {
 	app.SetRoot(modalPages, true)
 	app.SetAfterDrawFunc(menuBar.AfterDraw())
 
-	menuBar.SetOnClose(func(nextFocus nuview.Primitive) {
+	menuBar.SetOnClose(func(nextFocus tview.Primitive) {
 		if nextFocus != nil {
 			app.SetFocus(nextFocus)
 		} else {

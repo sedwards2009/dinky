@@ -1,18 +1,18 @@
 package dialog
 
 import (
-	nuview "github.com/rivo/tview"
+	"github.com/rivo/tview"
 )
 
 // createButtonsRow creates and configures the buttons for the message dialog
-func createButtonsRow(buttonsFlex *nuview.Flex, buttons []string, onButtonClick func(button string, index int)) []*nuview.Button {
+func createButtonsRow(buttonsFlex *tview.Flex, buttons []string, onButtonClick func(button string, index int)) []*tview.Button {
 	buttonsFlex.Clear()
-	nuviewButtons := make([]*nuview.Button, len(buttons))
+	tviewButtons := make([]*tview.Button, len(buttons))
 
 	if len(buttons) == 1 {
 		// If it is just one button, then center it.
-		btn := nuview.NewButton(buttons[0])
-		nuviewButtons[0] = btn
+		btn := tview.NewButton(buttons[0])
+		tviewButtons[0] = btn
 		btn.SetSelectedFunc(func() {
 			if onButtonClick != nil {
 				onButtonClick(buttons[0], 0)
@@ -23,8 +23,8 @@ func createButtonsRow(buttonsFlex *nuview.Flex, buttons []string, onButtonClick 
 		buttonsFlex.AddItem(nil, 0, 1, false)
 	} else {
 		for i, button := range buttons {
-			btn := nuview.NewButton(button)
-			nuviewButtons[i] = btn
+			btn := tview.NewButton(button)
+			tviewButtons[i] = btn
 			btn.SetSelectedFunc(func() {
 				if onButtonClick != nil {
 					onButtonClick(button, i)
@@ -38,5 +38,5 @@ func createButtonsRow(buttonsFlex *nuview.Flex, buttons []string, onButtonClick 
 		}
 	}
 
-	return nuviewButtons
+	return tviewButtons
 }
