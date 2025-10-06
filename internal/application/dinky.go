@@ -87,6 +87,7 @@ func newFile(contents string, filename string) {
 
 	bufferFindbar := findbar.NewFindbar(app, editor)
 	style.StyleFindbar(bufferFindbar)
+	bufferFindbar.SetFemtoKeybindings(femtoSingleLineKeyBindings)
 
 	fileBuffer := &FileBuffer{
 		panelVFlex:    panelVFlex,

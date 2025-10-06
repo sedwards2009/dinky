@@ -91,7 +91,6 @@ func StyleInputDialog(inputDialog *dialog.InputDialog) {
 	for _, button := range inputDialog.Buttons {
 		StyleButton(button)
 	}
-	StyleInputField(inputDialog.InputField)
 }
 
 func StyleListDialog(d *dialog.ListDialog) {
@@ -121,7 +120,6 @@ func StyleFileDialog(fileDialog *filedialog.FileDialog) {
 
 func StyleFindbar(findBar *findbar.Findbar) {
 	findBar.SetBackgroundColor(stylecolor.LightGray)
-	StyleInputField(findBar.SearchStringField)
 	StyleButton(findBar.SearchUpButton)
 	StyleButton(findBar.SearchDownButton)
 	StyleButton(findBar.CloseButton)

@@ -5,26 +5,23 @@ import (
 )
 
 var femtoDefaultKeyBindings femto.KeyBindings
+var femtoSingleLineKeyBindings femto.KeyBindings
 var femtoKeyToActionMapping map[string]string
+var femtoSingleLineKeyToActionMapping map[string]string
 var actionToKeyMapping map[string]string
 var dinkyKeyBindings map[femto.KeyDesc]string
 var dinkyKeyToActionMapping map[string]string
 
 func initKeyBindings() {
-	femtoKeyToActionMapping = map[string]string{
-		"Up":    femto.ActionCursorUp,
-		"Down":  femto.ActionCursorDown,
+	femtoSingleLineKeyToActionMapping = map[string]string{
 		"Right": femto.ActionCursorRight,
 		"Left":  femto.ActionCursorLeft,
 
-		"ShiftUp":        femto.ActionSelectUp,
-		"ShiftDown":      femto.ActionSelectDown,
-		"ShiftLeft":      femto.ActionSelectLeft,
-		"ShiftRight":     femto.ActionSelectRight,
-		"CtrlLeft":       femto.ActionWordLeft,
-		"CtrlRight":      femto.ActionWordRight,
-		"AltUp":          femto.ActionMoveLinesUp,
-		"AltDown":        femto.ActionMoveLinesDown,
+		"ShiftLeft":  femto.ActionSelectLeft,
+		"ShiftRight": femto.ActionSelectRight,
+		"CtrlLeft":   femto.ActionWordLeft,
+		"CtrlRight":  femto.ActionWordRight,
+
 		"CtrlShiftRight": femto.ActionSelectWordRight,
 		"CtrlShiftLeft":  femto.ActionSelectWordLeft,
 		// "AltLeft":        femto.ActionStartOfTextToggle,
@@ -37,8 +34,6 @@ func initKeyBindings() {
 		"CtrlDown":      femto.ActionCursorEnd,
 		"CtrlShiftUp":   femto.ActionSelectToStart,
 		"CtrlShiftDown": femto.ActionSelectToEnd,
-		"Alt-{":         femto.ActionParagraphPrevious,
-		"Alt-}":         femto.ActionParagraphNext,
 		"Enter":         femto.ActionInsertNewline,
 		"CtrlH":         femto.ActionBackspace,
 		"Backspace":     femto.ActionBackspace,
@@ -46,8 +41,6 @@ func initKeyBindings() {
 		"Alt-CtrlH":     femto.ActionDeleteWordLeft,
 		"Alt-Backspace": femto.ActionDeleteWordLeft,
 		// "Tab":            "Autocomplete|IndentSelection|InsertTab,
-		"Tab":     femto.ActionIndentSelection + "," + femto.ActionInsertTab,
-		"Backtab": "CycleAutocompleteBack|OutdentSelection|OutdentLine",
 		// "Ctrl-o":  femto.ActionOpenFile,
 		// "Ctrl-s":  femto.ActionSave,
 		// "Ctrl-f":  femto.ActionFind,
@@ -69,43 +62,47 @@ func initKeyBindings() {
 		"End":      femto.ActionEndOfLine,
 		"CtrlHome": femto.ActionCursorStart,
 		"CtrlEnd":  femto.ActionCursorEnd,
-		"PageUp":   femto.ActionCursorPageUp,
-		"PageDown": femto.ActionCursorPageDown,
-		// "CtrlPageUp":     "PreviousTab|LastTab,
-		// "CtrlPageDown":   "NextTab|FirstTab,
-		"ShiftPageUp":   femto.ActionSelectPageUp,
-		"ShiftPageDown": femto.ActionSelectPageDown,
-		"Ctrl-r":        femto.ActionToggleRuler,
-		"Delete":        femto.ActionDelete,
-		// "Ctrl-w":         "NextSplit|FirstSplit,
-		// "Ctrl-u":         femto.ActionToggleMacro,
-		// "Ctrl-j":         femto.ActionPlayMacro,
-		"Insert": femto.ActionToggleOverwriteMode,
-
-		// Emacs-style keybindings
-		// "Alt-f": femto.ActionWordRight,
-		// "Alt-b": femto.ActionWordLeft,
-		// "Alt-a": femto.ActionStartOfText,
-		// "Alt-e": femto.ActionEndOfLine,
-		// "Alt-p": femto.ActionCursorUp,
-		// "Alt-n": femto.ActionCursorDown,
-
-		"Esc": femto.ActionEscape + "," + femto.ActionRemoveAllMultiCursors,
-
-		// "MouseMiddle":      femto.ActionPastePrimary,
-		// "Ctrl-MouseLeft":   femto.ActionMouseMultiCursor,
-
-		// "Alt-n": femto.ActionSpawnMultiCursor,
-		"Ctrl-d": femto.ActionSpawnMultiCursor,
-		"Alt-m":  femto.ActionSpawnMultiCursorSelect,
-
-		//"AltShiftUp":   femto.ActionSpawnMultiCursorUp,
-		// "AltShiftDown": femto.ActionSpawnMultiCursorDown,
-		"Alt-p":  femto.ActionRemoveMultiCursor,
-		"Alt-c":  femto.ActionRemoveAllMultiCursors,
-		"Alt-x":  femto.ActionSkipMultiCursor,
-		"Ctrl-j": femto.ActionJumpToMatchingBrace,
+		"Delete":   femto.ActionDelete,
 	}
+
+	// Copy femtoSimpleKeyToActionMapping into femtoKeyToActionMapping
+	femtoKeyToActionMapping = make(map[string]string)
+	for k, v := range femtoSingleLineKeyToActionMapping {
+		femtoKeyToActionMapping[k] = v
+	}
+	femtoKeyToActionMapping["Up"] = femto.ActionCursorUp
+	femtoKeyToActionMapping["Down"] = femto.ActionCursorDown
+	femtoKeyToActionMapping["ShiftUp"] = femto.ActionSelectUp
+	femtoKeyToActionMapping["ShiftDown"] = femto.ActionSelectDown
+	femtoKeyToActionMapping["AltUp"] = femto.ActionMoveLinesUp
+	femtoKeyToActionMapping["AltDown"] = femto.ActionMoveLinesDown
+	femtoKeyToActionMapping["Alt-{"] = femto.ActionParagraphPrevious
+	femtoKeyToActionMapping["Alt-}"] = femto.ActionParagraphNext
+	femtoKeyToActionMapping["Tab"] = femto.ActionIndentSelection + "," + femto.ActionInsertTab
+	femtoKeyToActionMapping["Backtab"] = "CycleAutocompleteBack|OutdentSelection|OutdentLine"
+	femtoKeyToActionMapping["PageUp"] = femto.ActionCursorPageUp
+	femtoKeyToActionMapping["PageDown"] = femto.ActionCursorPageDown
+	// "CtrlPageUp":     "PreviousTab|LastTab,
+	// "CtrlPageDown":   "NextTab|FirstTab,
+	femtoKeyToActionMapping["ShiftPageUp"] = femto.ActionSelectPageUp
+	femtoKeyToActionMapping["ShiftPageDown"] = femto.ActionSelectPageDown
+	femtoKeyToActionMapping["Ctrl-r"] = femto.ActionToggleRuler
+	// "Ctrl-w":         "NextSplit|FirstSplit,
+	// "Ctrl-u":         femto.ActionToggleMacro,
+	// "Ctrl-j":         femto.ActionPlayMacro,
+	femtoKeyToActionMapping["Insert"] = femto.ActionToggleOverwriteMode
+	femtoKeyToActionMapping["Esc"] = femto.ActionEscape + "," + femto.ActionRemoveAllMultiCursors
+	// "MouseMiddle":      femto.ActionPastePrimary,
+	// "Ctrl-MouseLeft":   femto.ActionMouseMultiCursor,
+	// "Alt-n": femto.ActionSpawnMultiCursor,
+	femtoKeyToActionMapping["Ctrl-d"] = femto.ActionSpawnMultiCursor
+	femtoKeyToActionMapping["Alt-m"] = femto.ActionSpawnMultiCursorSelect
+	// "AltShiftUp":   femto.ActionSpawnMultiCursorUp,
+	// "AltShiftDown": femto.ActionSpawnMultiCursorDown,
+	femtoKeyToActionMapping["Alt-p"] = femto.ActionRemoveMultiCursor
+	femtoKeyToActionMapping["Alt-c"] = femto.ActionRemoveAllMultiCursors
+	femtoKeyToActionMapping["Alt-x"] = femto.ActionSkipMultiCursor
+	femtoKeyToActionMapping["Ctrl-j"] = femto.ActionJumpToMatchingBrace
 
 	dinkyKeyToActionMapping = map[string]string{
 		"Ctrl-n": ACTION_NEW,
@@ -129,6 +126,7 @@ func initKeyBindings() {
 	}
 
 	femtoDefaultKeyBindings = femto.NewKeyBindings(femtoKeyToActionMapping)
+	femtoSingleLineKeyBindings = femto.NewKeyBindings(femtoSingleLineKeyToActionMapping)
 
 	for key, action := range dinkyKeyToActionMapping {
 		if action == "" {

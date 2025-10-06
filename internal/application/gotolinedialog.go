@@ -19,6 +19,7 @@ func ShowGoToLineDialog(title string, message string, defaultValue string, onCan
 
 	if inputDialog == nil {
 		inputDialog = dialog.NewInputDialog(app)
+		inputDialog.SetFemtoKeybindings(femtoSingleLineKeyBindings)
 	}
 
 	width := 50

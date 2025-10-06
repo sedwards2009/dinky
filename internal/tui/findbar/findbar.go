@@ -1,6 +1,8 @@
 package findbar
 
 import (
+	"dinky/internal/tui/femtoinputfield"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/sedwards2009/femto"
@@ -10,7 +12,7 @@ type Findbar struct {
 	*tview.Flex
 	app               *tview.Application
 	editor            *femto.View
-	SearchStringField *tview.InputField
+	SearchStringField *femtoinputfield.FemtoInputField
 	SearchUpButton    *tview.Button
 	SearchDownButton  *tview.Button
 	CloseButton       *tview.Button
@@ -29,12 +31,9 @@ func NewFindbar(app *tview.Application, editor *femto.View) *Findbar {
 
 	hFlex := tview.NewFlex()
 	hFlex.SetDirection(tview.FlexColumn)
-	// hFlex.SetBackgroundTransparent(false)
 	hFlex.SetBorder(false)
 
-	searchStringField := tview.NewInputField()
-	searchStringField.SetLabel("Find: ")
-	searchStringField.SetLabelWidth(6)
+	searchStringField := femtoinputfield.NewFemtoInputField()
 	searchStringField.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEscape:
@@ -48,6 +47,10 @@ func NewFindbar(app *tview.Application, editor *femto.View) *Findbar {
 		}
 		return event
 	})
+
+	searchFieldLabel := tview.NewTextView()
+	searchFieldLabel.SetText("Find: ")
+	hFlex.AddItem(searchFieldLabel, 6, 0, false)
 
 	hFlex.AddItem(searchStringField, 0, 1, true)
 	hFlex.AddItem(nil, 1, 0, false)
@@ -101,4 +104,8 @@ func (f *Findbar) SearchDown() {
 		f.editor.Search(f.SearchStringField.GetText(), false, true)
 		f.editor.Relocate()
 	}
+}
+
+func (f *Findbar) SetFemtoKeybindings(keybindings femto.KeyBindings) {
+	f.SearchStringField.SetKeybindings(keybindings)
 }

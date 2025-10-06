@@ -1,8 +1,11 @@
 package dialog
 
 import (
+	"dinky/internal/tui/femtoinputfield"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+	"github.com/sedwards2009/femto"
 )
 
 type InputDialog struct {
@@ -11,10 +14,12 @@ type InputDialog struct {
 
 	verticalContentsFlex *tview.Flex
 	buttonsFlex          *tview.Flex
-	InputField           *tview.InputField
+	InputField           *femtoinputfield.FemtoInputField
 	innerFlex            *tview.Flex
+	inputFieldFlex       *tview.Flex
 	Buttons              []*tview.Button
 	options              InputDialogOptions
+	InputLabel           *tview.TextView
 }
 
 type InputDialogOptions struct {
@@ -47,12 +52,21 @@ func NewInputDialog(app *tview.Application) *InputDialog {
 	verticalContentsFlex.SetBorder(true)
 	verticalContentsFlex.SetTitleAlign(tview.AlignLeft)
 
-	inputField := tview.NewInputField()
-	verticalContentsFlex.AddItem(inputField, 0, 1, false)
+	inputField := femtoinputfield.NewFemtoInputField()
+
+	inputFieldFlex := tview.NewFlex()
+	inputFieldFlex.SetDirection(tview.FlexColumn)
+	inputFieldFlex.SetBorder(false)
+
+	inputLabel := tview.NewTextView()
+	inputFieldFlex.AddItem(inputLabel, 0, 1, false)
+	inputFieldFlex.AddItem(inputField, 0, 1, true)
+	verticalContentsFlex.AddItem(inputFieldFlex, 1, 0, false)
+
+	verticalContentsFlex.AddItem(nil, 1, 0, false)
 
 	buttonsFlex := tview.NewFlex()
 	buttonsFlex.SetDirection(tview.FlexColumn)
-	// buttonsFlex.SetBackgroundTransparent(false)
 	buttonsFlex.SetBorder(false)
 	verticalContentsFlex.AddItem(buttonsFlex, 1, 0, false)
 
@@ -70,7 +84,9 @@ func NewInputDialog(app *tview.Application) *InputDialog {
 		verticalContentsFlex: verticalContentsFlex,
 		innerFlex:            innerFlex,
 		buttonsFlex:          buttonsFlex,
+		inputFieldFlex:       inputFieldFlex,
 		InputField:           inputField,
+		InputLabel:           inputLabel,
 	}
 	return result
 }
@@ -78,7 +94,8 @@ func NewInputDialog(app *tview.Application) *InputDialog {
 func (d *InputDialog) Open(options InputDialogOptions) {
 	d.options = options
 	d.verticalContentsFlex.SetTitle(options.Title)
-	d.InputField.SetLabel(options.Message)
+	d.InputLabel.SetText(options.Message)
+	d.inputFieldFlex.ResizeItem(d.InputLabel, len([]rune(options.Message))+1, 0)
 	d.InputField.SetText(options.DefaultValue)
 
 	onButtonClick := func(button string, index int) {
@@ -174,4 +191,8 @@ func (d *InputDialog) handleTabKey(direction int) {
 			return
 		}
 	}
+}
+
+func (d *InputDialog) SetFemtoKeybindings(keybindings femto.KeyBindings) {
+	d.InputField.SetKeybindings(keybindings)
 }
