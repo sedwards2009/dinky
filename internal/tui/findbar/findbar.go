@@ -34,18 +34,15 @@ func NewFindbar(app *tview.Application, editor *femto.View) *Findbar {
 	hFlex.SetBorder(false)
 
 	searchStringField := femtoinputfield.NewFemtoInputField()
-	searchStringField.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Key() {
+	searchStringField.SetDoneFunc(func(key tcell.Key) {
+		switch key {
 		case tcell.KeyEscape:
 			if f.OnClose != nil {
 				f.OnClose()
 			}
-			return nil
 		case tcell.KeyEnter:
 			f.SearchDown()
-			return nil
 		}
-		return event
 	})
 
 	searchFieldLabel := tview.NewTextView()

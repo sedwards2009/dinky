@@ -1,6 +1,7 @@
 package filedialog
 
 import (
+	"dinky/internal/tui/femtoinputfield"
 	"dinky/internal/tui/filelist"
 	"os"
 	"path/filepath"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+	"github.com/sedwards2009/femto"
 )
 
 type FileDialogMode int
@@ -20,8 +22,8 @@ const (
 type FileDialog struct {
 	*tview.Flex
 	app                *tview.Application
-	DirectoryField     *tview.InputField
-	FilenameField      *tview.InputField
+	DirectoryField     *femtoinputfield.FemtoInputField
+	FilenameField      *femtoinputfield.FemtoInputField
 	FileList           *filelist.FileList
 	vertContentsFlex   *tview.Flex
 	ActionButton       *tview.Button
@@ -52,8 +54,11 @@ func NewFileDialog(app *tview.Application) *FileDialog {
 	directoryFlex.SetDirection(tview.FlexColumn)
 	directoryFlex.SetBorder(false)
 
-	directoryField := tview.NewInputField()
-	directoryField.SetLabel("Directory: ")
+	directoryLabel := tview.NewTextView()
+	directoryLabel.SetText("Directory: ")
+	directoryFlex.AddItem(directoryLabel, 11, 0, false)
+
+	directoryField := femtoinputfield.NewFemtoInputField()
 	directoryFlex.AddItem(directoryField, 0, 1, false)
 
 	directoryFlex.AddItem(nil, 1, 0, false)
@@ -68,9 +73,14 @@ func NewFileDialog(app *tview.Application) *FileDialog {
 	vertContentsFlex.AddItem(fileList, 0, 1, false)
 	vertContentsFlex.AddItem(nil, 1, 0, false)
 
-	filenameField := tview.NewInputField()
-	filenameField.SetLabel("File name: ")
-	vertContentsFlex.AddItem(filenameField, 1, 0, false)
+	filenameFlex := tview.NewFlex()
+	filenameLabel := tview.NewTextView()
+	filenameLabel.SetLabel("File name: ")
+	filenameFlex.AddItem(filenameLabel, 11, 0, false)
+	filenameField := femtoinputfield.NewFemtoInputField()
+	filenameFlex.AddItem(filenameField, 0, 1, false)
+
+	vertContentsFlex.AddItem(filenameFlex, 1, 0, false)
 
 	vertContentsFlex.AddItem(nil, 1, 0, false)
 
@@ -324,4 +334,9 @@ func (fileDialog *FileDialog) syncActionButton() {
 		return
 	}
 
+}
+
+func (fileDialog *FileDialog) SetFemtoKeybindings(keybindings femto.KeyBindings) {
+	fileDialog.DirectoryField.SetKeybindings(keybindings)
+	fileDialog.FilenameField.SetKeybindings(keybindings)
 }

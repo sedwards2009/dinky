@@ -82,6 +82,7 @@ func showFileDialog(title string, mode filedialog.FileDialogMode, defaultPath st
 	if fileDialog == nil {
 		fileDialog = filedialog.NewFileDialog(app)
 		style.StyleFileDialog(fileDialog)
+		fileDialog.SetFemtoKeybindings(femtoDefaultKeyBindings)
 	}
 	fileDialog.SetTitle(title)
 	if defaultPath == "" {
