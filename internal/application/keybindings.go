@@ -115,6 +115,8 @@ func initKeyBindings() {
 		"Ctrl-f": ACTION_FIND,
 		"F3":     ACTION_FIND_NEXT,
 		"F2":     ACTION_FIND_PREVIOUS,
+		"F9":     ACTION_NEXT_EDITOR,
+		"F10":    ACTION_PREVIOUS_EDITOR,
 	}
 
 	actionToKeyMapping = make(map[string]string)

@@ -40,6 +40,8 @@ func createMenus() []*menu.Menu {
 			{ID: femto.ActionJumpToMatchingBrace, Title: "Go to Bracket", Callback: handleFemtoAction},
 			{ID: femto.ActionParagraphPrevious, Title: "Previous Paragraph", Callback: handleFemtoAction},
 			{ID: femto.ActionParagraphNext, Title: "Next Paragraph", Callback: handleFemtoAction},
+			{ID: ACTION_NEXT_EDITOR, Title: "Next Editor", Callback: handleDinkyAction},
+			{ID: ACTION_PREVIOUS_EDITOR, Title: "Previous Editor", Callback: handleDinkyAction},
 			{Title: "", Callback: nil}, // Separator
 			{ID: femto.ActionSpawnMultiCursor, Title: "Add Next Occurrence", Callback: handleFemtoAction},
 			{ID: femto.ActionSpawnMultiCursorSelect, Title: "Add Cursors to Selection", Callback: handleFemtoAction},

@@ -33,6 +33,8 @@ const (
 	ACTION_FIND_NEXT               = "FindNext"
 	ACTION_FIND_PREVIOUS           = "FindPrevious"
 	ACTION_ABOUT                   = "About"
+	ACTION_NEXT_EDITOR             = "NextEditor"
+	ACTION_PREVIOUS_EDITOR         = "PreviousEditor"
 )
 
 var dinkyActionMapping map[string]func() tview.Primitive
@@ -57,6 +59,8 @@ func init() {
 		ACTION_FIND:                    handleFind,
 		ACTION_FIND_NEXT:               handleFindNext,
 		ACTION_FIND_PREVIOUS:           handleFindPrevious,
+		ACTION_NEXT_EDITOR:             handleNextEditor,
+		ACTION_PREVIOUS_EDITOR:         handlePreviousEditor,
 	}
 }
 
@@ -444,5 +448,35 @@ func handleFindNext() tview.Primitive {
 func handleFindPrevious() tview.Primitive {
 	currentFileBuffer.openFindbar()
 	currentFileBuffer.findbar.SearchUp()
+	return nil
+}
+
+func handleNextEditor() tview.Primitive {
+	if len(fileBuffers) < 2 {
+		return nil
+	}
+
+	for i, fileBuffer := range fileBuffers {
+		if fileBuffer.uuid == fileBufferID {
+			nextIndex := (i + 1) % len(fileBuffers)
+			selectTab(fileBuffers[nextIndex].uuid)
+			break
+		}
+	}
+	return nil
+}
+
+func handlePreviousEditor() tview.Primitive {
+	if len(fileBuffers) < 2 {
+		return nil
+	}
+
+	for i, fileBuffer := range fileBuffers {
+		if fileBuffer.uuid == fileBufferID {
+			prevIndex := (i - 1 + len(fileBuffers)) % len(fileBuffers)
+			selectTab(fileBuffers[prevIndex].uuid)
+			break
+		}
+	}
 	return nil
 }
