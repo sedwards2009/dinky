@@ -18,7 +18,7 @@ func NewFemtoInputField() *FemtoInputField {
 	editor := femto.NewView(buffer)
 	editor.SetRuntimeFiles(runtime.Files)
 	buffer.Settings["ruler"] = false
-	// editor.SetKeybindings(femtoDefaultKeyBindings)
+	buffer.Settings["hidecursoronblur"] = true
 
 	return &FemtoInputField{
 		View: editor,
