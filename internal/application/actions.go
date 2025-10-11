@@ -36,6 +36,7 @@ const (
 	ACTION_NEXT_EDITOR             = "NextEditor"
 	ACTION_PREVIOUS_EDITOR         = "PreviousEditor"
 	ACTION_CONVERT_TAB_SPACES      = "ConvertTabSpaces"
+	ACTION_TOGGLE_WHITESPACE       = "ToggleWhitespace"
 )
 
 var dinkyActionMapping map[string]func() tview.Primitive
@@ -63,6 +64,7 @@ func init() {
 		ACTION_NEXT_EDITOR:             handleNextEditor,
 		ACTION_PREVIOUS_EDITOR:         handlePreviousEditor,
 		ACTION_CONVERT_TAB_SPACES:      handleConvertTabSpaces,
+		ACTION_TOGGLE_WHITESPACE:       handleToggleWhitespace,
 	}
 }
 
@@ -494,5 +496,13 @@ func handleConvertTabSpaces() tview.Primitive {
 		msg = "Converted all spaces to tabs"
 	}
 	statusBar.ShowMessage(msg)
+	return nil
+}
+
+func handleToggleWhitespace() tview.Primitive {
+	buffer := currentFileBuffer.buffer
+	on := buffer.Settings["showwhitespace"].(bool)
+	buffer.Settings["showwhitespace"] = !on
+	syncShowWhitespace(menus, !on)
 	return nil
 }

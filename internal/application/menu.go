@@ -51,6 +51,7 @@ func createMenus() []*menu.Menu {
 		}},
 		{Title: "View", Items: []*menu.MenuItem{
 			{ID: femto.ActionToggleRuler, Title: "Line Numbers", Callback: handleFemtoAction},
+			{ID: ACTION_TOGGLE_WHITESPACE, Title: "Show Whitespace", Callback: handleDinkyAction},
 			{ID: ACTION_TOGGLE_SOFT_WRAP, Title: "Soft Wrap", Callback: handleDinkyAction},
 			{ID: ACTION_TOGGLE_MATCH_BRACKET, Title: "Match Brackets", Callback: handleDinkyAction},
 			{ID: ACTION_SET_TAB_SIZE, Title: "Tab Size…", Callback: handleDinkyAction},
@@ -99,6 +100,10 @@ func syncLineNumbers(menus []*menu.Menu, on bool) {
 
 func syncMatchBracket(menus []*menu.Menu, on bool) {
 	syncToggleMenuItem(menus, ACTION_TOGGLE_MATCH_BRACKET, "Match Brackets", on)
+}
+
+func syncShowWhitespace(menus []*menu.Menu, on bool) {
+	syncToggleMenuItem(menus, ACTION_TOGGLE_WHITESPACE, "Show Whitespace", on)
 }
 
 func syncLineEndings(menus []*menu.Menu, buffer *femto.Buffer) {
@@ -184,8 +189,8 @@ func syncMenuFromBuffer(buffer *femto.Buffer) {
 	syncSoftWrap(menus, softwrap)
 	lineNumbers := buffer.Settings["ruler"].(bool)
 	syncLineNumbers(menus, lineNumbers)
-	matchBracket := buffer.Settings["matchbrace"].(bool)
-	syncMatchBracket(menus, matchBracket)
+	syncMatchBracket(menus, buffer.Settings["matchbrace"].(bool))
+	syncShowWhitespace(menus, buffer.Settings["showwhitespace"].(bool))
 	syncTabSize(menus, int(buffer.Settings["tabsize"].(float64)))
 	syncTabCharacter(menus, buffer)
 	syncLineEndings(menus, buffer)
