@@ -74,7 +74,11 @@ func (statusBar *StatusBar) Draw(screen tcell.Screen) {
 	x, y, width, _ := statusBar.GetInnerRect()
 
 	style := statusBar.Style
+
 	leftMessage := statusBar.Filename
+	if statusBar.IsModified {
+		leftMessage = "M " + leftMessage
+	}
 	if statusBar.message != "" {
 		leftMessage = statusBar.message
 		style = statusBar.MessageStyle
@@ -85,12 +89,7 @@ func (statusBar *StatusBar) Draw(screen tcell.Screen) {
 	}
 
 	utils.DrawHorizontalLine(screen, x, y, width, style, ' ')
-
-	if statusBar.IsModified {
-		utils.DrawText(screen, x, y, "M", style)
-	}
-
-	utils.DrawText(screen, x+2, y, leftMessage, style)
+	utils.DrawText(screen, x, y, leftMessage, style)
 
 	overwrite := "    "
 	if statusBar.IsOverwriteMode {

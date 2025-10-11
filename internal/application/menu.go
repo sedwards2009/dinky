@@ -32,6 +32,7 @@ func createMenus() []*menu.Menu {
 			{Title: "", Callback: nil}, // Separator
 			{ID: ACTION_SET_TAB_CHARACTER, Title: "Tab Character…", Callback: handleDinkyAction},
 			{ID: ACTION_SET_LINE_ENDINGS, Title: "Line Endings…", Callback: handleDinkyAction},
+			{ID: ACTION_CONVERT_TAB_SPACES, Title: "Convert All Tabs to Spaces", Callback: handleDinkyAction},
 		}},
 		{Title: "Selection", Items: []*menu.MenuItem{
 			{ID: femto.ActionSelectAll, Title: "Select All", Callback: handleFemtoAction},
@@ -127,6 +128,14 @@ func syncTabCharacter(menus []*menu.Menu, buffer *femto.Buffer) {
 					menuItem.Title = "Tab Character (Tab)…"
 				} else {
 					menuItem.Title = "Tab Character (Space)…"
+				}
+			}
+			if menuItem.ID == ACTION_CONVERT_TAB_SPACES {
+				expandTab, ok := buffer.Settings["tabstospaces"]
+				if !ok || !expandTab.(bool) {
+					menuItem.Title = "Convert All Spaces to Tabs"
+				} else {
+					menuItem.Title = "Convert All Tabs to Spaces"
 				}
 			}
 		}

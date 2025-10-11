@@ -35,6 +35,7 @@ const (
 	ACTION_ABOUT                   = "About"
 	ACTION_NEXT_EDITOR             = "NextEditor"
 	ACTION_PREVIOUS_EDITOR         = "PreviousEditor"
+	ACTION_CONVERT_TAB_SPACES      = "ConvertTabSpaces"
 )
 
 var dinkyActionMapping map[string]func() tview.Primitive
@@ -61,6 +62,7 @@ func init() {
 		ACTION_FIND_PREVIOUS:           handleFindPrevious,
 		ACTION_NEXT_EDITOR:             handleNextEditor,
 		ACTION_PREVIOUS_EDITOR:         handlePreviousEditor,
+		ACTION_CONVERT_TAB_SPACES:      handleConvertTabSpaces,
 	}
 }
 
@@ -478,5 +480,19 @@ func handlePreviousEditor() tview.Primitive {
 			break
 		}
 	}
+	return nil
+}
+
+func handleConvertTabSpaces() tview.Primitive {
+	currentFileBuffer.editor.Retab()
+
+	expandTab, ok := currentFileBuffer.buffer.Settings["tabstospaces"]
+	var msg string
+	if !ok || !expandTab.(bool) {
+		msg = "Converted all tabs to spaces"
+	} else {
+		msg = "Converted all spaces to tabs"
+	}
+	statusBar.ShowMessage(msg)
 	return nil
 }
