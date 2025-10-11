@@ -40,6 +40,7 @@ Yes! We can have nice things in a terminal application. 💎
 - **Line numbers**: Toggle line number display
 - **Bracket matching**: Navigate between matching brackets
 - **Soft wrap**: Wrap long lines to window width
+- **Show whitespace**: You need this for Makefiles, sorry
 - **Syntax highlighting**: Support for multiple programming languages, looks pretty ✨
 
 ## Installation
@@ -75,7 +76,7 @@ Very much in development, So much development. I'll try to do regular releases a
 
 Dinky is built in Go and uses:
 - **[femto (my fork)](https://github.com/sedwards2009/femto)**: The editor component (based on micro's editing engine)
-- **[nuview (my fork of tview)](https://github.com/sedwards2009/nuview)**: Terminal UI framework
+- **[tview](https://github.com/rivo/tview/**: Terminal UI framework
 - **[tcell](https://github.com/gdamore/tcell)**: Cross-platform terminal handling
 
 ## License
