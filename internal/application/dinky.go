@@ -88,6 +88,9 @@ func newFile(contents string, filename string) {
 	bufferFindbar := findbar.NewFindbar(app, editor)
 	style.StyleFindbar(bufferFindbar)
 	bufferFindbar.SetFemtoKeybindings(femtoSingleLineKeyBindings)
+	bufferFindbar.SetOnError(func(err error) {
+		statusBar.ShowMessage(err.Error())
+	})
 
 	fileBuffer := &FileBuffer{
 		panelVFlex:    panelVFlex,
@@ -104,7 +107,7 @@ func newFile(contents string, filename string) {
 
 	fileBuffer.openFindbar = func() {
 		if !fileBuffer.isFindbarOpen {
-			fileBuffer.panelVFlex.AddItem(fileBuffer.findbar, 2, 0, false)
+			fileBuffer.panelVFlex.AddItem(fileBuffer.findbar, 1, 0, false)
 			fileBuffer.isFindbarOpen = true
 		}
 

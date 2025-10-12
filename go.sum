@@ -45,6 +45,8 @@ github.com/sedwards2009/femto v0.0.0-20251008200414-31a475f4fa20 h1:Q32PPKLtPZmI
 github.com/sedwards2009/femto v0.0.0-20251008200414-31a475f4fa20/go.mod h1:ReeteyVWX0ybfNs4L+4ysEZR2bKRSmo3m9im+4MJ4Bo=
 github.com/sedwards2009/femto v0.0.0-20251011172710-05a695c237b5 h1:cVtkqbqBH2yPVrOCDG/pk+X4s+QokCE0m+TrD2MZUMY=
 github.com/sedwards2009/femto v0.0.0-20251011172710-05a695c237b5/go.mod h1:ReeteyVWX0ybfNs4L+4ysEZR2bKRSmo3m9im+4MJ4Bo=
+github.com/sedwards2009/femto v0.0.0-20251012192813-f26513c1fc30 h1:ekqsWKtdAhM/0PstQMXLjTM0yIInw5BYICmqlVzYQOU=
+github.com/sedwards2009/femto v0.0.0-20251012192813-f26513c1fc30/go.mod h1:ReeteyVWX0ybfNs4L+4ysEZR2bKRSmo3m9im+4MJ4Bo=
 github.com/sergi/go-diff v1.1.0 h1:we8PVUC3FE2uYfodKH/nBHMSetSfHDR6scGdBi+erh0=
 github.com/sergi/go-diff v1.1.0/go.mod h1:STckp+ISIX8hZLjrqAeVduY0gWCT9IjLuqbuNXdaHfM=
 github.com/sergi/go-diff v1.4.0 h1:n/SP9D5ad1fORl+llWyN+D6qoUETXNZARKjyY2/KVCw=

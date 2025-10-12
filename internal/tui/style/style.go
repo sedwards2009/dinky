@@ -130,4 +130,12 @@ func StyleFindbar(findBar *findbar.Findbar) {
 	StyleButton(findBar.SearchUpButton)
 	StyleButton(findBar.SearchDownButton)
 	StyleButton(findBar.CloseButton)
+
+	StyleCheckbox(findBar.RegexCheckbox)
+	findBar.RegexCheckbox.SetCheckedString("[✓Regex ]")
+	findBar.RegexCheckbox.SetUncheckedString("[ Regex ]")
+
+	StyleCheckbox(findBar.CaseSensitiveCheckbox)
+	findBar.CaseSensitiveCheckbox.SetCheckedString("[✓Aa ]")
+	findBar.CaseSensitiveCheckbox.SetUncheckedString("[ Aa ]")
 }

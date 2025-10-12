@@ -10,13 +10,16 @@ import (
 
 type Findbar struct {
 	*tview.Flex
-	app               *tview.Application
-	editor            *femto.View
-	SearchStringField *femtoinputfield.FemtoInputField
-	SearchUpButton    *tview.Button
-	SearchDownButton  *tview.Button
-	CloseButton       *tview.Button
-	OnClose           func()
+	app                   *tview.Application
+	editor                *femto.View
+	SearchStringField     *femtoinputfield.FemtoInputField
+	SearchUpButton        *tview.Button
+	SearchDownButton      *tview.Button
+	CloseButton           *tview.Button
+	RegexCheckbox         *tview.Checkbox
+	CaseSensitiveCheckbox *tview.Checkbox
+	OnClose               func()
+	OnError               func(err error)
 }
 
 func NewFindbar(app *tview.Application, editor *femto.View) *Findbar {
@@ -50,7 +53,20 @@ func NewFindbar(app *tview.Application, editor *femto.View) *Findbar {
 	hFlex.AddItem(searchFieldLabel, 6, 0, false)
 
 	hFlex.AddItem(searchStringField, 0, 1, true)
+	f.SearchStringField = searchStringField
 	hFlex.AddItem(nil, 1, 0, false)
+
+	// Case Sensitive Checkbox [✓Aa ]
+	caseSensitiveCheckbox := tview.NewCheckbox()
+	caseSensitiveCheckbox.SetChecked(false)
+	hFlex.AddItem(caseSensitiveCheckbox, 7, 0, false)
+	f.CaseSensitiveCheckbox = caseSensitiveCheckbox
+
+	// Regex Checkbox [✓Regex ]
+	regexCheckbox := tview.NewCheckbox()
+	regexCheckbox.SetChecked(false)
+	hFlex.AddItem(regexCheckbox, 10, 0, false)
+	f.RegexCheckbox = regexCheckbox
 
 	searchUpButton := tview.NewButton("↑") // U+2191 UPWARDS ARROW
 	searchUpButton.SetSelectedFunc(f.SearchUp)
@@ -77,12 +93,21 @@ func NewFindbar(app *tview.Application, editor *femto.View) *Findbar {
 
 	f.AddItem(hFlex, 1, 0, true)
 
-	f.SearchStringField = searchStringField
+	// hFlex2 := tview.NewFlex()
+	// hFlex2.SetDirection(tview.FlexColumn)
+	// hFlex2.SetBorder(false)
+
+	// f.AddItem(hFlex2, 1, 0, true)
+
 	return f
 }
 
 func (f *Findbar) Focus(delegate func(p tview.Primitive)) {
 	delegate(f.SearchStringField)
+}
+
+func (f *Findbar) SetOnError(onError func(err error)) {
+	f.OnError = onError
 }
 
 func (f *Findbar) SetSearchText(text string) {
@@ -91,14 +116,26 @@ func (f *Findbar) SetSearchText(text string) {
 
 func (f *Findbar) SearchUp() {
 	if f.SearchStringField.GetText() != "" {
-		f.editor.Search(f.SearchStringField.GetText(), false, false)
+		err := f.editor.Search(f.SearchStringField.GetText(), f.RegexCheckbox.IsChecked(), f.CaseSensitiveCheckbox.IsChecked(), false)
+		if err != nil {
+			if f.OnError != nil {
+				f.OnError(err)
+			}
+			return
+		}
 		f.editor.Relocate()
 	}
 }
 
 func (f *Findbar) SearchDown() {
 	if f.SearchStringField.GetText() != "" {
-		f.editor.Search(f.SearchStringField.GetText(), false, true)
+		err := f.editor.Search(f.SearchStringField.GetText(), f.RegexCheckbox.IsChecked(), f.CaseSensitiveCheckbox.IsChecked(), true)
+		if err != nil {
+			if f.OnError != nil {
+				f.OnError(err)
+			}
+			return
+		}
 		f.editor.Relocate()
 	}
 }
