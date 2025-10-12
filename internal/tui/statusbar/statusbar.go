@@ -1,6 +1,7 @@
 package statusbar
 
 import (
+	"dinky/internal/tui/stylecolor"
 	"dinky/internal/tui/utils"
 	"fmt"
 	"time"
@@ -35,16 +36,15 @@ type StatusBar struct {
 }
 
 func NewStatusBar(app *tview.Application) *StatusBar {
-	fg := tcell.NewHexColor(0xf3f3f3)
-	bg := tcell.NewHexColor(0x007ace)
-	messageBg := tcell.NewHexColor(0x0b835c)
-	errorBg := tcell.NewHexColor(0xa4090c)
+	fg := stylecolor.White
+	bg := stylecolor.Blue
+
 	return &StatusBar{
 		Box:          tview.NewBox(),
 		app:          app,
 		Style:        tcell.StyleDefault.Foreground(fg).Background(bg),
-		MessageStyle: tcell.StyleDefault.Foreground(fg).Background(messageBg),
-		ErrorStyle:   tcell.StyleDefault.Foreground(fg).Background(errorBg),
+		MessageStyle: tcell.StyleDefault.Foreground(fg).Background(stylecolor.Green),
+		ErrorStyle:   tcell.StyleDefault.Foreground(fg).Background(stylecolor.Red),
 	}
 }
 
