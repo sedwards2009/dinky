@@ -37,6 +37,7 @@ const (
 	ACTION_PREVIOUS_EDITOR         = "PreviousEditor"
 	ACTION_CONVERT_TAB_SPACES      = "ConvertTabSpaces"
 	ACTION_TOGGLE_WHITESPACE       = "ToggleWhitespace"
+	ACTION_FIND_AND_REPLACE        = "FindAndReplace"
 )
 
 var dinkyActionMapping map[string]func() tview.Primitive
@@ -65,6 +66,7 @@ func init() {
 		ACTION_PREVIOUS_EDITOR:         handlePreviousEditor,
 		ACTION_CONVERT_TAB_SPACES:      handleConvertTabSpaces,
 		ACTION_TOGGLE_WHITESPACE:       handleToggleWhitespace,
+		ACTION_FIND_AND_REPLACE:        handleFindAndReplace,
 	}
 }
 
@@ -505,4 +507,10 @@ func handleToggleWhitespace() tview.Primitive {
 	buffer.Settings["showwhitespace"] = !on
 	syncShowWhitespace(menus, !on)
 	return nil
+}
+
+func handleFindAndReplace() tview.Primitive {
+	currentFileBuffer.openFindbar()
+	currentFileBuffer.findbar.Expand()
+	return currentFileBuffer.findbar
 }

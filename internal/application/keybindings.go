@@ -86,7 +86,7 @@ func initKeyBindings() {
 	// "CtrlPageDown":   "NextTab|FirstTab,
 	femtoKeyToActionMapping["ShiftPageUp"] = femto.ActionSelectPageUp
 	femtoKeyToActionMapping["ShiftPageDown"] = femto.ActionSelectPageDown
-	femtoKeyToActionMapping["Ctrl-r"] = femto.ActionToggleRuler
+	// "Ctrl-r" femto.ActionToggleRuler
 	// "Ctrl-w":         "NextSplit|FirstSplit,
 	// "Ctrl-u":         femto.ActionToggleMacro,
 	// "Ctrl-j":         femto.ActionPlayMacro,
@@ -117,6 +117,7 @@ func initKeyBindings() {
 		"F2":     ACTION_FIND_PREVIOUS,
 		"F9":     ACTION_NEXT_EDITOR,
 		"F10":    ACTION_PREVIOUS_EDITOR,
+		"Ctrl-r": ACTION_FIND_AND_REPLACE,
 	}
 
 	actionToKeyMapping = make(map[string]string)

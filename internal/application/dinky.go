@@ -91,6 +91,9 @@ func newFile(contents string, filename string) {
 	bufferFindbar.SetOnError(func(err error) {
 		statusBar.ShowMessage(err.Error())
 	})
+	bufferFindbar.SetOnMessage(func(message string) {
+		statusBar.ShowMessage(message)
+	})
 
 	fileBuffer := &FileBuffer{
 		panelVFlex:    panelVFlex,
@@ -128,6 +131,15 @@ func newFile(contents string, filename string) {
 			app.SetFocus(editor)
 		}
 	}
+	bufferFindbar.SetOnExpand(func(expanded bool) {
+		if fileBuffer.isFindbarOpen {
+			newSize := 1
+			if expanded {
+				newSize += 1
+			}
+			fileBuffer.panelVFlex.ResizeItem(fileBuffer.findbar, newSize, 0)
+		}
+	})
 
 	vScrollbar.UpdateHook = func(sb *scrollbar.Scrollbar) {
 		// Update the scrollbar's position and size based on the content

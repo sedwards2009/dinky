@@ -29,6 +29,7 @@ func createMenus() []*menu.Menu {
 			{ID: ACTION_FIND, Title: "Find", Callback: handleDinkyAction},
 			{ID: ACTION_FIND_NEXT, Title: "Find Next", Callback: handleDinkyAction},
 			{ID: ACTION_FIND_PREVIOUS, Title: "Find Previous", Callback: handleDinkyAction},
+			{ID: ACTION_FIND_AND_REPLACE, Title: "Find & Replace", Callback: handleDinkyAction},
 			{Title: "", Callback: nil}, // Separator
 			{ID: ACTION_SET_TAB_CHARACTER, Title: "Tab Character…", Callback: handleDinkyAction},
 			{ID: ACTION_SET_LINE_ENDINGS, Title: "Line Endings…", Callback: handleDinkyAction},
