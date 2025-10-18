@@ -366,3 +366,7 @@ func (fileList *FileList) SetShowHidden(showHidden bool) {
 	fileList.showHidden = showHidden
 	fileList.setEntries(fileList.allEntries, fileList.path)
 }
+
+func (fileList *FileList) Focus(delegate func(p tview.Primitive)) {
+	delegate(fileList.table)
+}
