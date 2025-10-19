@@ -331,6 +331,7 @@ func (fileDialog *FileDialog) handleListChanged(path string, entry os.DirEntry) 
 }
 
 func (fileDialog *FileDialog) SetPath(path string) {
+	path, _ = filepath.Abs(path)
 	if info, err := os.Stat(path); err == nil {
 		if info.IsDir() {
 			if !strings.HasSuffix(path, "/") {

@@ -86,8 +86,8 @@ var fileDialog *filedialog.FileDialog
 
 const fileDialogName = "fileDialog"
 
-func showFileDialog(title string, mode filedialog.FileDialogMode, defaultPath string, completedFunc func(accepted bool,
-	filePath string)) tview.Primitive {
+func showFileDialog(title string, mode filedialog.FileDialogMode, defaultPath string,
+	completedFunc func(accepted bool, filePath string)) tview.Primitive {
 
 	if fileDialog == nil {
 		fileDialog = filedialog.NewFileDialog(app)
@@ -184,15 +184,16 @@ func writeCurrentFileBuffer() {
 
 func handleSaveFileAs() tview.Primitive {
 	fileBuffer := getFileBufferByID(fileBufferID)
-	return showFileDialog("Save File As", filedialog.SAVE_FILE_MODE, fileBuffer.filename, func(accepted bool, filePath string) {
-		hideFileDialog()
-		if !accepted {
-			return
-		}
-		fileBuffer.filename = filePath
-		tabBarLine.SetTabTitle(fileBufferID, filepath.Base(fileBuffer.filename))
-		writeCurrentFileBuffer()
-	})
+	return showFileDialog("Save File As", filedialog.SAVE_FILE_MODE, fileBuffer.filename,
+		func(accepted bool, filePath string) {
+			hideFileDialog()
+			if !accepted {
+				return
+			}
+			fileBuffer.filename = filePath
+			tabBarLine.SetTabTitle(fileBufferID, filepath.Base(fileBuffer.filename))
+			writeCurrentFileBuffer()
+		})
 }
 
 func handleCloseFile() tview.Primitive {
