@@ -8,6 +8,7 @@ import (
 	"dinky/internal/tui/findbar"
 	"dinky/internal/tui/menu"
 	"dinky/internal/tui/scrollbar"
+	"dinky/internal/tui/settingsdialog"
 	"dinky/internal/tui/stylecolor"
 	"dinky/internal/tui/tabbar"
 	"dinky/internal/tui/table2"
@@ -146,4 +147,17 @@ func StyleFindbar(findBar *findbar.Findbar) {
 	findBar.ExpanderCheckbox.SetCheckedStyle(tcell.StyleDefault.Background(stylecolor.ButtonBackgroundColor).Foreground(stylecolor.ButtonLabelColor))
 	findBar.ExpanderCheckbox.SetCheckedString(" \u2BC6 ")
 	findBar.ExpanderCheckbox.SetUncheckedString(" \u2BC8 ")
+}
+
+func StyleSettingsDialog(sd *settingsdialog.SettingsDialog) {
+	sd.SetBackgroundColor(stylecolor.LightGray)
+	StyleButton(sd.OkButton)
+	StyleButton(sd.CancelButton)
+
+	StyleTable(sd.ColorSchemeTableField)
+	sd.SetItemTextColor(stylecolor.White)
+	sd.SetItemBackgroundColor(stylecolor.Black)
+	sd.SetSelectedItemBackgroundColor(stylecolor.Blue)
+
+	StyleScrollbar(sd.ColorSchemeTableVerticalScrollbar)
 }

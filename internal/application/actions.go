@@ -1,8 +1,10 @@
 package application
 
 import (
+	"dinky/internal/application/settingstype"
 	"dinky/internal/tui/dialog"
 	"dinky/internal/tui/filedialog"
+	"dinky/internal/tui/settingsdialog"
 	"dinky/internal/tui/style"
 	"os"
 	"path/filepath"
@@ -38,6 +40,7 @@ const (
 	ACTION_CONVERT_TAB_SPACES      = "ConvertTabSpaces"
 	ACTION_TOGGLE_WHITESPACE       = "ToggleWhitespace"
 	ACTION_FIND_AND_REPLACE        = "FindAndReplace"
+	ACTION_SETTINGS                = "Settings"
 )
 
 var dinkyActionMapping map[string]func() tview.Primitive
@@ -67,6 +70,7 @@ func init() {
 		ACTION_CONVERT_TAB_SPACES:      handleConvertTabSpaces,
 		ACTION_TOGGLE_WHITESPACE:       handleToggleWhitespace,
 		ACTION_FIND_AND_REPLACE:        handleFindAndReplace,
+		ACTION_SETTINGS:                handleSettings,
 	}
 }
 
@@ -514,4 +518,25 @@ func handleFindAndReplace() tview.Primitive {
 	currentFileBuffer.openFindbar()
 	currentFileBuffer.findbar.Expand()
 	return currentFileBuffer.findbar
+}
+
+var settingsDialog *settingsdialog.SettingsDialog
+
+func handleSettings() tview.Primitive {
+	settingsDialogName := "settings"
+	if settingsDialog == nil {
+		settingsDialog = settingsdialog.NewSettingsDialog()
+		style.StyleSettingsDialog(settingsDialog)
+		settingsDialog.SetCloseFunc(func() {
+			modalPages.RemovePage(settingsDialogName)
+		})
+		settingsDialog.SetOkFunc(func(newSettings settingstype.Settings) {
+			settings = newSettings
+			SaveSettings(settings)
+			loadEditorColorScheme(settings.ColorScheme)
+		})
+	}
+	settingsDialog.SetSettings(settings)
+	modalPages.AddPage(settingsDialogName, settingsDialog, true, true)
+	return settingsDialog
 }

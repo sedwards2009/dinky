@@ -20,21 +20,11 @@ type MessageDialog struct {
 }
 
 func NewMessageDialog(app *tview.Application) *MessageDialog {
-	topLayout := tview.NewFlex()
-
-	topLayout.AddItem(nil, 0, 1, false)
-
-	innerFlex := tview.NewFlex()
-	innerFlex.AddItem(nil, 0, 1, false)
-
 	verticalContentsFlex := tview.NewFlex()
 	verticalContentsFlex.SetDirection(tview.FlexRow)
-
 	verticalContentsFlex.Box = tview.NewBox() // Nasty hack to clear the `dontClear` flag inside Box.
 	verticalContentsFlex.Box.Primitive = verticalContentsFlex
-
 	verticalContentsFlex.SetBorderPadding(1, 1, 1, 1)
-	// verticalContentsFlex.SetBackgroundTransparent(false)
 	verticalContentsFlex.SetBorder(true)
 	verticalContentsFlex.SetTitleAlign(tview.AlignLeft)
 
@@ -43,17 +33,20 @@ func NewMessageDialog(app *tview.Application) *MessageDialog {
 
 	buttonsFlex := tview.NewFlex()
 	buttonsFlex.SetDirection(tview.FlexColumn)
-	// buttonsFlex.SetBackgroundTransparent(false)
 	buttonsFlex.SetBorder(false)
 	verticalContentsFlex.AddItem(buttonsFlex, 1, 0, false)
 
+	innerFlex := tview.NewFlex()
+	innerFlex.SetDirection(tview.FlexColumn)
+	innerFlex.AddItem(nil, 0, 1, false)
 	innerFlex.AddItem(verticalContentsFlex, 80, 0, true)
 	innerFlex.AddItem(nil, 0, 1, false)
-	innerFlex.SetDirection(tview.FlexColumn)
 
+	topLayout := tview.NewFlex()
+	topLayout.SetDirection(tview.FlexRow)
+	topLayout.AddItem(nil, 0, 1, false)
 	topLayout.AddItem(innerFlex, 20, 0, true)
 	topLayout.AddItem(nil, 0, 1, false)
-	topLayout.SetDirection(tview.FlexRow)
 
 	result := &MessageDialog{
 		Flex:                 topLayout,
@@ -132,6 +125,7 @@ func (d *MessageDialog) FocusButton(index int) {
 
 func (d *MessageDialog) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
 	return d.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
+		// This exists to prevent elements behind this dialog from receiving mouse events.
 		d.verticalContentsFlex.MouseHandler()(action, event, setFocus)
 		return true, nil
 	})

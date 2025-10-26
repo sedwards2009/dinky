@@ -9,7 +9,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.19
 	github.com/rivo/tview v0.42.1-0.20250927122039-2cde1d24230c
 	github.com/rivo/uniseg v0.4.7
-	github.com/sedwards2009/femto v0.0.0-20251016174604-6e2ffeda955f
+	github.com/sedwards2009/femto v0.0.0-20251026125232-dbf9395ef96b
 )
 
 require (

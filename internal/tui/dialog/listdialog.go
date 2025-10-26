@@ -66,6 +66,7 @@ func NewListDialog(app *tview.Application) *ListDialog {
 	verticalContentsFlex.AddItem(nil, 1, 0, false)
 
 	tableField := table2.NewTable()
+	tableField.SetSelectable(true, false)
 
 	tableFlex := tview.NewFlex()
 	tableFlex.SetDirection(tview.FlexColumn)
@@ -147,7 +148,6 @@ func (d *ListDialog) Open(options ListDialogOptions) {
 		}
 		d.TableField.SetCell(rowIndex, 0, cell)
 	}
-	d.TableField.SetSelectable(true, false)
 
 	d.TableField.Select(0, 0)
 	for rowIndex, item := range options.Items {

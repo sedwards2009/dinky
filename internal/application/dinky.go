@@ -1,6 +1,7 @@
 package application
 
 import (
+	"dinky/internal/application/settingstype"
 	"dinky/internal/tui/findbar"
 	"dinky/internal/tui/menu"
 	"dinky/internal/tui/scrollbar"
@@ -35,6 +36,7 @@ var modalPages *tview.Pages
 var editorPages *tview.Pages
 var statusBar *statusbar.StatusBar
 
+var settings settingstype.Settings
 var colorscheme femto.Colorscheme
 
 type FileBuffer struct {
@@ -55,12 +57,20 @@ var fileBuffers []*FileBuffer
 var currentFileBuffer *FileBuffer
 
 // -----------------------------------------------------------------
-func initEditorColorScheme() {
-	if monokai := runtime.Files.FindFile(femto.RTColorscheme, "monokai"); monokai != nil {
-		if data, err := monokai.Data(); err == nil {
+func loadEditorColorScheme(colorSchemeName string) {
+	if colorScheme := runtime.Files.FindFile(femto.RTColorscheme, colorSchemeName); colorScheme != nil {
+		if data, err := colorScheme.Data(); err == nil {
 			colorscheme = femto.ParseColorscheme(string(data))
 		}
 	}
+
+	for _, fileBuffer := range fileBuffers {
+		fileBuffer.editor.SetColorscheme(colorscheme)
+	}
+
+	defaultStyle := colorscheme.GetColor("default")
+	_, bg, _ := defaultStyle.Decompose()
+	tabBarLine.SetTabBackgroundColor(bg)
 }
 
 func newFile(contents string, filename string) {
@@ -71,8 +81,13 @@ func newFile(contents string, filename string) {
 	editor.SetColorscheme(colorscheme)
 	editor.SetKeybindings(femtoDefaultKeyBindings)
 	editor.SetInputCapture(editorInputCapture)
-	buffer.Settings["matchbrace"] = true
-	buffer.Settings["tabstospaces"] = false // Default to using tab character
+	buffer.Settings["matchbrace"] = settings.ShowMatchBracket
+	buffer.Settings["ruler"] = settings.ShowLineNumbers
+	buffer.Settings["showwhitespace"] = settings.ShowWhitespace
+	buffer.Settings["showwhitespace"] = settings.ShowWhitespace
+	buffer.Settings["softwrap"] = settings.SoftWrap
+	buffer.Settings["tabsize"] = float64(settings.TabSize)
+	buffer.Settings["tabstospaces"] = settings.TabCharacter == "tab" // Default to using tab character
 
 	panelHFlex := tview.NewFlex()
 	panelHFlex.SetDirection(tview.FlexColumn)
@@ -350,7 +365,8 @@ func Main() {
 		log.SetOutput(io.Discard)
 	}
 
-	initEditorColorScheme()
+	settings = LoadUserSettings()
+
 	initKeyBindings()
 
 	app = tview.NewApplication()
@@ -388,10 +404,7 @@ func Main() {
 		handleCloseFile()
 	}
 
-	defaultStyle := colorscheme.GetColor("default")
-	_, bg, _ := defaultStyle.Decompose()
-	tabBarLine.SetTabBackgroundColor(bg)
-
+	loadEditorColorScheme(settings.ColorScheme)
 	mainUiFlex.AddItem(tabBarLine, 1, 0, false)
 
 	editorPages = tview.NewPages()
