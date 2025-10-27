@@ -47,6 +47,11 @@ var ListShortcutColor tcell.Color
 var ListSelectedTextColor tcell.Color
 var ListSelectedBackgroundColor tcell.Color
 
+var DropDownTextColor tcell.Color
+var DropDownBackgroundColor tcell.Color
+var DropDownSelectedTextColor tcell.Color
+var DropDownSelectedBackgroundColor tcell.Color
+
 func init() {
 	tview.Styles.TitleColor = Black
 	tview.Styles.BorderColor = Black
@@ -87,4 +92,9 @@ func init() {
 	ListShortcutColor = LightGray
 	ListSelectedTextColor = White
 	ListSelectedBackgroundColor = Blue
+
+	DropDownTextColor = White
+	DropDownBackgroundColor = Black
+	DropDownSelectedTextColor = White
+	DropDownSelectedBackgroundColor = Blue
 }

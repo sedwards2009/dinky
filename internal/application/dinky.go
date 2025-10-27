@@ -84,10 +84,9 @@ func newFile(contents string, filename string) {
 	buffer.Settings["matchbrace"] = settings.ShowMatchBracket
 	buffer.Settings["ruler"] = settings.ShowLineNumbers
 	buffer.Settings["showwhitespace"] = settings.ShowWhitespace
-	buffer.Settings["showwhitespace"] = settings.ShowWhitespace
 	buffer.Settings["softwrap"] = settings.SoftWrap
 	buffer.Settings["tabsize"] = float64(settings.TabSize)
-	buffer.Settings["tabstospaces"] = settings.TabCharacter == "tab" // Default to using tab character
+	buffer.Settings["tabstospaces"] = settings.TabCharacter == "space"
 
 	panelHFlex := tview.NewFlex()
 	panelHFlex.SetDirection(tview.FlexColumn)

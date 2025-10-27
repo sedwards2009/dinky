@@ -60,6 +60,15 @@ func StyleInputField(inputField *tview.InputField) {
 	inputField.SetLabelStyle(tcell.StyleDefault.Foreground(stylecolor.InputFieldLabelColor))
 }
 
+func StyleDropDown(dropDown *tview.DropDown) {
+	dropDown.SetFieldStyle(tcell.StyleDefault.Background(stylecolor.InputFieldFieldBackgroundColor).Foreground(stylecolor.InputFieldFieldTextColor))
+	dropDown.SetLabelStyle(tcell.StyleDefault.Foreground(stylecolor.InputFieldLabelColor))
+
+	unselectedItemStyle := tcell.StyleDefault.Background(stylecolor.DropDownBackgroundColor).Foreground(stylecolor.DropDownTextColor)
+	selectedItemStyle := tcell.StyleDefault.Background(stylecolor.DropDownSelectedBackgroundColor).Foreground(stylecolor.DropDownSelectedTextColor)
+	dropDown.SetListStyles(unselectedItemStyle, selectedItemStyle)
+}
+
 func StyleFemtoInputField(femtoInputField *femtoinputfield.FemtoInputField) {
 	femtoInputField.SetTextColor(stylecolor.InputFieldFieldTextColor, stylecolor.InputFieldFieldBackgroundColor)
 }
@@ -153,6 +162,13 @@ func StyleSettingsDialog(sd *settingsdialog.SettingsDialog) {
 	sd.SetBackgroundColor(stylecolor.LightGray)
 	StyleButton(sd.OkButton)
 	StyleButton(sd.CancelButton)
+	StyleCheckbox(sd.ShowLineNumbersCheckbox)
+	StyleCheckbox(sd.ShowWhitespaceCheckbox)
+	StyleCheckbox(sd.ShowMatchBracketCheckbox)
+	StyleCheckbox(sd.SoftWrapCheckbox)
+
+	StyleDropDown(sd.TabCharDropdown)
+	StyleDropDown(sd.TabSizeDropdown)
 
 	StyleTable(sd.ColorSchemeTableField)
 	sd.SetItemTextColor(stylecolor.White)
