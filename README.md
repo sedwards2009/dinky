@@ -37,6 +37,7 @@ Yes! We can have nice things in a terminal application. 💎
 - **Desktop style keyboard shortcuts**: and menus which show the shortcuts so you can subconsciously learn them while you ~~sleep~~ work.
 - **Go to Line**: Jump to specific lines & columns
 - **Find**: Find that needle in the haystack
+- **Find & Replace**: Replace said needle in haystack
 - **Line numbers**: Toggle line number display
 - **Bracket matching**: Navigate between matching brackets
 - **Soft wrap**: Wrap long lines to window width
@@ -76,7 +77,7 @@ Very much in development, So much development. I'll try to do regular releases a
 
 Dinky is built in Go and uses:
 - **[femto (my fork)](https://github.com/sedwards2009/femto)**: The editor component (based on micro's editing engine)
-- **[tview](https://github.com/rivo/tview/**: Terminal UI framework
+- **[tview](https://github.com/rivo/tview/)**: Terminal UI framework
 - **[tcell](https://github.com/gdamore/tcell)**: Cross-platform terminal handling
 
 ## License
