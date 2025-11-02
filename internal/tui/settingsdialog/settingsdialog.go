@@ -23,8 +23,8 @@ type SettingsDialog struct {
 	ShowWhitespaceCheckbox   *tview.Checkbox
 	ShowMatchBracketCheckbox *tview.Checkbox
 	SoftWrapCheckbox         *tview.Checkbox
-	TabCharDropdown          *tview.DropDown
-	TabSizeDropdown          *tview.DropDown
+	TabCharList              *tview.List
+	TabSizeList              *tview.List
 
 	// Femto color scheme list
 	ColorSchemeTableField             *table2.Table
@@ -101,40 +101,66 @@ func main() {
 	firstColumnFlex.SetDirection(tview.FlexRow)
 
 	showLineNumbersCheckbox := tview.NewCheckbox()
-	showLineNumbersCheckbox.SetLabel("Show Line Numbers: ")
+	showLineNumbersCheckbox.SetLabel("Show Line Numbers:  ")
 	firstColumnFlex.AddItem(showLineNumbersCheckbox, 1, 0, false)
 
 	showWhitespaceCheckbox := tview.NewCheckbox()
-	showWhitespaceCheckbox.SetLabel("Show Whitespace:   ")
+	showWhitespaceCheckbox.SetLabel("Show Whitespace:    ")
 	firstColumnFlex.AddItem(showWhitespaceCheckbox, 1, 0, false)
 
 	softWrapCheckbox := tview.NewCheckbox()
-	softWrapCheckbox.SetLabel("Soft Wrap:         ")
+	softWrapCheckbox.SetLabel("Soft Wrap:          ")
 	firstColumnFlex.AddItem(softWrapCheckbox, 1, 0, false)
 
-	optionsColumnFlex.AddItem(firstColumnFlex, 0, 1, false)
+	showMatchBracketCheckbox := tview.NewCheckbox()
+	showMatchBracketCheckbox.SetLabel("Show Match Bracket: ")
+	firstColumnFlex.AddItem(showMatchBracketCheckbox, 1, 0, false)
 
 	// Second column of checkboxes
 	secondColumnFlex := tview.NewFlex()
 	secondColumnFlex.SetDirection(tview.FlexRow)
 
-	showMatchBracketCheckbox := tview.NewCheckbox()
-	showMatchBracketCheckbox.SetLabel("Show Match Bracket: ")
-	secondColumnFlex.AddItem(showMatchBracketCheckbox, 1, 0, false)
+	tabCharLabel := tview.NewTextView()
+	tabCharLabel.SetText("Tab Character: ")
+	secondColumnFlex.AddItem(tabCharLabel, 2, 0, false)
 
-	tabCharDropdown := tview.NewDropDown()
-	tabCharDropdown.SetLabel("Tab Character:      ")
-	tabCharDropdown.SetOptions([]string{"Tab", "Spaces"}, nil)
-	secondColumnFlex.AddItem(tabCharDropdown, 1, 0, false)
+	// Third column of options
+	thirdColumnFlex := tview.NewFlex()
+	thirdColumnFlex.SetDirection(tview.FlexRow)
 
-	tabSizeDropdown := tview.NewDropDown()
-	tabSizeDropdown.SetLabel("Tab Size:           ")
-	tabSizeDropdown.SetOptions([]string{"2", "4", "8", "16"}, nil)
-	secondColumnFlex.AddItem(tabSizeDropdown, 1, 0, false)
+	tabCharList := tview.NewList()
+	tabCharList.ShowSecondaryText(false)
+	tabCharList.AddItem(" Tab    ", "", 0, nil)
+	tabCharList.AddItem(" Spaces ", "", 0, nil)
+	thirdColumnFlex.AddItem(tabCharList, 2, 0, false)
 
-	optionsColumnFlex.AddItem(secondColumnFlex, 0, 1, false)
+	// Fourth column of options
+	forthColumnFlex := tview.NewFlex()
+	forthColumnFlex.SetDirection(tview.FlexRow)
 
-	verticalContentsFlex.AddItem(optionsColumnFlex, 3, 0, false)
+	tabSizeLabel := tview.NewTextView()
+	tabSizeLabel.SetText("  Tab Size:")
+	forthColumnFlex.AddItem(tabSizeLabel, 1, 0, false)
+
+	// Fifth column of options
+	fifthColumnFlex := tview.NewFlex()
+	fifthColumnFlex.SetDirection(tview.FlexRow)
+
+	tabSizeList := tview.NewList()
+	tabSizeList.ShowSecondaryText(false)
+	tabSizeList.AddItem(" 2  ", "", 0, nil)
+	tabSizeList.AddItem(" 4  ", "", 0, nil)
+	tabSizeList.AddItem(" 8  ", "", 0, nil)
+	tabSizeList.AddItem(" 16 ", "", 0, nil)
+	fifthColumnFlex.AddItem(tabSizeList, 4, 0, false)
+
+	optionsColumnFlex.AddItem(firstColumnFlex, 25, 0, false)
+	optionsColumnFlex.AddItem(secondColumnFlex, 15, 0, false)
+	optionsColumnFlex.AddItem(thirdColumnFlex, 8, 0, false)
+	optionsColumnFlex.AddItem(forthColumnFlex, 12, 0, false)
+	optionsColumnFlex.AddItem(fifthColumnFlex, 0, 1, false)
+
+	verticalContentsFlex.AddItem(optionsColumnFlex, 4, 0, false)
 
 	verticalContentsFlex.AddItem(nil, 1, 0, false)
 
@@ -158,7 +184,7 @@ func main() {
 
 	topLayout := tview.NewFlex()
 	topLayout.AddItem(nil, 0, 1, false)
-	topLayout.AddItem(innerFlex, 70, 1, true)
+	topLayout.AddItem(innerFlex, 68, 1, true)
 	topLayout.AddItem(nil, 0, 1, false)
 
 	sd := &SettingsDialog{
@@ -170,8 +196,8 @@ func main() {
 		ShowWhitespaceCheckbox:   showWhitespaceCheckbox,
 		ShowMatchBracketCheckbox: showMatchBracketCheckbox,
 		SoftWrapCheckbox:         softWrapCheckbox,
-		TabCharDropdown:          tabCharDropdown,
-		TabSizeDropdown:          tabSizeDropdown,
+		TabCharList:              tabCharList,
+		TabSizeList:              tabSizeList,
 
 		ColorSchemeTableField:             colorSchemeTableField,
 		ColorSchemeTableFlex:              colorSchemeTableFlex,
@@ -247,21 +273,21 @@ func (sd *SettingsDialog) SetSettings(settings settingstype.Settings) {
 	sd.ShowMatchBracketCheckbox.SetChecked(settings.ShowMatchBracket)
 	sd.SoftWrapCheckbox.SetChecked(settings.SoftWrap)
 	if settings.TabCharacter == "tab" {
-		sd.TabCharDropdown.SetCurrentOption(0)
+		sd.TabCharList.SetCurrentItem(0)
 	} else {
-		sd.TabCharDropdown.SetCurrentOption(1)
+		sd.TabCharList.SetCurrentItem(1)
 	}
 	switch settings.TabSize {
 	case 2:
-		sd.TabSizeDropdown.SetCurrentOption(0)
+		sd.TabSizeList.SetCurrentItem(0)
 	case 4:
-		sd.TabSizeDropdown.SetCurrentOption(1)
+		sd.TabSizeList.SetCurrentItem(1)
 	case 8:
-		sd.TabSizeDropdown.SetCurrentOption(2)
+		sd.TabSizeList.SetCurrentItem(2)
 	case 16:
-		sd.TabSizeDropdown.SetCurrentOption(3)
+		sd.TabSizeList.SetCurrentItem(3)
 	default:
-		sd.TabSizeDropdown.SetCurrentOption(1)
+		sd.TabSizeList.SetCurrentItem(1)
 	}
 }
 
@@ -272,21 +298,22 @@ func (sd *SettingsDialog) getSettings() settingstype.Settings {
 	newSettings.ShowWhitespace = sd.ShowWhitespaceCheckbox.IsChecked()
 	newSettings.ShowMatchBracket = sd.ShowMatchBracketCheckbox.IsChecked()
 	newSettings.SoftWrap = sd.SoftWrapCheckbox.IsChecked()
-	_, tabChar := sd.TabCharDropdown.GetCurrentOption()
-	if tabChar == "Tab" {
+	tabCharIndex := sd.TabCharList.GetCurrentItem()
+	if tabCharIndex == 0 {
 		newSettings.TabCharacter = "tab"
 	} else {
 		newSettings.TabCharacter = "space"
 	}
-	_, tabSizeStr := sd.TabSizeDropdown.GetCurrentOption()
-	switch tabSizeStr {
-	case "2":
+
+	tabSizeIndex := sd.TabSizeList.GetCurrentItem()
+	switch tabSizeIndex {
+	case 0:
 		newSettings.TabSize = 2
-	case "4":
+	case 1:
 		newSettings.TabSize = 4
-	case "8":
+	case 2:
 		newSettings.TabSize = 8
-	case "16":
+	case 3:
 		newSettings.TabSize = 16
 	default:
 		newSettings.TabSize = 4

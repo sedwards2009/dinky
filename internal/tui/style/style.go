@@ -94,6 +94,11 @@ func StyleTableCell(cell *table2.TableCell) {
 	cell.SetStyle(tcell.StyleDefault.Foreground(stylecolor.White).Background(stylecolor.Black))
 }
 
+func StyleList(list *tview.List) {
+	list.SetMainTextStyle(tcell.StyleDefault.Foreground(stylecolor.White).Background(stylecolor.Black))
+	list.SetSelectedStyle(tcell.StyleDefault.Foreground(stylecolor.White).Background(stylecolor.Blue))
+}
+
 func StyleMessageDialog(messageDialog *dialog.MessageDialog) {
 	messageDialog.SetBackgroundColor(stylecolor.LightGray)
 	for _, button := range messageDialog.Buttons {
@@ -167,8 +172,8 @@ func StyleSettingsDialog(sd *settingsdialog.SettingsDialog) {
 	StyleCheckbox(sd.ShowMatchBracketCheckbox)
 	StyleCheckbox(sd.SoftWrapCheckbox)
 
-	StyleDropDown(sd.TabCharDropdown)
-	StyleDropDown(sd.TabSizeDropdown)
+	StyleList(sd.TabCharList)
+	StyleList(sd.TabSizeList)
 
 	StyleTable(sd.ColorSchemeTableField)
 	sd.SetItemTextColor(stylecolor.White)
