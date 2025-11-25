@@ -3,20 +3,18 @@ package femtoinputfield
 import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	"github.com/sedwards2009/femto"
-	"github.com/sedwards2009/femto/runtime"
+	"github.com/sedwards2009/smidgen"
 )
 
 type FemtoInputField struct {
-	*femto.View
+	*smidgen.View
 	done    func(tcell.Key)
 	changed func(text string)
 }
 
-func NewFemtoInputField() *FemtoInputField {
-	buffer := femto.NewBufferFromString("", "")
-	editor := femto.NewView(buffer)
-	editor.SetRuntimeFiles(runtime.Files)
+func NewSmidgenInputField(app *tview.Application) *FemtoInputField {
+	buffer := smidgen.NewBufferFromString("", "")
+	editor := smidgen.NewView(app, buffer)
 	buffer.Settings["ruler"] = false
 	buffer.Settings["hidecursoronblur"] = true
 
@@ -25,23 +23,23 @@ func NewFemtoInputField() *FemtoInputField {
 	}
 }
 
-func (f *FemtoInputField) SetKeybindings(keybindings femto.KeyBindings) {
+func (f *FemtoInputField) SetKeybindings(keybindings smidgen.Keybindings) {
 	f.View.SetKeybindings(keybindings)
 }
 
 func (f *FemtoInputField) SetTextColor(foreground tcell.Color, background tcell.Color) {
-	scheme := make(femto.Colorscheme)
+	scheme := make(smidgen.Colorscheme)
 	scheme["default"] = tcell.StyleDefault.Foreground(foreground).Background(background)
 	f.View.SetColorscheme(scheme)
 }
 
 func (f *FemtoInputField) GetText() string {
-	return f.View.Buf.Line(0)
+	return f.View.Buffer().Line(0)
 }
 
 func (f *FemtoInputField) SetText(text string) {
-	f.View.DeleteLine()
-	f.View.Buf.Insert(f.View.Buf.Start(), text)
+	f.View.ActionController().DeleteLine()
+	f.View.Buffer().Insert(f.View.Buffer().Start(), text)
 }
 
 func (f *FemtoInputField) InputHandler() func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
@@ -54,10 +52,10 @@ func (f *FemtoInputField) InputHandler() func(event *tcell.EventKey, setFocus fu
 			return
 		}
 
-		f.View.Buf.IsModified = false
+		f.View.Buffer().ClearModified()
 		f.View.InputHandler()(event, setFocus)
-		if f.View.Buf.IsModified {
-			f.View.Buf.IsModified = false
+		if f.View.Buffer().Modified() {
+			f.View.Buffer().ClearModified()
 			if f.changed != nil {
 				f.changed(f.GetText())
 			}

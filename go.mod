@@ -14,9 +14,11 @@ require (
 
 require (
 	github.com/atotto/clipboard v0.1.4 // indirect
+	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
 	github.com/gdamore/encoding v1.0.1 // indirect
 	github.com/lucasb-eyer/go-colorful v1.3.0 // indirect
+	github.com/sedwards2009/smidgen v0.0.0-20251119210736-ff59a2e5fdce // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
 	github.com/zyedidia/micro v1.4.1 // indirect
 	golang.org/x/sys v0.37.0 // indirect

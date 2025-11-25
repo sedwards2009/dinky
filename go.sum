@@ -1,6 +1,8 @@
 github.com/atotto/clipboard v0.1.2/go.mod h1:ZY9tmq7sm5xIbd9bOK4onWV4S6X0u6GY7Vn0Yu86PYI=
 github.com/atotto/clipboard v0.1.4 h1:EH0zSVneZPSuFR11BlR9YppQTVDbh5+16AmcJi4g1z4=
 github.com/atotto/clipboard v0.1.4/go.mod h1:ZY9tmq7sm5xIbd9bOK4onWV4S6X0u6GY7Vn0Yu86PYI=
+github.com/blang/semver v3.5.1+incompatible h1:cQNTCjp13qL8KC3Nbxr/y2Bqb63oX6wdnnjpJbkM4JQ=
+github.com/blang/semver v3.5.1+incompatible/go.mod h1:kRBLl5iJ+tD4TcOOxsy/0fnwebNt5EWlYSAyrTnjyyk=
 github.com/clipperhouse/uax29/v2 v2.2.0 h1:ChwIKnQN3kcZteTXMgb1wztSgaU+ZemkgWdohwgs8tY=
 github.com/clipperhouse/uax29/v2 v2.2.0/go.mod h1:EFJ2TJMRUaplDxHKj1qAEhCtQPW2tJSwu5BF98AuoVM=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -39,6 +41,8 @@ github.com/sedwards2009/femto v0.0.0-20251016174604-6e2ffeda955f h1:SLtdZxxG16YT
 github.com/sedwards2009/femto v0.0.0-20251016174604-6e2ffeda955f/go.mod h1:ReeteyVWX0ybfNs4L+4ysEZR2bKRSmo3m9im+4MJ4Bo=
 github.com/sedwards2009/femto v0.0.0-20251026125232-dbf9395ef96b h1:A6Is2CszdC861cMY/iN3VtDseujVbf9xklfugjv6dww=
 github.com/sedwards2009/femto v0.0.0-20251026125232-dbf9395ef96b/go.mod h1:ReeteyVWX0ybfNs4L+4ysEZR2bKRSmo3m9im+4MJ4Bo=
+github.com/sedwards2009/smidgen v0.0.0-20251119210736-ff59a2e5fdce h1:Ja4wM7o6lz1sjhC7swBNOlFd1wG9mBsZq0tjN+w1QAA=
+github.com/sedwards2009/smidgen v0.0.0-20251119210736-ff59a2e5fdce/go.mod h1:JoIrRb8oFigd4MloRK04b1Iqc+RFqt+POXekZtfWRlE=
 github.com/sergi/go-diff v1.1.0/go.mod h1:STckp+ISIX8hZLjrqAeVduY0gWCT9IjLuqbuNXdaHfM=
 github.com/sergi/go-diff v1.4.0 h1:n/SP9D5ad1fORl+llWyN+D6qoUETXNZARKjyY2/KVCw=
 github.com/sergi/go-diff v1.4.0/go.mod h1:A0bzQcvG0E7Rwjx0REVgAGH58e96+X0MeOfepqsbeW4=

@@ -1,6 +1,7 @@
 package application
 
 import (
+	"bytes"
 	"dinky/internal/application/settingstype"
 	"dinky/internal/tui/findbar"
 	"dinky/internal/tui/menu"
@@ -13,15 +14,15 @@ import (
 	"log"
 	"os"
 	"path"
-	"strings"
 
 	"runtime/debug"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/google/uuid"
 	"github.com/rivo/tview"
-	"github.com/sedwards2009/femto"
-	"github.com/sedwards2009/femto/runtime"
+	"github.com/sedwards2009/smidgen"
+	"github.com/sedwards2009/smidgen/micro/buffer"
+	"github.com/sedwards2009/smidgen/micro/display"
 )
 
 // -----------------------------------------------------------------
@@ -37,7 +38,7 @@ var editorPages *tview.Pages
 var statusBar *statusbar.StatusBar
 
 var settings settingstype.Settings
-var colorscheme femto.Colorscheme
+var colorscheme smidgen.Colorscheme
 
 type FileBuffer struct {
 	panelVFlex    *tview.Flex
@@ -47,8 +48,8 @@ type FileBuffer struct {
 	isFindbarOpen bool
 	openFindbar   func()
 
-	buffer   *femto.Buffer
-	editor   *femto.View
+	buffer   *buffer.Buffer
+	editor   *smidgen.View
 	uuid     string
 	filename string
 }
@@ -58,10 +59,9 @@ var currentFileBuffer *FileBuffer
 
 // -----------------------------------------------------------------
 func loadEditorColorScheme(colorSchemeName string) {
-	if colorScheme := runtime.Files.FindFile(femto.RTColorscheme, colorSchemeName); colorScheme != nil {
-		if data, err := colorScheme.Data(); err == nil {
-			colorscheme = femto.ParseColorscheme(string(data))
-		}
+	colorscheme, ok := smidgen.LoadInternalColorscheme(colorSchemeName)
+	if !ok {
+		colorscheme, _ = smidgen.LoadInternalColorscheme("monokai")
 	}
 
 	for _, fileBuffer := range fileBuffers {
@@ -74,10 +74,9 @@ func loadEditorColorScheme(colorSchemeName string) {
 }
 
 func newFile(contents string, filename string) {
-	buffer := femto.NewBufferFromString(contents, "")
-	editor := femto.NewView(buffer)
+	buffer := smidgen.NewBufferFromString(contents, "")
+	editor := smidgen.NewView(app, buffer)
 	buffer.Path = filename // femto uses this to determine the file type
-	editor.SetRuntimeFiles(runtime.Files)
 	editor.SetColorscheme(colorscheme)
 	editor.SetKeybindings(femtoDefaultKeyBindings)
 	editor.SetInputCapture(editorInputCapture)
@@ -128,14 +127,14 @@ func newFile(contents string, filename string) {
 			fileBuffer.isFindbarOpen = true
 		}
 
-		selectionText := editor.Cursor.GetSelection()
-		if selectionText != "" {
+		selectionText := editor.Cursor().GetSelection()
+		if len(selectionText) != 0 {
 			// Split the text into lines and use the first line only
 			// (as the findbar is a single line input)
-			if idx := strings.IndexByte(selectionText, '\n'); idx > 0 {
+			if idx := bytes.IndexByte(selectionText, '\n'); idx > 0 {
 				selectionText = selectionText[:idx]
 			}
-			fileBuffer.findbar.SetSearchText(selectionText)
+			fileBuffer.findbar.SetSearchText(string(selectionText))
 		}
 	}
 	bufferFindbar.OnClose = func() {
@@ -159,11 +158,12 @@ func newFile(contents string, filename string) {
 		// Update the scrollbar's position and size based on the content
 		_, _, _, height := editor.GetRect()
 		sb.Track.SetThumbSize(height)
-		sb.Track.SetMax(buffer.NumLines)
-		sb.Track.SetPosition(editor.Topline)
+		sb.Track.SetMax(buffer.LinesNum())
+		sloc := editor.ActionController().GetView().StartLine
+		sb.Track.SetPosition(sloc.Line)
 	}
 	vScrollbar.SetChangedFunc(func(position int) {
-		editor.Topline = position
+		editor.ActionController().SetStartLine(display.SLoc{Line: position, Row: 0})
 	})
 
 	fileBuffers = append(fileBuffers, fileBuffer)
@@ -218,14 +218,14 @@ func syncStatusBarFromFileBuffer(statusBar *statusbar.StatusBar) {
 		return
 	}
 	statusBar.Filename = fileBuffer.filename
-	statusBar.Line = fileBuffer.editor.Cursor.Y + 1
-	statusBar.Col = fileBuffer.editor.Cursor.X + 1
+	statusBar.Line = fileBuffer.editor.Cursor().Y + 1
+	statusBar.Col = fileBuffer.editor.Cursor().X + 1
 
-	statusBar.IsModified = fileBuffer.buffer.IsModified
+	statusBar.IsModified = fileBuffer.buffer.Modified()
 
 	tabSize := int(fileBuffer.buffer.Settings["tabsize"].(float64))
 	statusBar.TabSize = tabSize
-	statusBar.IsOverwriteMode = fileBuffer.editor.IsOverwriteMode()
+	statusBar.IsOverwriteMode = fileBuffer.buffer.OverwriteMode
 
 	lineEndings := "LF"
 	if isBufferCRLF(fileBuffer.buffer) {
@@ -234,7 +234,7 @@ func syncStatusBarFromFileBuffer(statusBar *statusbar.StatusBar) {
 	statusBar.LineEndings = lineEndings
 }
 
-func isBufferCRLF(buffer *femto.Buffer) bool {
+func isBufferCRLF(buffer *buffer.Buffer) bool {
 	return buffer.Settings["fileformat"].(string) == "dos"
 }
 

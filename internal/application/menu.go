@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/sedwards2009/femto"
+	"github.com/sedwards2009/smidgen/micro/buffer"
 )
 
 func createMenus() []*menu.Menu {
@@ -21,12 +22,12 @@ func createMenus() []*menu.Menu {
 			{ID: ACTION_QUIT, Title: "Quit", Callback: handleDinkyAction},
 		}},
 		{Title: "Edit", Items: []*menu.MenuItem{
-			{ID: femto.ActionUndo, Title: "Undo", Callback: handleFemtoAction},
-			{ID: femto.ActionRedo, Title: "Redo", Callback: handleFemtoAction},
+			{ID: femto.ActionUndo, Title: "Undo", Callback: handleSmidgenAction},
+			{ID: femto.ActionRedo, Title: "Redo", Callback: handleSmidgenAction},
 			{Title: "", Callback: nil}, // Separator
-			{ID: femto.ActionCut, Title: "Cut", Callback: handleFemtoAction},
-			{ID: femto.ActionCopy, Title: "Copy", Callback: handleFemtoAction},
-			{ID: femto.ActionPaste, Title: "Paste", Callback: handleFemtoAction},
+			{ID: femto.ActionCut, Title: "Cut", Callback: handleSmidgenAction},
+			{ID: femto.ActionCopy, Title: "Copy", Callback: handleSmidgenAction},
+			{ID: femto.ActionPaste, Title: "Paste", Callback: handleSmidgenAction},
 			{Title: "", Callback: nil}, // Separator
 			{ID: ACTION_FIND, Title: "Find", Callback: handleDinkyAction},
 			{ID: ACTION_FIND_NEXT, Title: "Find Next", Callback: handleDinkyAction},
@@ -38,22 +39,22 @@ func createMenus() []*menu.Menu {
 			{ID: ACTION_CONVERT_TAB_SPACES, Title: "Convert All Tabs to Spaces", Callback: handleDinkyAction},
 		}},
 		{Title: "Selection", Items: []*menu.MenuItem{
-			{ID: femto.ActionSelectAll, Title: "Select All", Callback: handleFemtoAction},
+			{ID: femto.ActionSelectAll, Title: "Select All", Callback: handleSmidgenAction},
 			{Title: "", Callback: nil}, // Separator
 			{ID: ACTION_GO_TO_LINE, Title: "Go to Line…", Callback: handleDinkyAction},
-			{ID: femto.ActionJumpToMatchingBrace, Title: "Go to Bracket", Callback: handleFemtoAction},
-			{ID: femto.ActionParagraphPrevious, Title: "Previous Paragraph", Callback: handleFemtoAction},
-			{ID: femto.ActionParagraphNext, Title: "Next Paragraph", Callback: handleFemtoAction},
+			{ID: femto.ActionJumpToMatchingBrace, Title: "Go to Bracket", Callback: handleSmidgenAction},
+			{ID: femto.ActionParagraphPrevious, Title: "Previous Paragraph", Callback: handleSmidgenAction},
+			{ID: femto.ActionParagraphNext, Title: "Next Paragraph", Callback: handleSmidgenAction},
 			{ID: ACTION_NEXT_EDITOR, Title: "Next Editor", Callback: handleDinkyAction},
 			{ID: ACTION_PREVIOUS_EDITOR, Title: "Previous Editor", Callback: handleDinkyAction},
 			{Title: "", Callback: nil}, // Separator
-			{ID: femto.ActionSpawnMultiCursor, Title: "Add Next Occurrence", Callback: handleFemtoAction},
-			{ID: femto.ActionSpawnMultiCursorSelect, Title: "Add Cursors to Selection", Callback: handleFemtoAction},
-			{ID: femto.ActionRemoveMultiCursor, Title: "Remove Last Cursor", Callback: handleFemtoAction},
-			{ID: femto.ActionRemoveAllMultiCursors, Title: "Remove All Cursors", Callback: handleFemtoAction},
+			{ID: femto.ActionSpawnMultiCursor, Title: "Add Next Occurrence", Callback: handleSmidgenAction},
+			{ID: femto.ActionSpawnMultiCursorSelect, Title: "Add Cursors to Selection", Callback: handleSmidgenAction},
+			{ID: femto.ActionRemoveMultiCursor, Title: "Remove Last Cursor", Callback: handleSmidgenAction},
+			{ID: femto.ActionRemoveAllMultiCursors, Title: "Remove All Cursors", Callback: handleSmidgenAction},
 		}},
 		{Title: "View", Items: []*menu.MenuItem{
-			{ID: femto.ActionToggleRuler, Title: "Line Numbers", Callback: handleFemtoAction},
+			{ID: femto.ActionToggleRuler, Title: "Line Numbers", Callback: handleSmidgenAction},
 			{ID: ACTION_TOGGLE_WHITESPACE, Title: "Show Whitespace", Callback: handleDinkyAction},
 			{ID: ACTION_TOGGLE_SOFT_WRAP, Title: "Soft Wrap", Callback: handleDinkyAction},
 			{ID: ACTION_TOGGLE_MATCH_BRACKET, Title: "Match Brackets", Callback: handleDinkyAction},
@@ -109,7 +110,7 @@ func syncShowWhitespace(menus []*menu.Menu, on bool) {
 	syncToggleMenuItem(menus, ACTION_TOGGLE_WHITESPACE, "Show Whitespace", on)
 }
 
-func syncLineEndings(menus []*menu.Menu, buffer *femto.Buffer) {
+func syncLineEndings(menus []*menu.Menu, buffer *buffer.Buffer) {
 	for _, menu := range menus {
 		for _, menuItem := range menu.Items {
 			if menuItem.ID == ACTION_SET_LINE_ENDINGS {
@@ -123,7 +124,7 @@ func syncLineEndings(menus []*menu.Menu, buffer *femto.Buffer) {
 	}
 }
 
-func syncTabCharacter(menus []*menu.Menu, buffer *femto.Buffer) {
+func syncTabCharacter(menus []*menu.Menu, buffer *buffer.Buffer) {
 	for _, menu := range menus {
 		for _, menuItem := range menu.Items {
 			if menuItem.ID == ACTION_SET_TAB_CHARACTER {
@@ -160,7 +161,7 @@ func syncTabSize(menus []*menu.Menu, size int) {
 	}
 }
 
-func syncSyntaxHighlighting(menus []*menu.Menu, buffer *femto.Buffer) {
+func syncSyntaxHighlighting(menus []*menu.Menu, buffer *buffer.Buffer) {
 	for _, menu := range menus {
 		for _, menuItem := range menu.Items {
 			if menuItem.ID == ACTION_SET_SYNTAX_HIGHLIGHTING {
@@ -187,7 +188,7 @@ func syncSyntaxHighlighting(menus []*menu.Menu, buffer *femto.Buffer) {
 	}
 }
 
-func syncMenuFromBuffer(buffer *femto.Buffer) {
+func syncMenuFromBuffer(buffer *buffer.Buffer) {
 	softwrap := buffer.Settings["softwrap"].(bool)
 	syncSoftWrap(menus, softwrap)
 	lineNumbers := buffer.Settings["ruler"].(bool)

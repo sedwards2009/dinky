@@ -6,13 +6,14 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	"github.com/sedwards2009/femto"
+	"github.com/sedwards2009/smidgen"
+	"github.com/sedwards2009/smidgen/micro/buffer"
 )
 
 type Findbar struct {
 	*tview.Flex
 	app                   *tview.Application
-	editor                *femto.View
+	editor                *smidgen.View
 	SearchStringField     *femtoinputfield.FemtoInputField
 	SearchUpButton        *tview.Button
 	SearchDownButton      *tview.Button
@@ -31,7 +32,7 @@ type Findbar struct {
 	hFlex2 *tview.Flex
 }
 
-func NewFindbar(app *tview.Application, editor *femto.View) *Findbar {
+func NewFindbar(app *tview.Application, editor *smidgen.View) *Findbar {
 	f := &Findbar{
 		Flex:   tview.NewFlex(),
 		app:    app,
@@ -54,7 +55,7 @@ func NewFindbar(app *tview.Application, editor *femto.View) *Findbar {
 	searchFieldLabel.SetText(" Find: ")
 	hFlex.AddItem(searchFieldLabel, 7, 0, false)
 
-	searchStringField := femtoinputfield.NewFemtoInputField()
+	searchStringField := femtoinputfield.NewSmidgenInputField(app)
 	searchStringField.SetDoneFunc(func(key tcell.Key) {
 		switch key {
 		case tcell.KeyEscape:
@@ -116,7 +117,7 @@ func NewFindbar(app *tview.Application, editor *femto.View) *Findbar {
 	replaceFieldLabel.SetText(" Replace: ")
 	hFlex2.AddItem(replaceFieldLabel, 10, 0, false)
 
-	replaceStringField := femtoinputfield.NewFemtoInputField()
+	replaceStringField := femtoinputfield.NewSmidgenInputField(app)
 	replaceStringField.SetDoneFunc(func(key tcell.Key) {
 		switch key {
 		case tcell.KeyEscape:
@@ -191,7 +192,7 @@ func (f *Findbar) search(directionDown bool) bool {
 	regex := f.RegexCheckbox.IsChecked()
 	caseSensitive := f.CaseSensitiveCheckbox.IsChecked()
 
-	found, err := f.editor.Search(searchText, regex, caseSensitive, directionDown)
+	found, err := f.editor.ActionController().Search(searchText, regex, caseSensitive, directionDown)
 	if err != nil {
 		if f.OnError != nil {
 			f.OnError(err)
@@ -201,26 +202,26 @@ func (f *Findbar) search(directionDown bool) bool {
 
 	if !found {
 		// Wrap the cursor around either to the start or end of the buffer
-		prevLoc := f.editor.Cursor.Loc
-		prevStartSelection := f.editor.Cursor.CurSelection[0]
-		prevEndSelection := f.editor.Cursor.CurSelection[1]
+		prevLoc := f.editor.Cursor().Loc
+		prevStartSelection := f.editor.Cursor().CurSelection[0]
+		prevEndSelection := f.editor.Cursor().CurSelection[1]
 
-		var wrapLoc femto.Loc
+		var wrapLoc buffer.Loc
 		if directionDown {
-			wrapLoc = f.editor.Buf.Start()
+			wrapLoc = f.editor.Buffer().Start()
 		} else {
-			wrapLoc = f.editor.Buf.End()
+			wrapLoc = f.editor.Buffer().End()
 		}
-		f.editor.Cursor.Loc = wrapLoc
-		f.editor.Cursor.SetSelectionStart(wrapLoc)
-		f.editor.Cursor.SetSelectionEnd(wrapLoc)
+		f.editor.Cursor().Loc = wrapLoc
+		f.editor.Cursor().SetSelectionStart(wrapLoc)
+		f.editor.Cursor().SetSelectionEnd(wrapLoc)
 
-		found, _ := f.editor.Search(searchText, regex, caseSensitive, directionDown)
+		found, _ := f.editor.ActionController().Search(searchText, regex, caseSensitive, directionDown)
 		if !found {
 			// Restore previous cursor position if not found
-			f.editor.Cursor.Loc = prevLoc
-			f.editor.Cursor.SetSelectionStart(prevStartSelection)
-			f.editor.Cursor.SetSelectionEnd(prevEndSelection)
+			f.editor.Cursor().Loc = prevLoc
+			f.editor.Cursor().SetSelectionStart(prevStartSelection)
+			f.editor.Cursor().SetSelectionEnd(prevEndSelection)
 			return false
 		}
 	}
@@ -238,9 +239,9 @@ func (f *Findbar) SearchDown() {
 
 func (f *Findbar) Replace() {
 	// Collapse the selection if there is one
-	if f.editor.Cursor.HasSelection() {
-		f.editor.Cursor.Loc = f.editor.Cursor.CurSelection[0]
-		f.editor.Cursor.ResetSelection()
+	if f.editor.Cursor().HasSelection() {
+		f.editor.Cursor().Loc = f.editor.Cursor().CurSelection[0]
+		f.editor.Cursor().ResetSelection()
 	}
 
 	found := f.search(true)
@@ -249,11 +250,11 @@ func (f *Findbar) Replace() {
 	}
 	replaceText := f.hFlex2.GetItem(1).(*femtoinputfield.FemtoInputField).GetText()
 
-	if f.editor.Cursor.HasSelection() {
-		f.editor.Cursor.DeleteSelection()
-		f.editor.Cursor.ResetSelection()
+	if f.editor.Cursor().HasSelection() {
+		f.editor.Cursor().DeleteSelection()
+		f.editor.Cursor().ResetSelection()
 	}
-	f.editor.Buf.Insert(f.editor.Cursor.Loc, replaceText)
+	f.editor.Buffer().Insert(f.editor.Cursor().Loc, replaceText)
 
 	f.search(true)
 
@@ -263,7 +264,7 @@ func (f *Findbar) Replace() {
 func (f *Findbar) ReplaceAll() {
 	regex := f.RegexCheckbox.IsChecked()
 	caseSensitive := f.CaseSensitiveCheckbox.IsChecked()
-	count, err := f.editor.ReplaceAll(f.SearchStringField.GetText(), regex, caseSensitive, f.hFlex2.GetItem(1).(*femtoinputfield.FemtoInputField).GetText())
+	count, err := f.editor.ActionController().ReplaceAll(f.SearchStringField.GetText(), regex, caseSensitive, f.hFlex2.GetItem(1).(*femtoinputfield.FemtoInputField).GetText())
 	if err != nil {
 		if f.OnError != nil {
 			f.OnError(err)
@@ -275,7 +276,7 @@ func (f *Findbar) ReplaceAll() {
 	}
 }
 
-func (f *Findbar) SetFemtoKeybindings(keybindings femto.KeyBindings) {
+func (f *Findbar) SetFemtoKeybindings(keybindings smidgen.Keybindings) {
 	f.SearchStringField.SetKeybindings(keybindings)
 }
 

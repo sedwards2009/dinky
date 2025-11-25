@@ -14,6 +14,7 @@ import (
 	"github.com/rivo/tview"
 	"github.com/sedwards2009/femto"
 	"github.com/sedwards2009/femto/runtime"
+	"github.com/sedwards2009/smidgen/micro/buffer"
 )
 
 const (
@@ -152,11 +153,11 @@ func handleOpenFile() tview.Primitive {
 	})
 }
 
-func bufferToBytes(buffer *femto.Buffer) []byte {
-	return buffer.LineArray.Bytes(isBufferCRLF(buffer))
+func bufferToBytes(buffer *buffer.Buffer) []byte {
+	return buffer.LineArray.Bytes()
 }
 
-func writeFile(filename string, buffer *femto.Buffer) (ok bool, message string) {
+func writeFile(filename string, buffer *buffer.Buffer) (ok bool, message string) {
 	contents := bufferToBytes(buffer)
 	err := renameio.WriteFile(filename, contents, 0644)
 	if err != nil {
@@ -178,7 +179,7 @@ func handleSaveFile() tview.Primitive {
 func writeCurrentFileBuffer() {
 	fileBuffer := getFileBufferByID(fileBufferID)
 	ok, message := writeFile(fileBuffer.filename, fileBuffer.buffer)
-	fileBuffer.buffer.IsModified = false
+	fileBuffer.buffer.ClearModified()
 	if ok {
 		statusBar.ShowMessage(message)
 	} else {
@@ -202,7 +203,7 @@ func handleSaveFileAs() tview.Primitive {
 
 func handleCloseFile() tview.Primitive {
 	fileBuffer := getFileBufferByID(fileBufferID)
-	if fileBuffer.buffer.IsModified {
+	if fileBuffer.buffer.Modified() {
 		return ShowConfirmDialog("File has unsaved changes. Close anyway?", func() {
 			closeFile(fileBufferID)
 			if len(fileBuffers) == 0 {
@@ -258,10 +259,11 @@ func handleMatchBracket() tview.Primitive {
 	return nil
 }
 
-func handleFemtoAction(id string) tview.Primitive {
-	if f, ok := femto.BindingActionsMapping[id]; ok {
-		f(currentFileBuffer.editor)
-		if id == femto.ActionToggleRuler {
+func handleSmidgenAction(id string) tview.Primitive {
+	action := currentFileBuffer.editor.MapActionNameToAction(id)
+	if action != nil {
+		action()
+		if id == "ToggleRuler" {
 			syncMenuFromBuffer(currentFileBuffer.buffer)
 		}
 	}
@@ -351,7 +353,7 @@ func handleSetLineEndings() tview.Primitive {
 }
 
 func handleSetSyntaxHighlighting() tview.Primitive {
-	var buffer *femto.Buffer
+	var buffer *buffer.Buffer
 	if currentFileBuffer.buffer != nil {
 		buffer = currentFileBuffer.buffer
 	}
@@ -401,12 +403,10 @@ func handleSetSyntaxHighlighting() tview.Primitive {
 			if value == "" {
 				// Auto-detect - reset filetype and trigger detection
 				buffer.Settings["filetype"] = "Unknown"
-				currentFileBuffer.editor.SetRuntimeFiles(runtime.Files)
 				statusBar.ShowMessage("Syntax highlighting set to auto-detect")
 			} else {
 				// Set specific syntax
 				buffer.Settings["filetype"] = value
-				currentFileBuffer.editor.SetRuntimeFiles(runtime.Files)
 				statusBar.ShowMessage("Syntax highlighting set to " + strings.Title(value))
 			}
 			syncMenuFromBuffer(buffer)
@@ -419,7 +419,7 @@ func handleQuit() tview.Primitive {
 	closeNextFileBuffer = func() tview.Primitive {
 		if len(fileBuffers) > 0 {
 			fileBuffer := fileBuffers[0]
-			if fileBuffer.buffer.IsModified {
+			if fileBuffer.buffer.Modified() {
 				selectTab(fileBuffer.uuid)
 				return ShowConfirmDialog("File has unsaved changes. Close anyway?", func() {
 					closeFile(fileBuffer.uuid)
@@ -493,7 +493,7 @@ func handlePreviousEditor() tview.Primitive {
 }
 
 func handleConvertTabSpaces() tview.Primitive {
-	currentFileBuffer.editor.Retab()
+	currentFileBuffer.editor.Buffer().Retab()
 
 	expandTab, ok := currentFileBuffer.buffer.Settings["tabstospaces"]
 	var msg string

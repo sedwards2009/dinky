@@ -7,7 +7,7 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	"github.com/sedwards2009/femto"
+	"github.com/sedwards2009/smidgen/micro/buffer"
 )
 
 var inputDialog *dialog.InputDialog
@@ -139,7 +139,7 @@ func parseAndGoToLine(input string) {
 	colNum--
 
 	// Validate line number
-	if lineNum < 0 || lineNum >= currentFileBuffer.buffer.NumLines {
+	if lineNum < 0 || lineNum >= currentFileBuffer.buffer.LinesNum() {
 		statusBar.ShowError("Line number out of range")
 		return
 	}
@@ -153,8 +153,7 @@ func parseAndGoToLine(input string) {
 	}
 
 	// Move cursor to the specified location
-	currentFileBuffer.editor.Cursor.GotoLoc(femto.Loc{X: colNum, Y: lineNum})
-	currentFileBuffer.editor.Relocate()
+	currentFileBuffer.editor.GoToLoc(buffer.Loc{X: colNum, Y: lineNum})
 
 	statusBar.ShowMessage("Jumped to line " + strconv.Itoa(lineNum+1))
 }

@@ -5,7 +5,7 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	"github.com/sedwards2009/femto"
+	"github.com/sedwards2009/smidgen"
 )
 
 type InputDialog struct {
@@ -52,7 +52,7 @@ func NewInputDialog(app *tview.Application) *InputDialog {
 	verticalContentsFlex.SetBorder(true)
 	verticalContentsFlex.SetTitleAlign(tview.AlignLeft)
 
-	inputField := femtoinputfield.NewFemtoInputField()
+	inputField := femtoinputfield.NewSmidgenInputField(app)
 
 	inputFieldFlex := tview.NewFlex()
 	inputFieldFlex.SetDirection(tview.FlexColumn)
@@ -193,6 +193,6 @@ func (d *InputDialog) handleTabKey(direction int) {
 	}
 }
 
-func (d *InputDialog) SetFemtoKeybindings(keybindings femto.KeyBindings) {
+func (d *InputDialog) SetFemtoKeybindings(keybindings smidgen.Keybindings) {
 	d.InputField.SetKeybindings(keybindings)
 }

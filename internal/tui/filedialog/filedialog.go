@@ -9,7 +9,7 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	"github.com/sedwards2009/femto"
+	"github.com/sedwards2009/smidgen"
 )
 
 type FileDialogMode int
@@ -59,7 +59,7 @@ func NewFileDialog(app *tview.Application) *FileDialog {
 	directoryLabel.SetText("[::u]D[::U]irectory: ")
 	directoryFlex.AddItem(directoryLabel, 11, 0, false)
 
-	directoryField := femtoinputfield.NewFemtoInputField()
+	directoryField := femtoinputfield.NewSmidgenInputField(app)
 	directoryFlex.AddItem(directoryField, 0, 1, false)
 
 	directoryFlex.AddItem(nil, 1, 0, false)
@@ -78,7 +78,7 @@ func NewFileDialog(app *tview.Application) *FileDialog {
 	filenameLabel := tview.NewTextView()
 	filenameLabel.SetLabel("[::u]F[::U]ile name: ")
 	filenameFlex.AddItem(filenameLabel, 11, 0, false)
-	filenameField := femtoinputfield.NewFemtoInputField()
+	filenameField := femtoinputfield.NewSmidgenInputField(app)
 	filenameFlex.AddItem(filenameField, 0, 1, false)
 
 	vertContentsFlex.AddItem(filenameFlex, 1, 0, false)
@@ -385,7 +385,7 @@ func (fileDialog *FileDialog) syncActionButton() {
 
 }
 
-func (fileDialog *FileDialog) SetFemtoKeybindings(keybindings femto.KeyBindings) {
+func (fileDialog *FileDialog) SetFemtoKeybindings(keybindings smidgen.Keybindings) {
 	fileDialog.DirectoryField.SetKeybindings(keybindings)
 	fileDialog.FilenameField.SetKeybindings(keybindings)
 }
