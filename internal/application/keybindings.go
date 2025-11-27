@@ -71,6 +71,12 @@ func initKeyBindings() {
 		"CtrlHome": smidgen.ActionCursorStart,
 		"CtrlEnd":  smidgen.ActionCursorEnd,
 		"Delete":   smidgen.ActionDelete,
+
+		"MouseWheelUp":     smidgen.ActionScrollUp,
+		"MouseWheelDown":   smidgen.ActionScrollDown,
+		"MouseLeft":        smidgen.ActionMousePress,
+		"MouseLeftDrag":    smidgen.ActionMouseDrag,
+		"MouseLeftRelease": smidgen.ActionMouseRelease,
 	}
 
 	// Copy femtoSimpleKeyToActionMapping into femtoKeyToActionMapping
