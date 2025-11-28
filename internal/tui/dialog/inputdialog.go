@@ -1,7 +1,7 @@
 package dialog
 
 import (
-	"dinky/internal/tui/femtoinputfield"
+	"dinky/internal/tui/smidgeninputfield"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -14,7 +14,7 @@ type InputDialog struct {
 
 	verticalContentsFlex *tview.Flex
 	buttonsFlex          *tview.Flex
-	InputField           *femtoinputfield.FemtoInputField
+	InputField           *smidgeninputfield.SmidgenInputField
 	innerFlex            *tview.Flex
 	inputFieldFlex       *tview.Flex
 	Buttons              []*tview.Button
@@ -52,7 +52,7 @@ func NewInputDialog(app *tview.Application) *InputDialog {
 	verticalContentsFlex.SetBorder(true)
 	verticalContentsFlex.SetTitleAlign(tview.AlignLeft)
 
-	inputField := femtoinputfield.NewSmidgenInputField(app)
+	inputField := smidgeninputfield.NewSmidgenInputField(app)
 
 	inputFieldFlex := tview.NewFlex()
 	inputFieldFlex.SetDirection(tview.FlexColumn)
@@ -193,6 +193,6 @@ func (d *InputDialog) handleTabKey(direction int) {
 	}
 }
 
-func (d *InputDialog) SetFemtoKeybindings(keybindings smidgen.Keybindings) {
+func (d *InputDialog) SetSmidgenKeybindings(keybindings smidgen.Keybindings) {
 	d.InputField.SetKeybindings(keybindings)
 }

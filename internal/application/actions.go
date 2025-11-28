@@ -12,8 +12,7 @@ import (
 
 	"github.com/google/renameio/v2"
 	"github.com/rivo/tview"
-	"github.com/sedwards2009/femto"
-	"github.com/sedwards2009/femto/runtime"
+	"github.com/sedwards2009/smidgen"
 	"github.com/sedwards2009/smidgen/micro/buffer"
 )
 
@@ -97,7 +96,7 @@ func showFileDialog(title string, mode filedialog.FileDialogMode, defaultPath st
 	if fileDialog == nil {
 		fileDialog = filedialog.NewFileDialog(app)
 		style.StyleFileDialog(fileDialog)
-		fileDialog.SetFemtoKeybindings(femtoDefaultKeyBindings)
+		fileDialog.SetSmidgenKeybindings(smidgenDefaultKeyBindings)
 	}
 	fileDialog.SetTitle(title)
 	if defaultPath == "" {
@@ -364,18 +363,16 @@ func handleSetSyntaxHighlighting() tview.Primitive {
 	}
 
 	// Get all available syntax files
-	syntaxFiles := runtime.Files.ListRuntimeFiles(femto.RTSyntax)
+	syntaxes := smidgen.ListSyntaxes()
 
 	// Create list items from syntax files
 	items := []dialog.ListItem{}
 	items = append(items, dialog.ListItem{Text: "Auto-detect", Value: ""})
 
-	for _, file := range syntaxFiles {
-		// Extract the name without the .yaml extension
-		name := strings.TrimSuffix(file.Name(), ".yaml")
+	for _, syntaxName := range syntaxes {
 		// Capitalize the first letter for display
-		displayName := strings.Title(name)
-		items = append(items, dialog.ListItem{Text: displayName, Value: name})
+		displayName := strings.Title(syntaxName)
+		items = append(items, dialog.ListItem{Text: displayName, Value: syntaxName})
 	}
 
 	currentFiletype := buffer.FileType()
@@ -525,7 +522,7 @@ var settingsDialog *settingsdialog.SettingsDialog
 func handleSettings() tview.Primitive {
 	settingsDialogName := "settings"
 	if settingsDialog == nil {
-		settingsDialog = settingsdialog.NewSettingsDialog()
+		settingsDialog = settingsdialog.NewSettingsDialog(app)
 		style.StyleSettingsDialog(settingsDialog)
 		settingsDialog.SetCloseFunc(func() {
 			modalPages.RemovePage(settingsDialogName)

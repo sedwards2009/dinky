@@ -4,7 +4,7 @@ import (
 	"dinky/internal/tui/menu"
 	"strings"
 
-	"github.com/sedwards2009/femto"
+	"github.com/sedwards2009/smidgen"
 	"github.com/sedwards2009/smidgen/micro/buffer"
 )
 
@@ -22,12 +22,12 @@ func createMenus() []*menu.Menu {
 			{ID: ACTION_QUIT, Title: "Quit", Callback: handleDinkyAction},
 		}},
 		{Title: "Edit", Items: []*menu.MenuItem{
-			{ID: femto.ActionUndo, Title: "Undo", Callback: handleSmidgenAction},
-			{ID: femto.ActionRedo, Title: "Redo", Callback: handleSmidgenAction},
+			{ID: smidgen.ActionUndo, Title: "Undo", Callback: handleSmidgenAction},
+			{ID: smidgen.ActionRedo, Title: "Redo", Callback: handleSmidgenAction},
 			{Title: "", Callback: nil}, // Separator
-			{ID: femto.ActionCut, Title: "Cut", Callback: handleSmidgenAction},
-			{ID: femto.ActionCopy, Title: "Copy", Callback: handleSmidgenAction},
-			{ID: femto.ActionPaste, Title: "Paste", Callback: handleSmidgenAction},
+			{ID: smidgen.ActionCut, Title: "Cut", Callback: handleSmidgenAction},
+			{ID: smidgen.ActionCopy, Title: "Copy", Callback: handleSmidgenAction},
+			{ID: smidgen.ActionPaste, Title: "Paste", Callback: handleSmidgenAction},
 			{Title: "", Callback: nil}, // Separator
 			{ID: ACTION_FIND, Title: "Find", Callback: handleDinkyAction},
 			{ID: ACTION_FIND_NEXT, Title: "Find Next", Callback: handleDinkyAction},
@@ -39,22 +39,22 @@ func createMenus() []*menu.Menu {
 			{ID: ACTION_CONVERT_TAB_SPACES, Title: "Convert All Tabs to Spaces", Callback: handleDinkyAction},
 		}},
 		{Title: "Selection", Items: []*menu.MenuItem{
-			{ID: femto.ActionSelectAll, Title: "Select All", Callback: handleSmidgenAction},
+			{ID: smidgen.ActionSelectAll, Title: "Select All", Callback: handleSmidgenAction},
 			{Title: "", Callback: nil}, // Separator
 			{ID: ACTION_GO_TO_LINE, Title: "Go to Line…", Callback: handleDinkyAction},
-			{ID: femto.ActionJumpToMatchingBrace, Title: "Go to Bracket", Callback: handleSmidgenAction},
-			{ID: femto.ActionParagraphPrevious, Title: "Previous Paragraph", Callback: handleSmidgenAction},
-			{ID: femto.ActionParagraphNext, Title: "Next Paragraph", Callback: handleSmidgenAction},
+			{ID: smidgen.ActionJumpToMatchingBrace, Title: "Go to Bracket", Callback: handleSmidgenAction},
+			{ID: smidgen.ActionParagraphPrevious, Title: "Previous Paragraph", Callback: handleSmidgenAction},
+			{ID: smidgen.ActionParagraphNext, Title: "Next Paragraph", Callback: handleSmidgenAction},
 			{ID: ACTION_NEXT_EDITOR, Title: "Next Editor", Callback: handleDinkyAction},
 			{ID: ACTION_PREVIOUS_EDITOR, Title: "Previous Editor", Callback: handleDinkyAction},
 			{Title: "", Callback: nil}, // Separator
-			{ID: femto.ActionSpawnMultiCursor, Title: "Add Next Occurrence", Callback: handleSmidgenAction},
-			{ID: femto.ActionSpawnMultiCursorSelect, Title: "Add Cursors to Selection", Callback: handleSmidgenAction},
-			{ID: femto.ActionRemoveMultiCursor, Title: "Remove Last Cursor", Callback: handleSmidgenAction},
-			{ID: femto.ActionRemoveAllMultiCursors, Title: "Remove All Cursors", Callback: handleSmidgenAction},
+			{ID: smidgen.ActionSpawnMultiCursor, Title: "Add Next Occurrence", Callback: handleSmidgenAction},
+			{ID: smidgen.ActionSpawnMultiCursorSelect, Title: "Add Cursors to Selection", Callback: handleSmidgenAction},
+			{ID: smidgen.ActionRemoveMultiCursor, Title: "Remove Last Cursor", Callback: handleSmidgenAction},
+			{ID: smidgen.ActionRemoveAllMultiCursors, Title: "Remove All Cursors", Callback: handleSmidgenAction},
 		}},
 		{Title: "View", Items: []*menu.MenuItem{
-			{ID: femto.ActionToggleRuler, Title: "Line Numbers", Callback: handleSmidgenAction},
+			{ID: smidgen.ActionToggleRuler, Title: "Line Numbers", Callback: handleSmidgenAction},
 			{ID: ACTION_TOGGLE_WHITESPACE, Title: "Show Whitespace", Callback: handleDinkyAction},
 			{ID: ACTION_TOGGLE_SOFT_WRAP, Title: "Soft Wrap", Callback: handleDinkyAction},
 			{ID: ACTION_TOGGLE_MATCH_BRACKET, Title: "Match Brackets", Callback: handleDinkyAction},
@@ -67,10 +67,10 @@ func createMenus() []*menu.Menu {
 	}
 }
 
-func syncMenuKeyBindings(menus []*menu.Menu, femtoActionToKeyMapping map[string]string) {
+func syncMenuKeyBindings(menus []*menu.Menu, smidgenActionToKeyMapping map[string]string) {
 	for _, menu := range menus {
 		for _, menuItem := range menu.Items {
-			if key, ok := femtoActionToKeyMapping[menuItem.ID]; ok {
+			if key, ok := smidgenActionToKeyMapping[menuItem.ID]; ok {
 				menuItem.Shortcut = key
 			} else {
 				menuItem.Shortcut = ""
@@ -99,7 +99,7 @@ func syncSoftWrap(menus []*menu.Menu, on bool) {
 }
 
 func syncLineNumbers(menus []*menu.Menu, on bool) {
-	syncToggleMenuItem(menus, femto.ActionToggleRuler, "Line Numbers", on)
+	syncToggleMenuItem(menus, smidgen.ActionToggleRuler, "Line Numbers", on)
 }
 
 func syncMatchBracket(menus []*menu.Menu, on bool) {

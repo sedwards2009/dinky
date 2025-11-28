@@ -78,7 +78,7 @@ func newFile(contents string, filename string) {
 	editor := smidgen.NewView(app, buffer)
 	buffer.Path = filename // femto uses this to determine the file type
 	editor.SetColorscheme(colorscheme)
-	editor.SetKeybindings(femtoDefaultKeyBindings)
+	editor.SetKeybindings(smidgenDefaultKeyBindings)
 	editor.SetInputCapture(editorInputCapture)
 	buffer.Settings["matchbrace"] = settings.ShowMatchBracket
 	buffer.Settings["ruler"] = settings.ShowLineNumbers
@@ -100,7 +100,7 @@ func newFile(contents string, filename string) {
 
 	bufferFindbar := findbar.NewFindbar(app, editor)
 	style.StyleFindbar(bufferFindbar)
-	bufferFindbar.SetFemtoKeybindings(femtoSingleLineKeyBindings)
+	bufferFindbar.SetSmidgenKeybindings(smidgenSingleLineKeyBindings)
 	bufferFindbar.SetOnError(func(err error) {
 		statusBar.ShowMessage(err.Error())
 	})

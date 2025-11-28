@@ -1,8 +1,8 @@
 package filedialog
 
 import (
-	"dinky/internal/tui/femtoinputfield"
 	"dinky/internal/tui/filelist"
+	"dinky/internal/tui/smidgeninputfield"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,8 +22,8 @@ const (
 type FileDialog struct {
 	*tview.Flex
 	app                *tview.Application
-	DirectoryField     *femtoinputfield.FemtoInputField
-	FilenameField      *femtoinputfield.FemtoInputField
+	DirectoryField     *smidgeninputfield.SmidgenInputField
+	FilenameField      *smidgeninputfield.SmidgenInputField
 	FileList           *filelist.FileList
 	vertContentsFlex   *tview.Flex
 	ActionButton       *tview.Button
@@ -59,7 +59,7 @@ func NewFileDialog(app *tview.Application) *FileDialog {
 	directoryLabel.SetText("[::u]D[::U]irectory: ")
 	directoryFlex.AddItem(directoryLabel, 11, 0, false)
 
-	directoryField := femtoinputfield.NewSmidgenInputField(app)
+	directoryField := smidgeninputfield.NewSmidgenInputField(app)
 	directoryFlex.AddItem(directoryField, 0, 1, false)
 
 	directoryFlex.AddItem(nil, 1, 0, false)
@@ -78,7 +78,7 @@ func NewFileDialog(app *tview.Application) *FileDialog {
 	filenameLabel := tview.NewTextView()
 	filenameLabel.SetLabel("[::u]F[::U]ile name: ")
 	filenameFlex.AddItem(filenameLabel, 11, 0, false)
-	filenameField := femtoinputfield.NewSmidgenInputField(app)
+	filenameField := smidgeninputfield.NewSmidgenInputField(app)
 	filenameFlex.AddItem(filenameField, 0, 1, false)
 
 	vertContentsFlex.AddItem(filenameFlex, 1, 0, false)
@@ -385,7 +385,7 @@ func (fileDialog *FileDialog) syncActionButton() {
 
 }
 
-func (fileDialog *FileDialog) SetFemtoKeybindings(keybindings smidgen.Keybindings) {
+func (fileDialog *FileDialog) SetSmidgenKeybindings(keybindings smidgen.Keybindings) {
 	fileDialog.DirectoryField.SetKeybindings(keybindings)
 	fileDialog.FilenameField.SetKeybindings(keybindings)
 }

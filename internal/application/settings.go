@@ -6,8 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/sedwards2009/femto"
-	"github.com/sedwards2009/femto/runtime"
+	"github.com/sedwards2009/smidgen"
 )
 
 func LoadUserSettings() settingstype.Settings {
@@ -90,9 +89,9 @@ func cleanColorSchemeName(colorScheme string) string {
 	if colorScheme == "" {
 		return "default"
 	}
-	colorFiles := runtime.Files.ListRuntimeFiles(femto.RTColorscheme)
-	for _, file := range colorFiles {
-		if file.Name() == colorScheme {
+	colorFiles := smidgen.ListColorschemes()
+	for _, filename := range colorFiles {
+		if filename == colorScheme {
 			return colorScheme
 		}
 	}

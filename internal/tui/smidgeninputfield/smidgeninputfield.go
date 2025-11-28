@@ -1,4 +1,4 @@
-package femtoinputfield
+package smidgeninputfield
 
 import (
 	"github.com/gdamore/tcell/v2"
@@ -6,43 +6,43 @@ import (
 	"github.com/sedwards2009/smidgen"
 )
 
-type FemtoInputField struct {
+type SmidgenInputField struct {
 	*smidgen.View
 	done    func(tcell.Key)
 	changed func(text string)
 }
 
-func NewSmidgenInputField(app *tview.Application) *FemtoInputField {
+func NewSmidgenInputField(app *tview.Application) *SmidgenInputField {
 	buffer := smidgen.NewBufferFromString("", "")
 	editor := smidgen.NewView(app, buffer)
 	buffer.Settings["ruler"] = false
 	buffer.Settings["hidecursoronblur"] = true
 
-	return &FemtoInputField{
+	return &SmidgenInputField{
 		View: editor,
 	}
 }
 
-func (f *FemtoInputField) SetKeybindings(keybindings smidgen.Keybindings) {
+func (f *SmidgenInputField) SetKeybindings(keybindings smidgen.Keybindings) {
 	f.View.SetKeybindings(keybindings)
 }
 
-func (f *FemtoInputField) SetTextColor(foreground tcell.Color, background tcell.Color) {
+func (f *SmidgenInputField) SetTextColor(foreground tcell.Color, background tcell.Color) {
 	scheme := make(smidgen.Colorscheme)
 	scheme["default"] = tcell.StyleDefault.Foreground(foreground).Background(background)
 	f.View.SetColorscheme(scheme)
 }
 
-func (f *FemtoInputField) GetText() string {
+func (f *SmidgenInputField) GetText() string {
 	return f.View.Buffer().Line(0)
 }
 
-func (f *FemtoInputField) SetText(text string) {
+func (f *SmidgenInputField) SetText(text string) {
 	f.View.ActionController().DeleteLine()
 	f.View.Buffer().Insert(f.View.Buffer().Start(), text)
 }
 
-func (f *FemtoInputField) InputHandler() func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
+func (f *SmidgenInputField) InputHandler() func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
 	return f.WrapInputHandler(func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
 		switch event.Key() {
 		case tcell.KeyEnter, tcell.KeyEscape, tcell.KeyTab, tcell.KeyBacktab:
@@ -63,12 +63,12 @@ func (f *FemtoInputField) InputHandler() func(event *tcell.EventKey, setFocus fu
 	})
 }
 
-func (f *FemtoInputField) SetDoneFunc(handler func(key tcell.Key)) *FemtoInputField {
+func (f *SmidgenInputField) SetDoneFunc(handler func(key tcell.Key)) *SmidgenInputField {
 	f.done = handler
 	return f
 }
 
-func (f *FemtoInputField) SetChangedFunc(handler func(text string)) *FemtoInputField {
+func (f *SmidgenInputField) SetChangedFunc(handler func(text string)) *SmidgenInputField {
 	f.changed = handler
 	return f
 }

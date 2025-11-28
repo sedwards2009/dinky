@@ -5,10 +5,10 @@ import (
 	"github.com/sedwards2009/smidgen"
 )
 
-var femtoDefaultKeyBindings smidgen.Keybindings
-var femtoSingleLineKeyBindings smidgen.Keybindings
-var femtoKeyToActionMapping map[string]string
-var femtoSingleLineKeyToActionMapping map[string]string
+var smidgenDefaultKeyBindings smidgen.Keybindings
+var smidgenSingleLineKeyBindings smidgen.Keybindings
+var smidgenKeyToActionMapping map[string]string
+var smidgenSingleLineKeyToActionMapping map[string]string
 var actionToKeyMapping map[string]string
 
 type KeyDesc struct {
@@ -21,7 +21,7 @@ var dinkyKeyBindings map[smidgen.KeyDesc]string
 var dinkyKeyToActionMapping map[string]string
 
 func initKeyBindings() {
-	femtoSingleLineKeyToActionMapping = map[string]string{
+	smidgenSingleLineKeyToActionMapping = map[string]string{
 		"Right": smidgen.ActionCursorRight,
 		"Left":  smidgen.ActionCursorLeft,
 
@@ -79,44 +79,44 @@ func initKeyBindings() {
 		"MouseLeftRelease": smidgen.ActionMouseRelease,
 	}
 
-	// Copy femtoSimpleKeyToActionMapping into femtoKeyToActionMapping
-	femtoKeyToActionMapping = make(map[string]string)
-	for k, v := range femtoSingleLineKeyToActionMapping {
-		femtoKeyToActionMapping[k] = v
+	// Copy smidgenSimpleKeyToActionMapping into smidgenKeyToActionMapping
+	smidgenKeyToActionMapping = make(map[string]string)
+	for k, v := range smidgenSingleLineKeyToActionMapping {
+		smidgenKeyToActionMapping[k] = v
 	}
-	femtoKeyToActionMapping["Up"] = smidgen.ActionCursorUp
-	femtoKeyToActionMapping["Down"] = smidgen.ActionCursorDown
-	femtoKeyToActionMapping["ShiftUp"] = smidgen.ActionSelectUp
-	femtoKeyToActionMapping["ShiftDown"] = smidgen.ActionSelectDown
-	femtoKeyToActionMapping["AltUp"] = smidgen.ActionMoveLinesUp
-	femtoKeyToActionMapping["AltDown"] = smidgen.ActionMoveLinesDown
-	femtoKeyToActionMapping["Alt-{"] = smidgen.ActionParagraphPrevious
-	femtoKeyToActionMapping["Alt-}"] = smidgen.ActionParagraphNext
-	femtoKeyToActionMapping["Tab"] = smidgen.ActionIndentSelection + "," + smidgen.ActionInsertTab
-	femtoKeyToActionMapping["Backtab"] = "CycleAutocompleteBack|OutdentSelection|OutdentLine"
-	femtoKeyToActionMapping["PageUp"] = smidgen.ActionCursorPageUp
-	femtoKeyToActionMapping["PageDown"] = smidgen.ActionCursorPageDown
+	smidgenKeyToActionMapping["Up"] = smidgen.ActionCursorUp
+	smidgenKeyToActionMapping["Down"] = smidgen.ActionCursorDown
+	smidgenKeyToActionMapping["ShiftUp"] = smidgen.ActionSelectUp
+	smidgenKeyToActionMapping["ShiftDown"] = smidgen.ActionSelectDown
+	smidgenKeyToActionMapping["AltUp"] = smidgen.ActionMoveLinesUp
+	smidgenKeyToActionMapping["AltDown"] = smidgen.ActionMoveLinesDown
+	smidgenKeyToActionMapping["Alt-{"] = smidgen.ActionParagraphPrevious
+	smidgenKeyToActionMapping["Alt-}"] = smidgen.ActionParagraphNext
+	smidgenKeyToActionMapping["Tab"] = smidgen.ActionIndentSelection + "," + smidgen.ActionInsertTab
+	smidgenKeyToActionMapping["Backtab"] = "CycleAutocompleteBack|OutdentSelection|OutdentLine"
+	smidgenKeyToActionMapping["PageUp"] = smidgen.ActionCursorPageUp
+	smidgenKeyToActionMapping["PageDown"] = smidgen.ActionCursorPageDown
 	// "CtrlPageUp":     "PreviousTab|LastTab,
 	// "CtrlPageDown":   "NextTab|FirstTab,
-	femtoKeyToActionMapping["ShiftPageUp"] = smidgen.ActionSelectPageUp
-	femtoKeyToActionMapping["ShiftPageDown"] = smidgen.ActionSelectPageDown
+	smidgenKeyToActionMapping["ShiftPageUp"] = smidgen.ActionSelectPageUp
+	smidgenKeyToActionMapping["ShiftPageDown"] = smidgen.ActionSelectPageDown
 	// "Ctrl-r" smidgen.ActionToggleRuler
 	// "Ctrl-w":         "NextSplit|FirstSplit,
 	// "Ctrl-u":         smidgen.ActionToggleMacro,
 	// "Ctrl-j":         smidgen.ActionPlayMacro,
-	femtoKeyToActionMapping["Insert"] = smidgen.ActionToggleOverwriteMode
-	femtoKeyToActionMapping["Esc"] = smidgen.ActionEscape + "," + smidgen.ActionRemoveAllMultiCursors
+	smidgenKeyToActionMapping["Insert"] = smidgen.ActionToggleOverwriteMode
+	smidgenKeyToActionMapping["Esc"] = smidgen.ActionEscape + "," + smidgen.ActionRemoveAllMultiCursors
 	// "MouseMiddle":      smidgen.ActionPastePrimary,
 	// "Ctrl-MouseLeft":   smidgen.ActionMouseMultiCursor,
 	// "Alt-n": smidgen.ActionSpawnMultiCursor,
-	femtoKeyToActionMapping["Ctrl-d"] = smidgen.ActionSpawnMultiCursor
-	femtoKeyToActionMapping["Alt-m"] = smidgen.ActionSpawnMultiCursorSelect
+	smidgenKeyToActionMapping["Ctrl-d"] = smidgen.ActionSpawnMultiCursor
+	smidgenKeyToActionMapping["Alt-m"] = smidgen.ActionSpawnMultiCursorSelect
 	// "AltShiftUp":   smidgen.ActionSpawnMultiCursorUp,
 	// "AltShiftDown": smidgen.ActionSpawnMultiCursorDown,
-	femtoKeyToActionMapping["Alt-p"] = smidgen.ActionRemoveMultiCursor
-	femtoKeyToActionMapping["Alt-c"] = smidgen.ActionRemoveAllMultiCursors
-	femtoKeyToActionMapping["Alt-x"] = smidgen.ActionSkipMultiCursor
-	femtoKeyToActionMapping["Ctrl-j"] = smidgen.ActionJumpToMatchingBrace
+	smidgenKeyToActionMapping["Alt-p"] = smidgen.ActionRemoveMultiCursor
+	smidgenKeyToActionMapping["Alt-c"] = smidgen.ActionRemoveAllMultiCursors
+	smidgenKeyToActionMapping["Alt-x"] = smidgen.ActionSkipMultiCursor
+	smidgenKeyToActionMapping["Ctrl-j"] = smidgen.ActionJumpToMatchingBrace
 
 	dinkyKeyToActionMapping = map[string]string{
 		"Ctrl-n": ACTION_NEW,
@@ -135,15 +135,15 @@ func initKeyBindings() {
 	}
 
 	actionToKeyMapping = make(map[string]string)
-	for key, action := range femtoKeyToActionMapping {
+	for key, action := range smidgenKeyToActionMapping {
 		if action == "" {
 			continue
 		}
 		actionToKeyMapping[action] = key
 	}
 
-	femtoDefaultKeyBindings = smidgen.ParseKeybindings(femtoKeyToActionMapping)
-	femtoSingleLineKeyBindings = smidgen.ParseKeybindings(femtoSingleLineKeyToActionMapping)
+	smidgenDefaultKeyBindings = smidgen.ParseKeybindings(smidgenKeyToActionMapping)
+	smidgenSingleLineKeyBindings = smidgen.ParseKeybindings(smidgenSingleLineKeyToActionMapping)
 
 	for key, action := range dinkyKeyToActionMapping {
 		if action == "" {

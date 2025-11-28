@@ -2,13 +2,13 @@ package style
 
 import (
 	"dinky/internal/tui/dialog"
-	"dinky/internal/tui/femtoinputfield"
 	"dinky/internal/tui/filedialog"
 	"dinky/internal/tui/filelist"
 	"dinky/internal/tui/findbar"
 	"dinky/internal/tui/menu"
 	"dinky/internal/tui/scrollbar"
 	"dinky/internal/tui/settingsdialog"
+	"dinky/internal/tui/smidgeninputfield"
 	"dinky/internal/tui/stylecolor"
 	"dinky/internal/tui/tabbar"
 	"dinky/internal/tui/table2"
@@ -69,8 +69,8 @@ func StyleDropDown(dropDown *tview.DropDown) {
 	dropDown.SetListStyles(unselectedItemStyle, selectedItemStyle)
 }
 
-func StyleFemtoInputField(femtoInputField *femtoinputfield.FemtoInputField) {
-	femtoInputField.SetTextColor(stylecolor.InputFieldFieldTextColor, stylecolor.InputFieldFieldBackgroundColor)
+func StyleSmidgenInputField(smidgenInputField *smidgeninputfield.SmidgenInputField) {
+	smidgenInputField.SetTextColor(stylecolor.InputFieldFieldTextColor, stylecolor.InputFieldFieldBackgroundColor)
 }
 
 func StyleTabBar(tabBar *tabbar.TabBar) {
@@ -107,7 +107,7 @@ func StyleMessageDialog(messageDialog *dialog.MessageDialog) {
 }
 
 func StyleInputDialog(inputDialog *dialog.InputDialog) {
-	StyleFemtoInputField(inputDialog.InputField)
+	StyleSmidgenInputField(inputDialog.InputField)
 	inputDialog.SetBackgroundColor(stylecolor.LightGray)
 	for _, button := range inputDialog.Buttons {
 		StyleButton(button)
@@ -130,8 +130,8 @@ func StyleListDialog(d *dialog.ListDialog) {
 
 func StyleFileDialog(fileDialog *filedialog.FileDialog) {
 	fileDialog.SetBackgroundColor(stylecolor.LightGray)
-	StyleFemtoInputField(fileDialog.DirectoryField)
-	StyleFemtoInputField(fileDialog.FilenameField)
+	StyleSmidgenInputField(fileDialog.DirectoryField)
+	StyleSmidgenInputField(fileDialog.FilenameField)
 	StyleFileList(fileDialog.FileList)
 	StyleButton(fileDialog.ActionButton)
 	StyleButton(fileDialog.CancelButton)
@@ -141,7 +141,7 @@ func StyleFileDialog(fileDialog *filedialog.FileDialog) {
 
 func StyleFindbar(findBar *findbar.Findbar) {
 	findBar.SetBackgroundColor(stylecolor.LightGray)
-	StyleFemtoInputField(findBar.SearchStringField)
+	StyleSmidgenInputField(findBar.SearchStringField)
 	StyleButton(findBar.SearchUpButton)
 	StyleButton(findBar.SearchDownButton)
 	StyleButton(findBar.CloseButton)

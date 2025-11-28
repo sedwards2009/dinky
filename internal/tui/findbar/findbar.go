@@ -1,7 +1,7 @@
 package findbar
 
 import (
-	"dinky/internal/tui/femtoinputfield"
+	"dinky/internal/tui/smidgeninputfield"
 	"fmt"
 
 	"github.com/gdamore/tcell/v2"
@@ -14,7 +14,7 @@ type Findbar struct {
 	*tview.Flex
 	app                   *tview.Application
 	editor                *smidgen.View
-	SearchStringField     *femtoinputfield.FemtoInputField
+	SearchStringField     *smidgeninputfield.SmidgenInputField
 	SearchUpButton        *tview.Button
 	SearchDownButton      *tview.Button
 	CloseButton           *tview.Button
@@ -55,7 +55,7 @@ func NewFindbar(app *tview.Application, editor *smidgen.View) *Findbar {
 	searchFieldLabel.SetText(" Find: ")
 	hFlex.AddItem(searchFieldLabel, 7, 0, false)
 
-	searchStringField := femtoinputfield.NewSmidgenInputField(app)
+	searchStringField := smidgeninputfield.NewSmidgenInputField(app)
 	searchStringField.SetDoneFunc(func(key tcell.Key) {
 		switch key {
 		case tcell.KeyEscape:
@@ -117,7 +117,7 @@ func NewFindbar(app *tview.Application, editor *smidgen.View) *Findbar {
 	replaceFieldLabel.SetText(" Replace: ")
 	hFlex2.AddItem(replaceFieldLabel, 10, 0, false)
 
-	replaceStringField := femtoinputfield.NewSmidgenInputField(app)
+	replaceStringField := smidgeninputfield.NewSmidgenInputField(app)
 	replaceStringField.SetDoneFunc(func(key tcell.Key) {
 		switch key {
 		case tcell.KeyEscape:
@@ -248,7 +248,7 @@ func (f *Findbar) Replace() {
 	if !found {
 		return
 	}
-	replaceText := f.hFlex2.GetItem(1).(*femtoinputfield.FemtoInputField).GetText()
+	replaceText := f.hFlex2.GetItem(1).(*smidgeninputfield.SmidgenInputField).GetText()
 
 	if f.editor.Cursor().HasSelection() {
 		f.editor.Cursor().DeleteSelection()
@@ -264,7 +264,8 @@ func (f *Findbar) Replace() {
 func (f *Findbar) ReplaceAll() {
 	regex := f.RegexCheckbox.IsChecked()
 	caseSensitive := f.CaseSensitiveCheckbox.IsChecked()
-	count, err := f.editor.ActionController().ReplaceAll(f.SearchStringField.GetText(), regex, caseSensitive, f.hFlex2.GetItem(1).(*femtoinputfield.FemtoInputField).GetText())
+	count, err := f.editor.ActionController().ReplaceAll(f.SearchStringField.GetText(), regex, caseSensitive,
+		f.hFlex2.GetItem(1).(*smidgeninputfield.SmidgenInputField).GetText())
 	if err != nil {
 		if f.OnError != nil {
 			f.OnError(err)
@@ -276,7 +277,7 @@ func (f *Findbar) ReplaceAll() {
 	}
 }
 
-func (f *Findbar) SetFemtoKeybindings(keybindings smidgen.Keybindings) {
+func (f *Findbar) SetSmidgenKeybindings(keybindings smidgen.Keybindings) {
 	f.SearchStringField.SetKeybindings(keybindings)
 }
 

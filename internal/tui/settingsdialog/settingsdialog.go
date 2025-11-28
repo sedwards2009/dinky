@@ -7,8 +7,7 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	"github.com/sedwards2009/femto"
-	"github.com/sedwards2009/femto/runtime"
+	"github.com/sedwards2009/smidgen"
 )
 
 type SettingsDialog struct {
@@ -26,21 +25,21 @@ type SettingsDialog struct {
 	TabCharList              *tview.List
 	TabSizeList              *tview.List
 
-	// Femto color scheme list
+	// Smidgen color scheme list
 	ColorSchemeTableField             *table2.Table
 	ColorSchemeTableFlex              *tview.Flex
-	ColorSchemePreviewEditor          *femto.View
+	ColorSchemePreviewEditor          *smidgen.View
 	ColorSchemeTableVerticalScrollbar *scrollbar.Scrollbar
 	selectedColorScheme               string
 
-	colorFiles []femto.RuntimeFile
+	colorFiles []string
 
 	colorSchemeItemTextColor               tcell.Color
 	colorSchemeItemBackgroundColor         tcell.Color
 	colorSchemeSelectedItemBackgroundColor tcell.Color
 }
 
-func NewSettingsDialog() *SettingsDialog {
+func NewSettingsDialog(app *tview.Application) *SettingsDialog {
 	verticalContentsFlex := tview.NewFlex()
 	verticalContentsFlex.Box = tview.NewBox() // Nasty hack to clear the `dontClear` flag inside Box.
 	verticalContentsFlex.Box.Primitive = verticalContentsFlex
@@ -75,9 +74,8 @@ func main() {
 	}
 }
 `
-	colorSchemeBuffer := femto.NewBufferFromString(contents, "example.go")
-	colorSchemePreviewEditor := femto.NewView(colorSchemeBuffer)
-	colorSchemePreviewEditor.SetRuntimeFiles(runtime.Files)
+	colorSchemeBuffer := smidgen.NewBufferFromString(contents, "example.go")
+	colorSchemePreviewEditor := smidgen.NewView(app, colorSchemeBuffer)
 	colorSchemeBuffer.Settings["matchbrace"] = false
 	colorSchemeBuffer.Settings["ruler"] = false
 
@@ -221,7 +219,7 @@ func main() {
 	})
 	sd.ColorSchemeTableField.SetSelectionChangedFunc(sd.handleColorSchemeSelected)
 
-	sd.colorFiles = runtime.Files.ListRuntimeFiles(femto.RTColorscheme)
+	sd.colorFiles = smidgen.ListColorschemes()
 	sd.loadColorSchemes()
 	return sd
 }
@@ -231,7 +229,7 @@ func (sd *SettingsDialog) loadColorSchemes() {
 	cellStyle := tcell.StyleDefault.Foreground(sd.colorSchemeItemTextColor).Background(sd.colorSchemeItemBackgroundColor)
 	for rowIndex, item := range sd.colorFiles {
 		cell := &table2.TableCell{
-			Text:  item.Name(),
+			Text:  item,
 			Style: cellStyle,
 		}
 		sd.ColorSchemeTableField.SetCell(rowIndex, 0, cell)
@@ -242,11 +240,10 @@ func (sd *SettingsDialog) handleColorSchemeSelected(row int, column int) {
 	if row < 0 || row >= len(sd.colorFiles) {
 		return
 	}
-	colorschemeFile := sd.colorFiles[row]
-	if data, err := colorschemeFile.Data(); err == nil {
-		colorscheme := femto.ParseColorscheme(string(data))
+	colorschemeName := sd.colorFiles[row]
+	if colorscheme, ok := smidgen.LoadInternalColorscheme(colorschemeName); ok {
 		sd.ColorSchemePreviewEditor.SetColorscheme(colorscheme)
-		sd.selectedColorScheme = colorschemeFile.Name()
+		sd.selectedColorScheme = colorschemeName
 	}
 }
 
@@ -260,9 +257,9 @@ func (sd *SettingsDialog) SetCloseFunc(closeFunc func()) {
 
 func (sd *SettingsDialog) SetSettings(settings settingstype.Settings) {
 	for rowIndex, item := range sd.colorFiles {
-		if item.Name() == settings.ColorScheme {
+		if item == settings.ColorScheme {
 			sd.ColorSchemeTableField.Select(rowIndex, 0)
-			sd.selectedColorScheme = item.Name()
+			sd.selectedColorScheme = item
 			sd.handleColorSchemeSelected(rowIndex, 0)
 			break
 		}

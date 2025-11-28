@@ -9,7 +9,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.19
 	github.com/rivo/tview v0.42.1-0.20250927122039-2cde1d24230c
 	github.com/rivo/uniseg v0.4.7
-	github.com/sedwards2009/femto v0.0.0-20251026125232-dbf9395ef96b
+	github.com/sedwards2009/smidgen v0.0.0-20251127212715-017c2bd7d028
 )
 
 require (
@@ -18,9 +18,7 @@ require (
 	github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
 	github.com/gdamore/encoding v1.0.1 // indirect
 	github.com/lucasb-eyer/go-colorful v1.3.0 // indirect
-	github.com/sedwards2009/smidgen v0.0.0-20251119210736-ff59a2e5fdce // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
-	github.com/zyedidia/micro v1.4.1 // indirect
 	golang.org/x/sys v0.37.0 // indirect
 	golang.org/x/term v0.36.0 // indirect
 	golang.org/x/text v0.30.0 // indirect
