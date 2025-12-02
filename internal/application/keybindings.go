@@ -93,7 +93,7 @@ func initKeyBindings() {
 	smidgenKeyToActionMapping["Alt-{"] = smidgen.ActionParagraphPrevious
 	smidgenKeyToActionMapping["Alt-}"] = smidgen.ActionParagraphNext
 	smidgenKeyToActionMapping["Tab"] = smidgen.ActionIndentSelection + "," + smidgen.ActionInsertTab
-	smidgenKeyToActionMapping["Backtab"] = "CycleAutocompleteBack|OutdentSelection|OutdentLine"
+	smidgenKeyToActionMapping["Backtab"] = smidgen.ActionOutdentSelection + "|" + smidgen.ActionOutdentLine
 	smidgenKeyToActionMapping["PageUp"] = smidgen.ActionCursorPageUp
 	smidgenKeyToActionMapping["PageDown"] = smidgen.ActionCursorPageDown
 	// "CtrlPageUp":     "PreviousTab|LastTab,

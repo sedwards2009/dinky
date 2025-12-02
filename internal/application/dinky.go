@@ -59,7 +59,8 @@ var currentFileBuffer *FileBuffer
 
 // -----------------------------------------------------------------
 func loadEditorColorScheme(colorSchemeName string) {
-	colorscheme, ok := smidgen.LoadInternalColorscheme(colorSchemeName)
+	var ok bool
+	colorscheme, ok = smidgen.LoadInternalColorscheme(colorSchemeName)
 	if !ok {
 		colorscheme, _ = smidgen.LoadInternalColorscheme("monokai")
 	}
@@ -74,7 +75,7 @@ func loadEditorColorScheme(colorSchemeName string) {
 }
 
 func newFile(contents string, filename string) {
-	buffer := smidgen.NewBufferFromString(contents, "")
+	buffer := smidgen.NewBufferFromString(contents, filename)
 	editor := smidgen.NewView(app, buffer)
 	buffer.Path = filename // femto uses this to determine the file type
 	editor.SetColorscheme(colorscheme)
