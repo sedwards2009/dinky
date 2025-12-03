@@ -399,13 +399,14 @@ func handleSetSyntaxHighlighting() tview.Primitive {
 
 			if value == "" {
 				// Auto-detect - reset filetype and trigger detection
-				buffer.Settings["filetype"] = "Unknown"
+				buffer.Settings["filetype"] = "unknown"
 				statusBar.ShowMessage("Syntax highlighting set to auto-detect")
 			} else {
 				// Set specific syntax
 				buffer.Settings["filetype"] = value
 				statusBar.ShowMessage("Syntax highlighting set to " + strings.Title(value))
 			}
+			buffer.UpdateRules()
 			syncMenuFromBuffer(buffer)
 		},
 	})
