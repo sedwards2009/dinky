@@ -212,14 +212,14 @@ func (f *Findbar) search(directionDown bool) bool {
 		} else {
 			wrapLoc = f.editor.Buffer().End()
 		}
-		f.editor.Cursor().Loc = wrapLoc
+		f.editor.Cursor().GotoLoc(wrapLoc)
 		f.editor.Cursor().SetSelectionStart(wrapLoc)
 		f.editor.Cursor().SetSelectionEnd(wrapLoc)
 
 		found, _ := f.editor.ActionController().Search(searchText, regex, caseSensitive, directionDown)
 		if !found {
 			// Restore previous cursor position if not found
-			f.editor.Cursor().Loc = prevLoc
+			f.editor.Cursor().GotoLoc(prevLoc)
 			f.editor.Cursor().SetSelectionStart(prevStartSelection)
 			f.editor.Cursor().SetSelectionEnd(prevEndSelection)
 			return false
