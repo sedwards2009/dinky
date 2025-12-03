@@ -506,8 +506,13 @@ func handleConvertTabSpaces() tview.Primitive {
 
 func handleToggleWhitespace() tview.Primitive {
 	buffer := currentFileBuffer.buffer
-	on := buffer.Settings["showwhitespace"].(bool)
-	buffer.Settings["showwhitespace"] = !on
+	showchars := buffer.Settings["showchars"].(string)
+	on := showchars != ""
+	if !on {
+		buffer.Settings["showchars"] = "space=·,tab=→"
+	} else {
+		buffer.Settings["showchars"] = ""
+	}
 	syncShowWhitespace(menus, !on)
 	return nil
 }
