@@ -171,6 +171,7 @@ func StyleSettingsDialog(sd *settingsdialog.SettingsDialog) {
 	StyleCheckbox(sd.ShowWhitespaceCheckbox)
 	StyleCheckbox(sd.ShowMatchBracketCheckbox)
 	StyleCheckbox(sd.SoftWrapCheckbox)
+	StyleCheckbox(sd.ShowTrailingWhitespaceCheckbox)
 
 	StyleList(sd.TabCharList)
 	StyleList(sd.TabSizeList)

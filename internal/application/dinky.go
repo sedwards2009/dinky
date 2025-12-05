@@ -87,6 +87,7 @@ func newFile(contents string, filename string) {
 	buffer.Settings["softwrap"] = settings.SoftWrap
 	buffer.Settings["tabsize"] = float64(settings.TabSize)
 	buffer.Settings["tabstospaces"] = settings.TabCharacter == "space"
+	buffer.Settings["hltrailingws"] = settings.ShowTrailingWhitespace
 
 	panelHFlex := tview.NewFlex()
 	panelHFlex.SetDirection(tview.FlexColumn)

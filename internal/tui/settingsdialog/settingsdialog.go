@@ -18,12 +18,13 @@ type SettingsDialog struct {
 	OkButton             *tview.Button
 	CancelButton         *tview.Button
 
-	ShowLineNumbersCheckbox  *tview.Checkbox
-	ShowWhitespaceCheckbox   *tview.Checkbox
-	ShowMatchBracketCheckbox *tview.Checkbox
-	SoftWrapCheckbox         *tview.Checkbox
-	TabCharList              *tview.List
-	TabSizeList              *tview.List
+	ShowLineNumbersCheckbox        *tview.Checkbox
+	ShowWhitespaceCheckbox         *tview.Checkbox
+	ShowMatchBracketCheckbox       *tview.Checkbox
+	ShowTrailingWhitespaceCheckbox *tview.Checkbox
+	SoftWrapCheckbox               *tview.Checkbox
+	TabCharList                    *tview.List
+	TabSizeList                    *tview.List
 
 	// Smidgen color scheme list
 	ColorSchemeTableField             *table2.Table
@@ -99,19 +100,23 @@ func main() {
 	firstColumnFlex.SetDirection(tview.FlexRow)
 
 	showLineNumbersCheckbox := tview.NewCheckbox()
-	showLineNumbersCheckbox.SetLabel("Show Line Numbers:  ")
+	showLineNumbersCheckbox.SetLabel("Show Line Numbers:        ")
 	firstColumnFlex.AddItem(showLineNumbersCheckbox, 1, 0, false)
 
 	showWhitespaceCheckbox := tview.NewCheckbox()
-	showWhitespaceCheckbox.SetLabel("Show Whitespace:    ")
+	showWhitespaceCheckbox.SetLabel("Show Whitespace:          ")
 	firstColumnFlex.AddItem(showWhitespaceCheckbox, 1, 0, false)
 
+	showTrailingWhitespaceCheckbox := tview.NewCheckbox()
+	showTrailingWhitespaceCheckbox.SetLabel("Show Trailing Whitespace: ")
+	firstColumnFlex.AddItem(showTrailingWhitespaceCheckbox, 1, 0, false)
+
 	softWrapCheckbox := tview.NewCheckbox()
-	softWrapCheckbox.SetLabel("Soft Wrap:          ")
+	softWrapCheckbox.SetLabel("Soft Wrap:                ")
 	firstColumnFlex.AddItem(softWrapCheckbox, 1, 0, false)
 
 	showMatchBracketCheckbox := tview.NewCheckbox()
-	showMatchBracketCheckbox.SetLabel("Show Match Bracket: ")
+	showMatchBracketCheckbox.SetLabel("Show Match Bracket:       ")
 	firstColumnFlex.AddItem(showMatchBracketCheckbox, 1, 0, false)
 
 	// Second column of checkboxes
@@ -152,7 +157,7 @@ func main() {
 	tabSizeList.AddItem(" 16 ", "", 0, nil)
 	fifthColumnFlex.AddItem(tabSizeList, 4, 0, false)
 
-	optionsColumnFlex.AddItem(firstColumnFlex, 25, 0, false)
+	optionsColumnFlex.AddItem(firstColumnFlex, 31, 0, false)
 	optionsColumnFlex.AddItem(secondColumnFlex, 15, 0, false)
 	optionsColumnFlex.AddItem(thirdColumnFlex, 8, 0, false)
 	optionsColumnFlex.AddItem(forthColumnFlex, 12, 0, false)
@@ -177,25 +182,26 @@ func main() {
 	innerFlex := tview.NewFlex()
 	innerFlex.SetDirection(tview.FlexRow)
 	innerFlex.AddItem(nil, 0, 1, false)
-	innerFlex.AddItem(verticalContentsFlex, 22, 0, true)
+	innerFlex.AddItem(verticalContentsFlex, 23, 0, true)
 	innerFlex.AddItem(nil, 0, 1, false)
 
 	topLayout := tview.NewFlex()
 	topLayout.AddItem(nil, 0, 1, false)
-	topLayout.AddItem(innerFlex, 68, 1, true)
+	topLayout.AddItem(innerFlex, 74, 1, true)
 	topLayout.AddItem(nil, 0, 1, false)
 
 	sd := &SettingsDialog{
-		Flex:                     topLayout,
-		verticalContentsFlex:     verticalContentsFlex,
-		OkButton:                 okButton,
-		CancelButton:             cancelButton,
-		ShowLineNumbersCheckbox:  showLineNumbersCheckbox,
-		ShowWhitespaceCheckbox:   showWhitespaceCheckbox,
-		ShowMatchBracketCheckbox: showMatchBracketCheckbox,
-		SoftWrapCheckbox:         softWrapCheckbox,
-		TabCharList:              tabCharList,
-		TabSizeList:              tabSizeList,
+		Flex:                           topLayout,
+		verticalContentsFlex:           verticalContentsFlex,
+		OkButton:                       okButton,
+		CancelButton:                   cancelButton,
+		ShowLineNumbersCheckbox:        showLineNumbersCheckbox,
+		ShowWhitespaceCheckbox:         showWhitespaceCheckbox,
+		ShowMatchBracketCheckbox:       showMatchBracketCheckbox,
+		ShowTrailingWhitespaceCheckbox: showTrailingWhitespaceCheckbox,
+		SoftWrapCheckbox:               softWrapCheckbox,
+		TabCharList:                    tabCharList,
+		TabSizeList:                    tabSizeList,
 
 		ColorSchemeTableField:             colorSchemeTableField,
 		ColorSchemeTableFlex:              colorSchemeTableFlex,
@@ -267,6 +273,7 @@ func (sd *SettingsDialog) SetSettings(settings settingstype.Settings) {
 
 	sd.ShowLineNumbersCheckbox.SetChecked(settings.ShowLineNumbers)
 	sd.ShowWhitespaceCheckbox.SetChecked(settings.ShowWhitespace)
+	sd.ShowTrailingWhitespaceCheckbox.SetChecked(settings.ShowTrailingWhitespace)
 	sd.ShowMatchBracketCheckbox.SetChecked(settings.ShowMatchBracket)
 	sd.SoftWrapCheckbox.SetChecked(settings.SoftWrap)
 	if settings.TabCharacter == "tab" {
@@ -293,6 +300,7 @@ func (sd *SettingsDialog) getSettings() settingstype.Settings {
 	newSettings.ColorScheme = sd.selectedColorScheme
 	newSettings.ShowLineNumbers = sd.ShowLineNumbersCheckbox.IsChecked()
 	newSettings.ShowWhitespace = sd.ShowWhitespaceCheckbox.IsChecked()
+	newSettings.ShowTrailingWhitespace = sd.ShowTrailingWhitespaceCheckbox.IsChecked()
 	newSettings.ShowMatchBracket = sd.ShowMatchBracketCheckbox.IsChecked()
 	newSettings.SoftWrap = sd.SoftWrapCheckbox.IsChecked()
 	tabCharIndex := sd.TabCharList.GetCurrentItem()

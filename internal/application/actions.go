@@ -17,60 +17,62 @@ import (
 )
 
 const (
-	ACTION_NEW                     = "NewFile"
-	ACTION_CLOSE_FILE              = "CloseFile"
-	ACTION_OPEN_FILE               = "OpenFile"
-	ACTION_SAVE_FILE               = "SaveFile"
-	ACTION_SAVE_FILE_AS            = "SaveFileAs"
-	ACTION_OPEN_MENU               = "OpenMenu"
-	ACTION_TOGGLE_SOFT_WRAP        = "ToggleSoftWrap"
-	ACTION_TOGGLE_MATCH_BRACKET    = "ToggleMatchBracket"
-	ACTION_SET_TAB_SIZE            = "SetTabSize"
-	ACTION_SET_TAB_CHARACTER       = "SetTabCharacter"
-	ACTION_SET_LINE_ENDINGS        = "SetLineEndings"
-	ACTION_SET_SYNTAX_HIGHLIGHTING = "SetSyntaxHighlighting"
-	ACTION_GO_TO_LINE              = "GoToLine"
-	ACTION_QUIT                    = "Quit"
-	ACTION_FIND                    = "Find"
-	ACTION_FIND_NEXT               = "FindNext"
-	ACTION_FIND_PREVIOUS           = "FindPrevious"
-	ACTION_ABOUT                   = "About"
-	ACTION_NEXT_EDITOR             = "NextEditor"
-	ACTION_PREVIOUS_EDITOR         = "PreviousEditor"
-	ACTION_CONVERT_TAB_SPACES      = "ConvertTabSpaces"
-	ACTION_TOGGLE_WHITESPACE       = "ToggleWhitespace"
-	ACTION_FIND_AND_REPLACE        = "FindAndReplace"
-	ACTION_SETTINGS                = "Settings"
+	ACTION_NEW                        = "NewFile"
+	ACTION_CLOSE_FILE                 = "CloseFile"
+	ACTION_OPEN_FILE                  = "OpenFile"
+	ACTION_SAVE_FILE                  = "SaveFile"
+	ACTION_SAVE_FILE_AS               = "SaveFileAs"
+	ACTION_OPEN_MENU                  = "OpenMenu"
+	ACTION_TOGGLE_SOFT_WRAP           = "ToggleSoftWrap"
+	ACTION_TOGGLE_MATCH_BRACKET       = "ToggleMatchBracket"
+	ACTION_SET_TAB_SIZE               = "SetTabSize"
+	ACTION_SET_TAB_CHARACTER          = "SetTabCharacter"
+	ACTION_SET_LINE_ENDINGS           = "SetLineEndings"
+	ACTION_SET_SYNTAX_HIGHLIGHTING    = "SetSyntaxHighlighting"
+	ACTION_GO_TO_LINE                 = "GoToLine"
+	ACTION_QUIT                       = "Quit"
+	ACTION_FIND                       = "Find"
+	ACTION_FIND_NEXT                  = "FindNext"
+	ACTION_FIND_PREVIOUS              = "FindPrevious"
+	ACTION_ABOUT                      = "About"
+	ACTION_NEXT_EDITOR                = "NextEditor"
+	ACTION_PREVIOUS_EDITOR            = "PreviousEditor"
+	ACTION_CONVERT_TAB_SPACES         = "ConvertTabSpaces"
+	ACTION_TOGGLE_WHITESPACE          = "ToggleWhitespace"
+	ACTION_TOGGLE_TRAILING_WHITESPACE = "ToggleTrailingWhitespace"
+	ACTION_FIND_AND_REPLACE           = "FindAndReplace"
+	ACTION_SETTINGS                   = "Settings"
 )
 
 var dinkyActionMapping map[string]func() tview.Primitive
 
 func init() {
 	dinkyActionMapping = map[string]func() tview.Primitive{
-		ACTION_NEW:                     handleNewFile,
-		ACTION_CLOSE_FILE:              handleCloseFile,
-		ACTION_OPEN_FILE:               handleOpenFile,
-		ACTION_OPEN_MENU:               handleOpenMenu,
-		ACTION_SAVE_FILE:               handleSaveFile,
-		ACTION_SAVE_FILE_AS:            handleSaveFileAs,
-		ACTION_TOGGLE_SOFT_WRAP:        handleSoftWrap,
-		ACTION_TOGGLE_MATCH_BRACKET:    handleMatchBracket,
-		ACTION_SET_TAB_SIZE:            handleSetTabSize,
-		ACTION_SET_TAB_CHARACTER:       handleSetTabCharacter,
-		ACTION_SET_LINE_ENDINGS:        handleSetLineEndings,
-		ACTION_SET_SYNTAX_HIGHLIGHTING: handleSetSyntaxHighlighting,
-		ACTION_GO_TO_LINE:              handleGoToLine,
-		ACTION_QUIT:                    handleQuit,
-		ACTION_ABOUT:                   handleAbout,
-		ACTION_FIND:                    handleFind,
-		ACTION_FIND_NEXT:               handleFindNext,
-		ACTION_FIND_PREVIOUS:           handleFindPrevious,
-		ACTION_NEXT_EDITOR:             handleNextEditor,
-		ACTION_PREVIOUS_EDITOR:         handlePreviousEditor,
-		ACTION_CONVERT_TAB_SPACES:      handleConvertTabSpaces,
-		ACTION_TOGGLE_WHITESPACE:       handleToggleWhitespace,
-		ACTION_FIND_AND_REPLACE:        handleFindAndReplace,
-		ACTION_SETTINGS:                handleSettings,
+		ACTION_NEW:                        handleNewFile,
+		ACTION_CLOSE_FILE:                 handleCloseFile,
+		ACTION_OPEN_FILE:                  handleOpenFile,
+		ACTION_OPEN_MENU:                  handleOpenMenu,
+		ACTION_SAVE_FILE:                  handleSaveFile,
+		ACTION_SAVE_FILE_AS:               handleSaveFileAs,
+		ACTION_TOGGLE_SOFT_WRAP:           handleSoftWrap,
+		ACTION_TOGGLE_MATCH_BRACKET:       handleMatchBracket,
+		ACTION_SET_TAB_SIZE:               handleSetTabSize,
+		ACTION_SET_TAB_CHARACTER:          handleSetTabCharacter,
+		ACTION_SET_LINE_ENDINGS:           handleSetLineEndings,
+		ACTION_SET_SYNTAX_HIGHLIGHTING:    handleSetSyntaxHighlighting,
+		ACTION_GO_TO_LINE:                 handleGoToLine,
+		ACTION_QUIT:                       handleQuit,
+		ACTION_ABOUT:                      handleAbout,
+		ACTION_FIND:                       handleFind,
+		ACTION_FIND_NEXT:                  handleFindNext,
+		ACTION_FIND_PREVIOUS:              handleFindPrevious,
+		ACTION_NEXT_EDITOR:                handleNextEditor,
+		ACTION_PREVIOUS_EDITOR:            handlePreviousEditor,
+		ACTION_CONVERT_TAB_SPACES:         handleConvertTabSpaces,
+		ACTION_TOGGLE_WHITESPACE:          handleToggleWhitespace,
+		ACTION_TOGGLE_TRAILING_WHITESPACE: handleToggleTrailingWhitespace,
+		ACTION_FIND_AND_REPLACE:           handleFindAndReplace,
+		ACTION_SETTINGS:                   handleSettings,
 	}
 }
 
@@ -514,6 +516,14 @@ func handleToggleWhitespace() tview.Primitive {
 		buffer.Settings["showchars"] = ""
 	}
 	syncShowWhitespace(menus, !on)
+	return nil
+}
+
+func handleToggleTrailingWhitespace() tview.Primitive {
+	buffer := currentFileBuffer.buffer
+	on := buffer.Settings["hltrailingws"].(bool)
+	buffer.Settings["hltrailingws"] = !on
+	syncShowTrailingWhitespace(menus, !on)
 	return nil
 }
 
