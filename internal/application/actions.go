@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gdamore/tcell/v2"
 	"github.com/google/renameio/v2"
 	"github.com/rivo/tview"
 	"github.com/sedwards2009/smidgen"
@@ -424,39 +423,19 @@ func handleSetVerticalRuler() tview.Primitive {
 		buffer = currentFileBuffer.buffer
 	}
 
-	if buffer == nil {
-		statusBar.ShowMessage("No file open")
-		return nil
-	}
-
 	currentVerticalRuler := int(buffer.Settings["colorcolumn"].(float64))
 	defaultValue := ""
 	if currentVerticalRuler > 0 {
 		defaultValue = strconv.Itoa(currentVerticalRuler)
 	}
 
-	fieldKeyFilter := func(event *tcell.EventKey) bool {
-		key := event.Key()
-		// Allow digits and basic editing keys
-		if key == tcell.KeyBackspace || key == tcell.KeyDelete ||
-			key == tcell.KeyLeft || key == tcell.KeyRight ||
-			key == tcell.KeyHome || key == tcell.KeyEnd ||
-			key == tcell.KeyDEL {
-			return true
-		}
-		if event.Rune() >= '0' && event.Rune() <= '9' {
-			return true
-		}
-		return false
-	}
-
 	return ShowInputDialog("Vertical Ruler", "Enter column number (0 = off):", defaultValue,
 		func() {
 			// On cancel
-			CloseGoToLineDialog()
+			CloseInputDialog()
 		},
 		func(value string, index int) {
-			CloseGoToLineDialog()
+			CloseInputDialog()
 			if index == 0 || index == -1 { // OK button or Enter key in input field
 				if value == "" {
 					buffer.Settings["colorcolumn"] = 0.0
@@ -479,7 +458,7 @@ func handleSetVerticalRuler() tview.Primitive {
 				}
 				syncMenuFromBuffer(buffer)
 			}
-		}, fieldKeyFilter)
+		}, numericInputFilter)
 }
 
 func handleQuit() tview.Primitive {
