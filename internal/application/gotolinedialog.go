@@ -17,6 +17,30 @@ const inputDialogName = "inputdialog"
 func ShowGoToLineDialog(title string, message string, defaultValue string, onCancel func(), onAccept func(value string,
 	index int)) tview.Primitive {
 
+	fieldKeyFilter := func(event *tcell.EventKey) bool {
+		key := event.Key()
+		// Allow digits, colon for line:column format, and basic editing keys
+		if key == tcell.KeyBackspace || key == tcell.KeyDelete ||
+			key == tcell.KeyLeft || key == tcell.KeyRight ||
+			key == tcell.KeyHome || key == tcell.KeyEnd ||
+			key == tcell.KeyDEL {
+			return true
+		}
+		if event.Rune() >= '0' && event.Rune() <= '9' {
+			return true
+		}
+		if event.Rune() == ':' {
+			return true
+		}
+		return false
+	}
+
+	return ShowInputDialog(title, message, defaultValue, onCancel, onAccept, fieldKeyFilter)
+}
+
+func ShowInputDialog(title string, message string, defaultValue string, onCancel func(), onAccept func(value string,
+	index int), fieldKeyFilter func(event *tcell.EventKey) bool) tview.Primitive {
+
 	if inputDialog == nil {
 		inputDialog = dialog.NewInputDialog(app)
 		inputDialog.SetSmidgenKeybindings(smidgenSingleLineKeyBindings)
@@ -38,31 +62,15 @@ func ShowGoToLineDialog(title string, message string, defaultValue string, onCan
 	modalPages.AddPage(inputDialogName, inputDialog, true, true)
 
 	options := dialog.InputDialogOptions{
-		Title:        title,
-		Message:      message,
-		DefaultValue: defaultValue,
-		Buttons:      []string{"OK", "Cancel"},
-		Width:        width,
-		Height:       height,
-		OnCancel:     onCancel,
-		OnAccept:     onAccept,
-		FieldKeyFilter: func(event *tcell.EventKey) bool {
-			key := event.Key()
-			// Allow digits, colon for line:column format, and basic editing keys
-			if key == tcell.KeyBackspace || key == tcell.KeyDelete ||
-				key == tcell.KeyLeft || key == tcell.KeyRight ||
-				key == tcell.KeyHome || key == tcell.KeyEnd ||
-				key == tcell.KeyDEL {
-				return true
-			}
-			if event.Rune() >= '0' && event.Rune() <= '9' {
-				return true
-			}
-			if event.Rune() == ':' {
-				return true
-			}
-			return false
-		},
+		Title:          title,
+		Message:        message,
+		DefaultValue:   defaultValue,
+		Buttons:        []string{"OK", "Cancel"},
+		Width:          width,
+		Height:         height,
+		OnCancel:       onCancel,
+		OnAccept:       onAccept,
+		FieldKeyFilter: fieldKeyFilter,
 	}
 
 	inputDialog.Open(options)

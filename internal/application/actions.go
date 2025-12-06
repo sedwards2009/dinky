@@ -8,8 +8,10 @@ import (
 	"dinky/internal/tui/style"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/google/renameio/v2"
 	"github.com/rivo/tview"
 	"github.com/sedwards2009/smidgen"
@@ -29,6 +31,7 @@ const (
 	ACTION_SET_TAB_CHARACTER          = "SetTabCharacter"
 	ACTION_SET_LINE_ENDINGS           = "SetLineEndings"
 	ACTION_SET_SYNTAX_HIGHLIGHTING    = "SetSyntaxHighlighting"
+	ACTION_SET_VERTICAL_RULER         = "SetVerticalRuler"
 	ACTION_GO_TO_LINE                 = "GoToLine"
 	ACTION_QUIT                       = "Quit"
 	ACTION_FIND                       = "Find"
@@ -60,6 +63,7 @@ func init() {
 		ACTION_SET_TAB_CHARACTER:          handleSetTabCharacter,
 		ACTION_SET_LINE_ENDINGS:           handleSetLineEndings,
 		ACTION_SET_SYNTAX_HIGHLIGHTING:    handleSetSyntaxHighlighting,
+		ACTION_SET_VERTICAL_RULER:         handleSetVerticalRuler,
 		ACTION_GO_TO_LINE:                 handleGoToLine,
 		ACTION_QUIT:                       handleQuit,
 		ACTION_ABOUT:                      handleAbout,
@@ -412,6 +416,70 @@ func handleSetSyntaxHighlighting() tview.Primitive {
 			syncMenuFromBuffer(buffer)
 		},
 	})
+}
+
+func handleSetVerticalRuler() tview.Primitive {
+	var buffer *buffer.Buffer
+	if currentFileBuffer.buffer != nil {
+		buffer = currentFileBuffer.buffer
+	}
+
+	if buffer == nil {
+		statusBar.ShowMessage("No file open")
+		return nil
+	}
+
+	currentVerticalRuler := int(buffer.Settings["colorcolumn"].(float64))
+	defaultValue := ""
+	if currentVerticalRuler > 0 {
+		defaultValue = strconv.Itoa(currentVerticalRuler)
+	}
+
+	fieldKeyFilter := func(event *tcell.EventKey) bool {
+		key := event.Key()
+		// Allow digits and basic editing keys
+		if key == tcell.KeyBackspace || key == tcell.KeyDelete ||
+			key == tcell.KeyLeft || key == tcell.KeyRight ||
+			key == tcell.KeyHome || key == tcell.KeyEnd ||
+			key == tcell.KeyDEL {
+			return true
+		}
+		if event.Rune() >= '0' && event.Rune() <= '9' {
+			return true
+		}
+		return false
+	}
+
+	return ShowInputDialog("Vertical Ruler", "Enter column number (0 = off):", defaultValue,
+		func() {
+			// On cancel
+			CloseGoToLineDialog()
+		},
+		func(value string, index int) {
+			CloseGoToLineDialog()
+			if index == 0 || index == -1 { // OK button or Enter key in input field
+				if value == "" {
+					buffer.Settings["colorcolumn"] = 0.0
+					statusBar.ShowMessage("Vertical ruler disabled")
+					syncMenuFromBuffer(buffer)
+					return
+				}
+
+				columnNum, err := strconv.Atoi(value)
+				if err != nil || columnNum < 0 {
+					statusBar.ShowError("Invalid column number")
+					return
+				}
+
+				buffer.Settings["colorcolumn"] = float64(columnNum)
+				if columnNum == 0 {
+					statusBar.ShowMessage("Vertical ruler disabled")
+				} else {
+					statusBar.ShowMessage("Vertical ruler set to " + value)
+				}
+				syncMenuFromBuffer(buffer)
+			}
+		}, fieldKeyFilter)
 }
 
 func handleQuit() tview.Primitive {

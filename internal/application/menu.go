@@ -2,6 +2,7 @@ package application
 
 import (
 	"dinky/internal/tui/menu"
+	"strconv"
 	"strings"
 
 	"github.com/sedwards2009/smidgen"
@@ -60,6 +61,7 @@ func createMenus() []*menu.Menu {
 			{ID: ACTION_TOGGLE_SOFT_WRAP, Title: "Soft Wrap", Callback: handleDinkyAction},
 			{ID: ACTION_TOGGLE_MATCH_BRACKET, Title: "Match Brackets", Callback: handleDinkyAction},
 			{ID: ACTION_SET_TAB_SIZE, Title: "Tab Size…", Callback: handleDinkyAction},
+			{ID: ACTION_SET_VERTICAL_RULER, Title: "Vertical Ruler…", Callback: handleDinkyAction},
 			{ID: ACTION_SET_SYNTAX_HIGHLIGHTING, Title: "Syntax…", Callback: handleDinkyAction},
 		}},
 		{Title: "Help", Items: []*menu.MenuItem{
@@ -193,6 +195,20 @@ func syncSyntaxHighlighting(menus []*menu.Menu, buffer *buffer.Buffer) {
 	}
 }
 
+func syncVerticalRuler(menus []*menu.Menu, colorColumn int) {
+	for _, menu := range menus {
+		for _, menuItem := range menu.Items {
+			if menuItem.ID == ACTION_SET_VERTICAL_RULER {
+				if colorColumn == 0 {
+					menuItem.Title = "Vertical Ruler (Off)…"
+				} else {
+					menuItem.Title = "Vertical Ruler (" + strconv.Itoa(colorColumn) + ")…"
+				}
+			}
+		}
+	}
+}
+
 func syncMenuFromBuffer(buffer *buffer.Buffer) {
 	softwrap := buffer.Settings["softwrap"].(bool)
 	syncSoftWrap(menus, softwrap)
@@ -205,4 +221,5 @@ func syncMenuFromBuffer(buffer *buffer.Buffer) {
 	syncTabCharacter(menus, buffer)
 	syncLineEndings(menus, buffer)
 	syncSyntaxHighlighting(menus, buffer)
+	syncVerticalRuler(menus, int(buffer.Settings["colorcolumn"].(float64)))
 }

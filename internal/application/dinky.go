@@ -88,6 +88,7 @@ func newFile(contents string, filename string) {
 	buffer.Settings["tabsize"] = float64(settings.TabSize)
 	buffer.Settings["tabstospaces"] = settings.TabCharacter == "space"
 	buffer.Settings["hltrailingws"] = settings.ShowTrailingWhitespace
+	buffer.Settings["colorcolumn"] = settings.VerticalRuler
 
 	panelHFlex := tview.NewFlex()
 	panelHFlex.SetDirection(tview.FlexColumn)
