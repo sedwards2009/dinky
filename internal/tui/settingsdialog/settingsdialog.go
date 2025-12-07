@@ -3,7 +3,9 @@ package settingsdialog
 import (
 	"dinky/internal/application/settingstype"
 	"dinky/internal/tui/scrollbar"
+	"dinky/internal/tui/smidgeninputfield"
 	"dinky/internal/tui/table2"
+	"strconv"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -25,6 +27,7 @@ type SettingsDialog struct {
 	SoftWrapCheckbox               *tview.Checkbox
 	TabCharList                    *tview.List
 	TabSizeList                    *tview.List
+	VerticalRulerInputField        *smidgeninputfield.SmidgenInputField
 
 	// Smidgen color scheme list
 	ColorSchemeTableField             *table2.Table
@@ -127,6 +130,22 @@ func main() {
 	tabCharLabel.SetText("Tab Character: ")
 	secondColumnFlex.AddItem(tabCharLabel, 2, 0, false)
 
+	secondColumnFlex.AddItem(nil, 1, 0, false)
+
+	verticalRulerInputFieldFlex := tview.NewFlex()
+	verticalRulerInputFieldFlex.SetDirection(tview.FlexColumn)
+	verticalRulerInputFieldFlex.SetBorder(false)
+
+	verticalRulerInputField := smidgeninputfield.NewSmidgenInputField(app)
+
+	verticalRulerLabel := tview.NewTextView()
+	verticalRulerLabel.SetText("Vertical Ruler: ")
+	secondColumnFlex.AddItem(verticalRulerLabel, 1, 0, false)
+
+	verticalRulerLabel2 := tview.NewTextView()
+	verticalRulerLabel2.SetText("(column, 0=off) ")
+	secondColumnFlex.AddItem(verticalRulerLabel2, 1, 0, false)
+
 	// Third column of options
 	thirdColumnFlex := tview.NewFlex()
 	thirdColumnFlex.SetDirection(tview.FlexRow)
@@ -136,6 +155,15 @@ func main() {
 	tabCharList.AddItem(" Tab    ", "", 0, nil)
 	tabCharList.AddItem(" Spaces ", "", 0, nil)
 	thirdColumnFlex.AddItem(tabCharList, 2, 0, false)
+
+	thirdColumnFlex.AddItem(nil, 1, 0, false)
+	thirdColumnFlex.AddItem(verticalRulerInputField, 1, 0, false)
+	verticalRulerInputField.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if numericInputFilter(event) {
+			return event
+		}
+		return nil
+	})
 
 	// Fourth column of options
 	forthColumnFlex := tview.NewFlex()
@@ -158,12 +186,12 @@ func main() {
 	fifthColumnFlex.AddItem(tabSizeList, 4, 0, false)
 
 	optionsColumnFlex.AddItem(firstColumnFlex, 31, 0, false)
-	optionsColumnFlex.AddItem(secondColumnFlex, 15, 0, false)
+	optionsColumnFlex.AddItem(secondColumnFlex, 16, 0, false)
 	optionsColumnFlex.AddItem(thirdColumnFlex, 8, 0, false)
 	optionsColumnFlex.AddItem(forthColumnFlex, 12, 0, false)
 	optionsColumnFlex.AddItem(fifthColumnFlex, 0, 1, false)
 
-	verticalContentsFlex.AddItem(optionsColumnFlex, 4, 0, false)
+	verticalContentsFlex.AddItem(optionsColumnFlex, 5, 0, false)
 
 	verticalContentsFlex.AddItem(nil, 1, 0, false)
 
@@ -187,7 +215,7 @@ func main() {
 
 	topLayout := tview.NewFlex()
 	topLayout.AddItem(nil, 0, 1, false)
-	topLayout.AddItem(innerFlex, 74, 1, true)
+	topLayout.AddItem(innerFlex, 75, 1, true)
 	topLayout.AddItem(nil, 0, 1, false)
 
 	sd := &SettingsDialog{
@@ -202,6 +230,7 @@ func main() {
 		SoftWrapCheckbox:               softWrapCheckbox,
 		TabCharList:                    tabCharList,
 		TabSizeList:                    tabSizeList,
+		VerticalRulerInputField:        verticalRulerInputField,
 
 		ColorSchemeTableField:             colorSchemeTableField,
 		ColorSchemeTableFlex:              colorSchemeTableFlex,
@@ -293,6 +322,8 @@ func (sd *SettingsDialog) SetSettings(settings settingstype.Settings) {
 	default:
 		sd.TabSizeList.SetCurrentItem(1)
 	}
+
+	sd.VerticalRulerInputField.SetText(strconv.Itoa(int(settings.VerticalRuler)))
 }
 
 func (sd *SettingsDialog) getSettings() settingstype.Settings {
@@ -323,6 +354,9 @@ func (sd *SettingsDialog) getSettings() settingstype.Settings {
 	default:
 		newSettings.TabSize = 4
 	}
+
+	value, _ := strconv.Atoi(sd.VerticalRulerInputField.GetText())
+	newSettings.VerticalRuler = float64(value)
 	return newSettings
 }
 
@@ -363,4 +397,19 @@ func (sd *SettingsDialog) MouseHandler() func(action tview.MouseAction, event *t
 		sd.verticalContentsFlex.MouseHandler()(action, event, setFocus)
 		return true, nil
 	})
+}
+
+func numericInputFilter(event *tcell.EventKey) bool {
+	key := event.Key()
+	// Allow digits and basic editing keys
+	if key == tcell.KeyBackspace || key == tcell.KeyDelete ||
+		key == tcell.KeyLeft || key == tcell.KeyRight ||
+		key == tcell.KeyHome || key == tcell.KeyEnd ||
+		key == tcell.KeyDEL {
+		return true
+	}
+	if event.Rune() >= '0' && event.Rune() <= '9' {
+		return true
+	}
+	return false
 }
