@@ -63,10 +63,9 @@ func initKeyBindings() {
 		"Ctrl-x": smidgen.ActionCut,
 		"Ctrl-k": smidgen.ActionCutLine,
 		// "Ctrl-d": smidgen.ActionDuplicateLine,
-		"Ctrl-v": smidgen.ActionPaste,
-		"Ctrl-a": smidgen.ActionSelectAll,
-
-		"Home":     smidgen.ActionStartOfLine,
+		"Ctrl-v":   smidgen.ActionPaste,
+		"Ctrl-a":   smidgen.ActionSelectAll,
+		"Home":     smidgen.ActionStartOfTextToggle,
 		"End":      smidgen.ActionEndOfLine,
 		"CtrlHome": smidgen.ActionCursorStart,
 		"CtrlEnd":  smidgen.ActionCursorEnd,
