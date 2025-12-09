@@ -40,6 +40,8 @@ func (f *SmidgenInputField) GetText() string {
 func (f *SmidgenInputField) SetText(text string) {
 	f.View.ActionController().DeleteLine()
 	f.View.Buffer().Insert(f.View.Buffer().Start(), text)
+	f.View.ActionController().StartOfLine()
+	f.View.Relocate()
 }
 
 func (f *SmidgenInputField) InputHandler() func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
