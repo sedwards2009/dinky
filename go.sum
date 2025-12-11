@@ -38,6 +38,8 @@ github.com/sedwards2009/smidgen v0.0.0-20251202202924-e3de2988d325 h1:r19ksgCaUg
 github.com/sedwards2009/smidgen v0.0.0-20251202202924-e3de2988d325/go.mod h1:JoIrRb8oFigd4MloRK04b1Iqc+RFqt+POXekZtfWRlE=
 github.com/sedwards2009/smidgen v0.0.0-20251209191459-3c78924034c2 h1:PGuGRHpcHK7BaItEmk0G3YnOhpj8Nq+stIBKCtfeF1k=
 github.com/sedwards2009/smidgen v0.0.0-20251209191459-3c78924034c2/go.mod h1:JoIrRb8oFigd4MloRK04b1Iqc+RFqt+POXekZtfWRlE=
+github.com/sedwards2009/smidgen v0.0.0-20251211193420-9ab04e954a98 h1:2mEmJTzGspQcvtKoMFymUnuz1p7KAkElYLUURMH3PDA=
+github.com/sedwards2009/smidgen v0.0.0-20251211193420-9ab04e954a98/go.mod h1:JoIrRb8oFigd4MloRK04b1Iqc+RFqt+POXekZtfWRlE=
 github.com/sergi/go-diff v1.4.0 h1:n/SP9D5ad1fORl+llWyN+D6qoUETXNZARKjyY2/KVCw=
 github.com/sergi/go-diff v1.4.0/go.mod h1:A0bzQcvG0E7Rwjx0REVgAGH58e96+X0MeOfepqsbeW4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
