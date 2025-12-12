@@ -187,6 +187,7 @@ func loadFile(filename string) string {
 	// Read the file contents
 	contents, err := os.ReadFile(filename)
 	if err != nil {
+		newFile("", filename)
 		return fmt.Sprintf("Failed to read file '%s':\n%v", filename, err)
 	}
 	newFile(string(contents), filename)
