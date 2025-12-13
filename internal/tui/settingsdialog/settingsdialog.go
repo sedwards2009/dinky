@@ -62,10 +62,10 @@ func NewSettingsDialog(app *tview.Application) *SettingsDialog {
 	colorSchemeTableFlex.SetBorder(false)
 	colorSchemeTableField := table2.NewTable()
 	colorSchemeTableField.SetSelectable(true, false)
-	colorSchemeTableFlex.AddItem(colorSchemeTableField, 12, 0, false)
+	colorSchemeTableFlex.AddItem(colorSchemeTableField, 13, 0, false)
 
-	verticalScrollbar := scrollbar.NewScrollbar()
-	colorSchemeTableFlex.AddItem(verticalScrollbar, 1, 0, false)
+	colorSchemeVerticalScrollbar := scrollbar.NewScrollbar()
+	colorSchemeTableFlex.AddItem(colorSchemeVerticalScrollbar, 1, 0, false)
 	colorSchemeTableFlex.AddItem(nil, 1, 0, false)
 
 	// Color scheme preview editor
@@ -235,20 +235,20 @@ func main() {
 		ColorSchemeTableField:             colorSchemeTableField,
 		ColorSchemeTableFlex:              colorSchemeTableFlex,
 		ColorSchemePreviewEditor:          colorSchemePreviewEditor,
-		ColorSchemeTableVerticalScrollbar: verticalScrollbar,
+		ColorSchemeTableVerticalScrollbar: colorSchemeVerticalScrollbar,
 	}
 	okButton.SetSelectedFunc(sd.doOK)
 	cancelButton.SetSelectedFunc(sd.doCancel)
 
 	// Set up vertical scrollbar
-	verticalScrollbar.Track.SetBeforeDrawFunc(func(_ tcell.Screen) {
+	colorSchemeVerticalScrollbar.Track.SetBeforeDrawFunc(func(_ tcell.Screen) {
 		row, _ := colorSchemeTableField.GetOffset()
-		verticalScrollbar.Track.SetMax(colorSchemeTableField.GetRowCount() - 1)
+		colorSchemeVerticalScrollbar.Track.SetMax(colorSchemeTableField.GetRowCount() - 1)
 		_, _, _, height := sd.ColorSchemeTableField.GetInnerRect()
-		verticalScrollbar.Track.SetThumbSize(height)
-		verticalScrollbar.Track.SetPosition(row)
+		colorSchemeVerticalScrollbar.Track.SetThumbSize(height)
+		colorSchemeVerticalScrollbar.Track.SetPosition(row)
 	})
-	verticalScrollbar.SetChangedFunc(func(position int) {
+	colorSchemeVerticalScrollbar.SetChangedFunc(func(position int) {
 		_, column := sd.ColorSchemeTableField.GetOffset()
 		sd.ColorSchemeTableField.SetOffset(position, column)
 	})
