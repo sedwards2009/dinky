@@ -77,7 +77,7 @@ Very much in development, So much development. I'll try to do regular releases a
 ## Technical Details
 
 Dinky is built in Go and uses:
-- **[femto (my fork)](https://github.com/sedwards2009/femto)**: The editor component (based on micro's editing engine)
+- **[smidgen](https://github.com/sedwards2009/smidgen)**: The editor component (based on micro's editing engine)
 - **[tview](https://github.com/rivo/tview/)**: Terminal UI framework
 - **[tcell](https://github.com/gdamore/tcell)**: Cross-platform terminal handling
 
