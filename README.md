@@ -43,6 +43,7 @@ Yes! We can have nice things in a terminal application. 💎
 - **Soft wrap**: Wrap long lines to window width
 - **Show whitespace**: You need this for Makefiles, sorry
 - **Syntax highlighting**: Support for multiple programming languages, looks pretty ✨
+- **Vertical Ruler**: Keep those long lines under control
 
 ## Installation
 
