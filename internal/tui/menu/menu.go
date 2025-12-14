@@ -19,9 +19,10 @@ type MenuBar struct {
 }
 
 type Menu struct {
-	ID    string
-	Title string
-	Items []*MenuItem
+	ID        string
+	Title     string
+	Items     []*MenuItem
+	charWidth int
 }
 
 type MenuItem struct {
@@ -58,12 +59,11 @@ func (menuBar *MenuBar) SetMenus(menus []*Menu) {
 	menuBar.menus = menus
 }
 
-func (menuBar *MenuBar) Open() {
-	menuBar.selectMenuBarItem(0)
+func (menuBar *MenuBar) Open(menuItem int) {
+	menuBar.selectMenuBarItem(menuItem)
 }
 
 func (menuBar *MenuBar) Draw(screen tcell.Screen) {
-	// menuBar.Box.DrawForSubclass(screen, menuBar)
 	x, y, width, _ := menuBar.GetInnerRect()
 
 	for i := 0; i < width; i += 1 {
@@ -75,7 +75,9 @@ func (menuBar *MenuBar) Draw(screen tcell.Screen) {
 		padding += " "
 	}
 
-	reverse := menuBar.MenuBarStyle.Reverse(true)
+	fg, bg, _ := menuBar.MenuBarStyle.Decompose()
+	reverse := menuBar.MenuBarStyle.Foreground(bg).Background(fg)
+
 	dx := 0
 	for i, menu := range menuBar.menus {
 		title := menu.Title
@@ -85,8 +87,15 @@ func (menuBar *MenuBar) Draw(screen tcell.Screen) {
 		}
 		utils.DrawText(screen, dx, y, padding, style)
 		dx += MENU_BAR_PADDING
-		utils.DrawText(screen, dx, y, title, style)
-		dx += len(title)
+
+		color, _, _ := style.Decompose()
+		// First measure the width
+		_, titleWidth := tview.Print(screen, title, dx, y, width, tview.AlignLeft, color)
+		utils.DrawSpace(screen, dx, y, titleWidth, style)
+		tview.Print(screen, title, dx, y, width, tview.AlignLeft, color)
+		dx += titleWidth
+		menu.charWidth = titleWidth
+
 		utils.DrawText(screen, dx, y, padding, style)
 		dx += MENU_BAR_PADDING
 		dx += MENU_BAR_SPACING
@@ -313,7 +322,7 @@ func (m *MenuBar) menuItemIndexAtX(posX int) (index int, leftX int) {
 
 		left := x
 		x += MENU_BAR_PADDING
-		x += runewidth.StringWidth(menu.Title)
+		x += menu.charWidth
 		x += MENU_BAR_PADDING
 		if posX < x {
 			return i, left
@@ -332,7 +341,7 @@ func (m *MenuBar) menuIndexLeft(index int) int {
 		}
 
 		x += MENU_BAR_PADDING
-		x += runewidth.StringWidth(menu.Title)
+		x += menu.charWidth
 		x += MENU_BAR_PADDING
 		x += MENU_BAR_SPACING
 	}

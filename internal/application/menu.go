@@ -11,7 +11,7 @@ import (
 
 func createMenus() []*menu.Menu {
 	return []*menu.Menu{
-		{Title: "File", Items: []*menu.MenuItem{
+		{Title: "[::u]F[::U]ile", Items: []*menu.MenuItem{
 			{ID: ACTION_NEW, Title: "New", Callback: handleDinkyAction},
 			{ID: ACTION_OPEN_FILE, Title: "Open", Callback: handleDinkyAction},
 			{ID: ACTION_SAVE_FILE, Title: "Save", Callback: handleDinkyAction},
@@ -22,7 +22,7 @@ func createMenus() []*menu.Menu {
 			{Title: "", Callback: nil}, // Separator
 			{ID: ACTION_QUIT, Title: "Quit", Callback: handleDinkyAction},
 		}},
-		{Title: "Edit", Items: []*menu.MenuItem{
+		{Title: "[::u]E[::U]dit", Items: []*menu.MenuItem{
 			{ID: smidgen.ActionUndo, Title: "Undo", Callback: handleSmidgenAction},
 			{ID: smidgen.ActionRedo, Title: "Redo", Callback: handleSmidgenAction},
 			{Title: "", Callback: nil}, // Separator
@@ -38,8 +38,9 @@ func createMenus() []*menu.Menu {
 			{ID: ACTION_SET_TAB_CHARACTER, Title: "Tab Character…", Callback: handleDinkyAction},
 			{ID: ACTION_SET_LINE_ENDINGS, Title: "Line Endings…", Callback: handleDinkyAction},
 			{ID: ACTION_CONVERT_TAB_SPACES, Title: "Convert All Tabs to Spaces", Callback: handleDinkyAction},
+			{ID: ACTION_TO_UPPERCASE, Title: "To Uppercase", Callback: handleDinkyAction},
 		}},
-		{Title: "Selection", Items: []*menu.MenuItem{
+		{Title: "[::u]S[::U]election", Items: []*menu.MenuItem{
 			{ID: smidgen.ActionSelectAll, Title: "Select All", Callback: handleSmidgenAction},
 			{Title: "", Callback: nil}, // Separator
 			{ID: ACTION_GO_TO_LINE, Title: "Go to Line…", Callback: handleDinkyAction},
@@ -54,7 +55,7 @@ func createMenus() []*menu.Menu {
 			{ID: smidgen.ActionRemoveMultiCursor, Title: "Remove Last Cursor", Callback: handleSmidgenAction},
 			{ID: smidgen.ActionRemoveAllMultiCursors, Title: "Remove All Cursors", Callback: handleSmidgenAction},
 		}},
-		{Title: "View", Items: []*menu.MenuItem{
+		{Title: "[::u]V[::U]iew", Items: []*menu.MenuItem{
 			{ID: smidgen.ActionToggleRuler, Title: "Line Numbers", Callback: handleSmidgenAction},
 			{ID: ACTION_TOGGLE_WHITESPACE, Title: "Show Whitespace", Callback: handleDinkyAction},
 			{ID: ACTION_TOGGLE_TRAILING_WHITESPACE, Title: "Show Trailing Whitespace", Callback: handleDinkyAction},
@@ -64,7 +65,7 @@ func createMenus() []*menu.Menu {
 			{ID: ACTION_SET_VERTICAL_RULER, Title: "Vertical Ruler…", Callback: handleDinkyAction},
 			{ID: ACTION_SET_SYNTAX_HIGHLIGHTING, Title: "Syntax…", Callback: handleDinkyAction},
 		}},
-		{Title: "Help", Items: []*menu.MenuItem{
+		{Title: "[::u]H[::U]elp", Items: []*menu.MenuItem{
 			{ID: ACTION_ABOUT, Title: "About", Callback: handleDinkyAction},
 		}},
 	}

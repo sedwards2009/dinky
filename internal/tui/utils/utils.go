@@ -9,6 +9,13 @@ func DrawText(screen tcell.Screen, x int, y int, text string, style tcell.Style)
 	}
 }
 
+func DrawSpace(screen tcell.Screen, x int, y int, width int, style tcell.Style) {
+	for i := 0; i < width; i++ {
+		screen.SetContent(x, y, ' ', nil, style)
+		x++
+	}
+}
+
 func DrawCappedHorizontalLine(screen tcell.Screen, x int, y int, width int, borderStyle tcell.Style, middleStyle tcell.Style, left rune,
 	middle rune, right rune) {
 

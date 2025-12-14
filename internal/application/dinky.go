@@ -245,7 +245,7 @@ func isBufferCRLF(buffer *buffer.Buffer) bool {
 func editorInputCapture(event *tcell.EventKey) *tcell.EventKey {
 	for keyDesc, action := range dinkyKeyBindings {
 		if event.Key() == keyDesc.KeyCode {
-			if event.Key() == tcell.KeyRune {
+			if event.Key() == tcell.KeyRune && keyDesc.R != event.Rune() {
 				continue
 			}
 

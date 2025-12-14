@@ -23,7 +23,11 @@ const (
 	ACTION_OPEN_FILE                  = "OpenFile"
 	ACTION_SAVE_FILE                  = "SaveFile"
 	ACTION_SAVE_FILE_AS               = "SaveFileAs"
-	ACTION_OPEN_MENU                  = "OpenMenu"
+	ACTION_OPEN_FILE_MENU             = "OpenFileMenu"
+	ACTION_OPEN_EDIT_MENU             = "OpenEditMenu"
+	ACTION_OPEN_SELECTION_MENU        = "OpenSelectionMenu"
+	ACTION_OPEN_VIEW_MENU             = "OpenViewMenu"
+	ACTION_OPEN_HELP_MENU             = "OpenHelpMenu"
 	ACTION_TOGGLE_SOFT_WRAP           = "ToggleSoftWrap"
 	ACTION_TOGGLE_MATCH_BRACKET       = "ToggleMatchBracket"
 	ACTION_SET_TAB_SIZE               = "SetTabSize"
@@ -53,7 +57,11 @@ func init() {
 		ACTION_NEW:                        handleNewFile,
 		ACTION_CLOSE_FILE:                 handleCloseFile,
 		ACTION_OPEN_FILE:                  handleOpenFile,
-		ACTION_OPEN_MENU:                  handleOpenMenu,
+		ACTION_OPEN_FILE_MENU:             handleOpenFileMenu,
+		ACTION_OPEN_EDIT_MENU:             handleOpenEditMenu,
+		ACTION_OPEN_SELECTION_MENU:        handleOpenSelectionMenu,
+		ACTION_OPEN_VIEW_MENU:             handleOpenViewMenu,
+		ACTION_OPEN_HELP_MENU:             handleOpenHelpMenu,
 		ACTION_SAVE_FILE:                  handleSaveFile,
 		ACTION_SAVE_FILE_AS:               handleSaveFileAs,
 		ACTION_TOGGLE_SOFT_WRAP:           handleSoftWrap,
@@ -241,8 +249,32 @@ func closeFile(fileBufferID string) {
 	}
 }
 
-func handleOpenMenu() tview.Primitive {
-	menuBar.Open()
+func handleOpenFileMenu() tview.Primitive {
+	menuBar.Open(0)
+	app.SetFocus(menuBar)
+	return nil
+}
+
+func handleOpenEditMenu() tview.Primitive {
+	menuBar.Open(1)
+	app.SetFocus(menuBar)
+	return nil
+}
+
+func handleOpenSelectionMenu() tview.Primitive {
+	menuBar.Open(2)
+	app.SetFocus(menuBar)
+	return nil
+}
+
+func handleOpenViewMenu() tview.Primitive {
+	menuBar.Open(3)
+	app.SetFocus(menuBar)
+	return nil
+}
+
+func handleOpenHelpMenu() tview.Primitive {
+	menuBar.Open(4)
 	app.SetFocus(menuBar)
 	return nil
 }

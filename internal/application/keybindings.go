@@ -1,6 +1,8 @@
 package application
 
 import (
+	"log"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/sedwards2009/smidgen"
 )
@@ -123,7 +125,12 @@ func initKeyBindings() {
 		"Ctrl-o": ACTION_OPEN_FILE,
 		"Ctrl-s": ACTION_SAVE_FILE,
 		"Ctrl-g": ACTION_GO_TO_LINE,
-		"F12":    ACTION_OPEN_MENU,
+		"F12":    ACTION_OPEN_FILE_MENU,
+		"Alt-f":  ACTION_OPEN_FILE_MENU,
+		"Alt-e":  ACTION_OPEN_EDIT_MENU,
+		"Alt-s":  ACTION_OPEN_SELECTION_MENU,
+		"Alt-v":  ACTION_OPEN_VIEW_MENU,
+		"Alt-h":  ACTION_OPEN_HELP_MENU,
 		"Ctrl-q": ACTION_QUIT,
 		"Ctrl-f": ACTION_FIND,
 		"F3":     ACTION_FIND_NEXT,
@@ -155,6 +162,8 @@ func initKeyBindings() {
 	for key, action := range dinkyKeyToActionMapping {
 		if desc, ok := smidgen.ParseKeySequence(key); ok {
 			dinkyKeyBindings[desc] = action
+		} else {
+			log.Printf("Failed to parse key sequence: %s", key)
 		}
 	}
 }
