@@ -6,6 +6,7 @@ import (
 	"dinky/internal/tui/filedialog"
 	"dinky/internal/tui/settingsdialog"
 	"dinky/internal/tui/style"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -51,6 +52,7 @@ const (
 	ACTION_SETTINGS                   = "Settings"
 	ACTION_TO_UPPERCASE               = "ToUppercase"
 	ACTION_TO_LOWERCASE               = "ToLowercase"
+	ACTION_URL_ENCODE                 = "UrlEncode"
 )
 
 var dinkyActionMapping map[string]func() tview.Primitive
@@ -90,6 +92,7 @@ func init() {
 		ACTION_SETTINGS:                   handleSettings,
 		ACTION_TO_UPPERCASE:               handleToUppercase,
 		ACTION_TO_LOWERCASE:               handleToLowercase,
+		ACTION_URL_ENCODE:                 handleURLEncode,
 	}
 }
 
@@ -669,6 +672,13 @@ func handleToUppercase() tview.Primitive {
 func handleToLowercase() tview.Primitive {
 	transformSelection(func(s string) string {
 		return strings.ToLower(s)
+	})
+	return nil
+}
+
+func handleURLEncode() tview.Primitive {
+	transformSelection(func(s string) string {
+		return url.QueryEscape(s)
 	})
 	return nil
 }
