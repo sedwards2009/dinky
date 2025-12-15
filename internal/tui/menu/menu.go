@@ -23,6 +23,7 @@ type Menu struct {
 	Title     string
 	Items     []*MenuItem
 	charWidth int
+	Shortcut  rune
 }
 
 type MenuItem struct {
@@ -183,6 +184,16 @@ func (menuBar *MenuBar) InputHandler() func(event *tcell.EventKey, setFocus func
 		menu := menuBar.menus[selectedMenuIndex]
 		selectedItemIndex := menuBar.selectedPath[1]
 		item := menu.Items[selectedItemIndex]
+
+		isAlt := (event.Modifiers() & tcell.ModAlt) != 0
+		if isAlt {
+			for i, menu := range menuBar.menus {
+				if menu.Shortcut != 0 && menu.Shortcut == event.Rune() {
+					menuBar.selectMenuBarItem(i)
+					return
+				}
+			}
+		}
 
 		switch event.Key() {
 		case tcell.KeyEscape:
