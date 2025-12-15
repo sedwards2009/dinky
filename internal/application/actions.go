@@ -63,6 +63,7 @@ func init() {
 		ACTION_OPEN_FILE_MENU:             handleOpenFileMenu,
 		ACTION_OPEN_EDIT_MENU:             handleOpenEditMenu,
 		ACTION_OPEN_SELECTION_MENU:        handleOpenSelectionMenu,
+		ACTION_OPEN_TRANSFORM_MENU:        handleOpenTransformMenu,
 		ACTION_OPEN_VIEW_MENU:             handleOpenViewMenu,
 		ACTION_OPEN_HELP_MENU:             handleOpenHelpMenu,
 		ACTION_SAVE_FILE:                  handleSaveFile,
@@ -272,14 +273,20 @@ func handleOpenSelectionMenu() tview.Primitive {
 	return nil
 }
 
-func handleOpenViewMenu() tview.Primitive {
+func handleOpenTransformMenu() tview.Primitive {
 	menuBar.Open(3)
 	app.SetFocus(menuBar)
 	return nil
 }
 
-func handleOpenHelpMenu() tview.Primitive {
+func handleOpenViewMenu() tview.Primitive {
 	menuBar.Open(4)
+	app.SetFocus(menuBar)
+	return nil
+}
+
+func handleOpenHelpMenu() tview.Primitive {
+	menuBar.Open(5)
 	app.SetFocus(menuBar)
 	return nil
 }
