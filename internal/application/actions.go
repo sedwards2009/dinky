@@ -26,6 +26,7 @@ const (
 	ACTION_OPEN_FILE_MENU             = "OpenFileMenu"
 	ACTION_OPEN_EDIT_MENU             = "OpenEditMenu"
 	ACTION_OPEN_SELECTION_MENU        = "OpenSelectionMenu"
+	ACTION_OPEN_TRANSFORM_MENU        = "OpenTransformMenu"
 	ACTION_OPEN_VIEW_MENU             = "OpenViewMenu"
 	ACTION_OPEN_HELP_MENU             = "OpenHelpMenu"
 	ACTION_TOGGLE_SOFT_WRAP           = "ToggleSoftWrap"
@@ -48,6 +49,8 @@ const (
 	ACTION_TOGGLE_TRAILING_WHITESPACE = "ToggleTrailingWhitespace"
 	ACTION_FIND_AND_REPLACE           = "FindAndReplace"
 	ACTION_SETTINGS                   = "Settings"
+	ACTION_TO_UPPERCASE               = "ToUppercase"
+	ACTION_TO_LOWERCASE               = "ToLowercase"
 )
 
 var dinkyActionMapping map[string]func() tview.Primitive
@@ -84,6 +87,8 @@ func init() {
 		ACTION_TOGGLE_TRAILING_WHITESPACE: handleToggleTrailingWhitespace,
 		ACTION_FIND_AND_REPLACE:           handleFindAndReplace,
 		ACTION_SETTINGS:                   handleSettings,
+		ACTION_TO_UPPERCASE:               handleToUppercase,
+		ACTION_TO_LOWERCASE:               handleToLowercase,
 	}
 }
 
@@ -631,4 +636,26 @@ func handleSettings() tview.Primitive {
 	settingsDialog.SetSettings(settings)
 	modalPages.AddPage(settingsDialogName, settingsDialog, true, true)
 	return settingsDialog
+}
+
+func handleToUppercase() tview.Primitive {
+	currentFileBuffer.editor.ActionController().TransformSelection(func(lines []string) []string {
+		result := make([]string, len(lines))
+		for i, line := range lines {
+			result[i] = strings.ToUpper(line)
+		}
+		return result
+	})
+	return nil
+}
+
+func handleToLowercase() tview.Primitive {
+	currentFileBuffer.editor.ActionController().TransformSelection(func(lines []string) []string {
+		result := make([]string, len(lines))
+		for i, line := range lines {
+			result[i] = strings.ToLower(line)
+		}
+		return result
+	})
+	return nil
 }

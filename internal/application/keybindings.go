@@ -129,6 +129,7 @@ func initKeyBindings() {
 		"Alt-f":  ACTION_OPEN_FILE_MENU,
 		"Alt-e":  ACTION_OPEN_EDIT_MENU,
 		"Alt-s":  ACTION_OPEN_SELECTION_MENU,
+		"Alt-t":  ACTION_OPEN_TRANSFORM_MENU,
 		"Alt-v":  ACTION_OPEN_VIEW_MENU,
 		"Alt-h":  ACTION_OPEN_HELP_MENU,
 		"Ctrl-q": ACTION_QUIT,

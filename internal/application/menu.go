@@ -38,7 +38,6 @@ func createMenus() []*menu.Menu {
 			{ID: ACTION_SET_TAB_CHARACTER, Title: "Tab Character…", Callback: handleDinkyAction},
 			{ID: ACTION_SET_LINE_ENDINGS, Title: "Line Endings…", Callback: handleDinkyAction},
 			{ID: ACTION_CONVERT_TAB_SPACES, Title: "Convert All Tabs to Spaces", Callback: handleDinkyAction},
-			{ID: ACTION_TO_UPPERCASE, Title: "To Uppercase", Callback: handleDinkyAction},
 		}},
 		{Title: "[::u]S[::U]election", Shortcut: 's', Items: []*menu.MenuItem{
 			{ID: smidgen.ActionSelectAll, Title: "Select All", Callback: handleSmidgenAction},
@@ -54,6 +53,10 @@ func createMenus() []*menu.Menu {
 			{ID: smidgen.ActionSpawnMultiCursorSelect, Title: "Add Cursors to Selection", Callback: handleSmidgenAction},
 			{ID: smidgen.ActionRemoveMultiCursor, Title: "Remove Last Cursor", Callback: handleSmidgenAction},
 			{ID: smidgen.ActionRemoveAllMultiCursors, Title: "Remove All Cursors", Callback: handleSmidgenAction},
+		}},
+		{Title: "[::u]T[::U]ransform", Shortcut: 't', Items: []*menu.MenuItem{
+			{ID: ACTION_TO_UPPERCASE, Title: "To Uppercase", Callback: handleDinkyAction},
+			{ID: ACTION_TO_LOWERCASE, Title: "To Lowercase", Callback: handleDinkyAction},
 		}},
 		{Title: "[::u]V[::U]iew", Shortcut: 'v', Items: []*menu.MenuItem{
 			{ID: smidgen.ActionToggleRuler, Title: "Line Numbers", Callback: handleSmidgenAction},
