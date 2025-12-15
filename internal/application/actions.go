@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -54,6 +55,8 @@ const (
 	ACTION_TO_LOWERCASE               = "ToLowercase"
 	ACTION_URL_ENCODE                 = "UrlEncode"
 	ACTION_URL_DECODE                 = "UrlDecode"
+	ACTION_SORT_LINES                 = "SortLines"
+	ACTION_REVERSE_LINES              = "ReverseLines"
 )
 
 var dinkyActionMapping map[string]func() tview.Primitive
@@ -95,6 +98,8 @@ func init() {
 		ACTION_TO_LOWERCASE:               handleToLowercase,
 		ACTION_URL_ENCODE:                 handleURLEncode,
 		ACTION_URL_DECODE:                 handleURLDecode,
+		ACTION_SORT_LINES:                 handleSortLines,
+		ACTION_REVERSE_LINES:              handleReverseLines,
 	}
 }
 
@@ -693,6 +698,32 @@ func handleURLDecode() tview.Primitive {
 			return s
 		}
 		return decoded
+	})
+	return nil
+}
+
+func handleSortLines() tview.Primitive {
+	if !currentFileBuffer.editor.Cursor().HasSelection() {
+		statusBar.ShowWarning("No text selected")
+		return nil
+	}
+	currentFileBuffer.editor.ActionController().TransformSelection(func(lines []string) []string {
+		result := append([]string(nil), lines...)
+		slices.Sort(result)
+		return result
+	})
+	return nil
+}
+
+func handleReverseLines() tview.Primitive {
+	if !currentFileBuffer.editor.Cursor().HasSelection() {
+		statusBar.ShowWarning("No text selected")
+		return nil
+	}
+	currentFileBuffer.editor.ActionController().TransformSelection(func(lines []string) []string {
+		result := append([]string(nil), lines...)
+		slices.Reverse(result)
+		return result
 	})
 	return nil
 }

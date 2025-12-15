@@ -59,6 +59,9 @@ func createMenus() []*menu.Menu {
 			{ID: ACTION_TO_LOWERCASE, Title: "To Lowercase", Callback: handleDinkyAction},
 			{ID: ACTION_URL_ENCODE, Title: "URL Encode", Callback: handleDinkyAction},
 			{ID: ACTION_URL_DECODE, Title: "URL Decode", Callback: handleDinkyAction},
+			{Title: "", Callback: nil}, // Separator
+			{ID: ACTION_SORT_LINES, Title: "Sort Lines", Callback: handleDinkyAction},
+			{ID: ACTION_REVERSE_LINES, Title: "Reverse Lines", Callback: handleDinkyAction},
 		}},
 		{Title: "[::u]V[::U]iew", Shortcut: 'v', Items: []*menu.MenuItem{
 			{ID: smidgen.ActionToggleRuler, Title: "Line Numbers", Callback: handleSmidgenAction},
