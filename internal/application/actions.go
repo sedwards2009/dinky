@@ -645,24 +645,30 @@ func handleSettings() tview.Primitive {
 	return settingsDialog
 }
 
-func handleToUppercase() tview.Primitive {
+func transformSelection(transformFunc func(string) string) {
+	if !currentFileBuffer.editor.Cursor().HasSelection() {
+		statusBar.ShowWarning("No text selected")
+		return
+	}
 	currentFileBuffer.editor.ActionController().TransformSelection(func(lines []string) []string {
 		result := make([]string, len(lines))
 		for i, line := range lines {
-			result[i] = strings.ToUpper(line)
+			result[i] = transformFunc(line)
 		}
 		return result
+	})
+}
+
+func handleToUppercase() tview.Primitive {
+	transformSelection(func(s string) string {
+		return strings.ToUpper(s)
 	})
 	return nil
 }
 
 func handleToLowercase() tview.Primitive {
-	currentFileBuffer.editor.ActionController().TransformSelection(func(lines []string) []string {
-		result := make([]string, len(lines))
-		for i, line := range lines {
-			result[i] = strings.ToLower(line)
-		}
-		return result
+	transformSelection(func(s string) string {
+		return strings.ToLower(s)
 	})
 	return nil
 }

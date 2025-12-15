@@ -23,6 +23,7 @@ type StatusBar struct {
 	Style           tcell.Style
 	MessageStyle    tcell.Style
 	ErrorStyle      tcell.Style
+	WarningStyle    tcell.Style
 	Filename        string
 	IsModified      bool
 	Line            int
@@ -31,6 +32,7 @@ type StatusBar struct {
 	TabSize         int
 	message         string
 	errorMessage    string
+	warningMessage  string
 	IsOverwriteMode bool
 	UpdateHook      func(statusBar *StatusBar) // Hook for updating the status bar
 }
@@ -45,11 +47,17 @@ func NewStatusBar(app *tview.Application) *StatusBar {
 		Style:        tcell.StyleDefault.Foreground(fg).Background(bg),
 		MessageStyle: tcell.StyleDefault.Foreground(fg).Background(stylecolor.Green),
 		ErrorStyle:   tcell.StyleDefault.Foreground(fg).Background(stylecolor.Red),
+		WarningStyle: tcell.StyleDefault.Foreground(fg).Background(stylecolor.Yellow),
 	}
 }
 
 func (statusBar *StatusBar) ShowMessage(message string) {
 	statusBar.message = message
+	statusBar.scheduleMessageReset(MESSAGE_TIMEOUT)
+}
+
+func (statusBar *StatusBar) ShowWarning(message string) {
+	statusBar.warningMessage = message
 	statusBar.scheduleMessageReset(MESSAGE_TIMEOUT)
 }
 
@@ -62,6 +70,8 @@ func (statusBar *StatusBar) scheduleMessageReset(timeOut time.Duration) {
 	time.AfterFunc(timeOut, func() {
 		statusBar.app.QueueUpdateDraw(func() {
 			statusBar.message = ""
+			statusBar.warningMessage = ""
+			statusBar.errorMessage = ""
 		})
 	})
 }
@@ -82,6 +92,10 @@ func (statusBar *StatusBar) Draw(screen tcell.Screen) {
 	if statusBar.message != "" {
 		leftMessage = statusBar.message
 		style = statusBar.MessageStyle
+	}
+	if statusBar.warningMessage != "" {
+		leftMessage = statusBar.warningMessage
+		style = statusBar.WarningStyle
 	}
 	if statusBar.errorMessage != "" {
 		leftMessage = statusBar.errorMessage

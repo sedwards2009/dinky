@@ -12,6 +12,7 @@ var LightGray = tcell.NewHexColor(0xaaaaaa).TrueColor()
 var Green = tcell.NewHexColor(0x0b835c).TrueColor()    // Green foreground
 var DarkGray = tcell.NewHexColor(0x333333).TrueColor() // Dark gray background
 var Red = tcell.NewHexColor(0xa4090c).TrueColor()      // Red foreground
+var Yellow = tcell.NewHexColor(0xb88f00).TrueColor()   // Yellow foreground
 
 var blackOnGrayStyle = tcell.StyleDefault.Foreground(Black).Background(LightGray)
 var whiteOnBlueStyle = tcell.StyleDefault.Foreground(White).Background(Blue)
