@@ -53,6 +53,7 @@ const (
 	ACTION_TO_UPPERCASE               = "ToUppercase"
 	ACTION_TO_LOWERCASE               = "ToLowercase"
 	ACTION_URL_ENCODE                 = "UrlEncode"
+	ACTION_URL_DECODE                 = "UrlDecode"
 )
 
 var dinkyActionMapping map[string]func() tview.Primitive
@@ -93,6 +94,7 @@ func init() {
 		ACTION_TO_UPPERCASE:               handleToUppercase,
 		ACTION_TO_LOWERCASE:               handleToLowercase,
 		ACTION_URL_ENCODE:                 handleURLEncode,
+		ACTION_URL_DECODE:                 handleURLDecode,
 	}
 }
 
@@ -679,6 +681,18 @@ func handleToLowercase() tview.Primitive {
 func handleURLEncode() tview.Primitive {
 	transformSelection(func(s string) string {
 		return url.QueryEscape(s)
+	})
+	return nil
+}
+
+func handleURLDecode() tview.Primitive {
+	transformSelection(func(s string) string {
+		decoded, err := url.QueryUnescape(s)
+		if err != nil {
+			statusBar.ShowWarning("Invalid URL encoding: " + err.Error())
+			return s
+		}
+		return decoded
 	})
 	return nil
 }
