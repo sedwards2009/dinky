@@ -708,9 +708,17 @@ func handleSortLines() tview.Primitive {
 		return nil
 	}
 	currentFileBuffer.editor.ActionController().TransformSelection(func(lines []string) []string {
-		result := append([]string(nil), lines...)
-		slices.Sort(result)
-		return result
+		lastLine := lines[len(lines)-1]
+		if lastLine == "" { // Leave the last line out of the sort if it is zero length.
+			result := append([]string(nil), lines[:len(lines)-1]...)
+			slices.Sort(result)
+			result = append(result, lastLine)
+			return result
+		} else {
+			result := append([]string(nil), lines...)
+			slices.Sort(result)
+			return result
+		}
 	})
 	return nil
 }
@@ -721,9 +729,17 @@ func handleReverseLines() tview.Primitive {
 		return nil
 	}
 	currentFileBuffer.editor.ActionController().TransformSelection(func(lines []string) []string {
-		result := append([]string(nil), lines...)
-		slices.Reverse(result)
-		return result
+		lastLine := lines[len(lines)-1]
+		if lastLine == "" { // Leave the last line out of the sort if it is zero length.
+			result := append([]string(nil), lines[:len(lines)-1]...)
+			slices.Reverse(result)
+			result = append(result, lastLine)
+			return result
+		} else {
+			result := append([]string(nil), lines...)
+			slices.Reverse(result)
+			return result
+		}
 	})
 	return nil
 }
