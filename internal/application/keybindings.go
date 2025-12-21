@@ -78,6 +78,9 @@ func initKeyBindings() {
 		"MouseLeft":        smidgen.ActionMousePress,
 		"MouseLeftDrag":    smidgen.ActionMouseDrag,
 		"MouseLeftRelease": smidgen.ActionMouseRelease,
+
+		"Ctrl-b": smidgen.ActionSetManualSelectionStart,
+		"Ctrl-e": smidgen.ActionSetManualSelectionEnd,
 	}
 
 	// Copy smidgenSimpleKeyToActionMapping into smidgenKeyToActionMapping
