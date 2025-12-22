@@ -41,6 +41,8 @@ func createMenus() []*menu.Menu {
 		}},
 		{Title: "[::u]S[::U]election", Shortcut: 's', Items: []*menu.MenuItem{
 			{ID: smidgen.ActionSelectAll, Title: "Select All", Callback: handleSmidgenAction},
+			{ID: smidgen.ActionSetManualSelectionStart, Title: "Set Selection Start", Callback: handleSmidgenAction},
+			{ID: smidgen.ActionSetManualSelectionEnd, Title: "Set Selection End", Callback: handleSmidgenAction},
 			{Title: "", Callback: nil}, // Separator
 			{ID: ACTION_GO_TO_LINE, Title: "Go to Line…", Callback: handleDinkyAction},
 			{ID: smidgen.ActionJumpToMatchingBrace, Title: "Go to Bracket", Callback: handleSmidgenAction},
