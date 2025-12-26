@@ -6,6 +6,7 @@ import (
 	"dinky/internal/tui/filedialog"
 	"dinky/internal/tui/settingsdialog"
 	"dinky/internal/tui/style"
+	"encoding/json"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -57,6 +58,7 @@ const (
 	ACTION_URL_DECODE                 = "UrlDecode"
 	ACTION_SORT_LINES                 = "SortLines"
 	ACTION_REVERSE_LINES              = "ReverseLines"
+	ACTION_FORMAT_JSON                = "FormatJSON"
 )
 
 var dinkyActionMapping map[string]func() tview.Primitive
@@ -100,6 +102,7 @@ func init() {
 		ACTION_URL_DECODE:                 handleURLDecode,
 		ACTION_SORT_LINES:                 handleSortLines,
 		ACTION_REVERSE_LINES:              handleReverseLines,
+		ACTION_FORMAT_JSON:                handleFormatJSON,
 	}
 }
 
@@ -740,6 +743,41 @@ func handleReverseLines() tview.Primitive {
 			slices.Reverse(result)
 			return result
 		}
+	})
+	return nil
+}
+
+func handleFormatJSON() tview.Primitive {
+	if !currentFileBuffer.editor.Cursor().HasSelection() {
+		statusBar.ShowWarning("No text selected")
+		return nil
+	}
+
+	currentFileBuffer.editor.ActionController().TransformSelection(func(lines []string) []string {
+		jsonStr := strings.Join(lines, "\n")
+		var jsonObj interface{}
+		err := json.Unmarshal([]byte(jsonStr), &jsonObj)
+		if err != nil {
+			statusBar.ShowWarning("Invalid JSON: " + err.Error())
+			return lines
+		}
+
+		var indentChar string
+		if currentFileBuffer.buffer.Settings["tabstospaces"].(bool) {
+			// Spaces for indentation
+			indentChar = strings.Repeat(" ", int(currentFileBuffer.buffer.Settings["tabsize"].(float64)))
+		} else {
+			indentChar = "\t"
+		}
+
+		// Marshal with indentation
+		formattedJSON, err := json.MarshalIndent(jsonObj, "", indentChar)
+		if err != nil {
+			statusBar.ShowWarning("Error: " + err.Error())
+			return lines
+		}
+		// Split back into lines
+		return strings.Split(string(formattedJSON), "\n")
 	})
 	return nil
 }
