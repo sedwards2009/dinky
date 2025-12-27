@@ -45,7 +45,7 @@ Yes! We can have nice things in a terminal application. 💎
 - **Syntax highlighting**: Support for multiple programming languages, looks pretty ✨
 - **Vertical Ruler**: Keep those long lines under control
 - **Sort & reverse lines**: Order those lines too
-- **URL encode/decode, upper/lower case**
+- **URL encode/decode, upper/lower case, format JSON**
 
 
 ## Installation
