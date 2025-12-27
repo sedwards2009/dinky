@@ -13,6 +13,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"github.com/google/renameio/v2"
 	"github.com/rivo/tview"
@@ -52,6 +53,7 @@ const (
 	ACTION_TOGGLE_TRAILING_WHITESPACE = "ToggleTrailingWhitespace"
 	ACTION_FIND_AND_REPLACE           = "FindAndReplace"
 	ACTION_SETTINGS                   = "Settings"
+	ACTION_SUSPEND                    = "Suspend"
 	ACTION_TO_UPPERCASE               = "ToUppercase"
 	ACTION_TO_LOWERCASE               = "ToLowercase"
 	ACTION_URL_ENCODE                 = "UrlEncode"
@@ -96,6 +98,7 @@ func init() {
 		ACTION_TOGGLE_TRAILING_WHITESPACE: handleToggleTrailingWhitespace,
 		ACTION_FIND_AND_REPLACE:           handleFindAndReplace,
 		ACTION_SETTINGS:                   handleSettings,
+		ACTION_SUSPEND:                    handleSuspend,
 		ACTION_TO_UPPERCASE:               handleToUppercase,
 		ACTION_TO_LOWERCASE:               handleToLowercase,
 		ACTION_URL_ENCODE:                 handleURLEncode,
@@ -656,6 +659,14 @@ func handleSettings() tview.Primitive {
 	settingsDialog.SetSettings(settings)
 	modalPages.AddPage(settingsDialogName, settingsDialog, true, true)
 	return settingsDialog
+}
+
+func handleSuspend() tview.Primitive {
+	app.Suspend(func() {
+		// Send SIGTSTP to put the process in the background
+		syscall.Kill(syscall.Getpid(), syscall.SIGTSTP)
+	})
+	return nil
 }
 
 func transformSelection(transformFunc func(string) string) {
