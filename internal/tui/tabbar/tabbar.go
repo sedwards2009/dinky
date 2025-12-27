@@ -1,6 +1,8 @@
 package tabbar
 
 import (
+	"dinky/internal/tui/stylecolor"
+	"math"
 	"slices"
 
 	"github.com/gdamore/tcell/v2"
@@ -9,6 +11,7 @@ import (
 )
 
 const tabNamePadding = 1
+const tabScrollStep = 20
 
 type TabBar struct {
 	*tview.Box
@@ -25,13 +28,14 @@ type TabBar struct {
 type Tab struct {
 	Title string
 	ID    string
+	width int
 }
 
 func NewTabBar() *TabBar {
-	fg := tcell.NewHexColor(0xf3f3f3) // White
-	bg := tcell.NewHexColor(0x007ace) // Blue
-	tabBg := tcell.NewHexColor(0x000000)
-	inactiveTabBg := tcell.NewHexColor(0x404040)
+	fg := stylecolor.White
+	bg := stylecolor.Blue
+	tabBg := stylecolor.Black
+	inactiveTabBg := stylecolor.InactiveGrey
 	return &TabBar{
 		Box:              tview.NewBox(),
 		BackgroundStyle:  tcell.StyleDefault.Foreground(fg).Background(bg).Bold(true),
@@ -56,15 +60,37 @@ func (tabBar *TabBar) Active() (int, string) {
 }
 
 func (tabBar *TabBar) SetActive(id string) {
+	pos := 0
 	for i, tab := range tabBar.tabs {
 		if tab.ID == id {
 			tabBar.active = i
+
+			_, _, width, _ := tabBar.GetInnerRect()
+			if tabBar.isOverflow() {
+				width -= 2
+			}
+			overhang := pos - tabBar.hscroll + tab.width - width
+			if overhang > 0 {
+				tabBar.hscroll += overhang
+			}
+
+			if tabBar.hscroll > pos {
+				tabBar.hscroll = pos
+			}
+			break
 		}
+		pos += tab.width
 	}
 }
 
 func (tabBar *TabBar) AddTab(title string, id string) {
-	tabBar.tabs = append(tabBar.tabs, Tab{Title: title, ID: id})
+	newTab := Tab{Title: title, ID: id}
+	newTab.width = computeTabWidth(newTab)
+	tabBar.tabs = append(tabBar.tabs, newTab)
+}
+
+func computeTabWidth(tab Tab) int {
+	return 1 + tabNamePadding + runewidth.StringWidth(tab.Title) + 1 + 1 + 1 + 2
 }
 
 func (tabBar *TabBar) RemoveTab(id string) {
@@ -85,11 +111,24 @@ func (tabBar *TabBar) SetTabTitle(id string, title string) {
 	}
 }
 
+func (tabBar *TabBar) totalBarWidth() int {
+	totalWidth := 0
+	for _, tab := range tabBar.tabs {
+		totalWidth += tab.width
+	}
+	return totalWidth
+}
+
+func (tabBar *TabBar) isOverflow() bool {
+	_, _, width, _ := tabBar.GetInnerRect()
+	isOverflow := tabBar.totalBarWidth() > width
+	return isOverflow
+}
+
 func (tabBar *TabBar) Draw(screen tcell.Screen) {
 	x, y, width, _ := tabBar.GetInnerRect()
 
 	x = x - tabBar.hscroll
-	done := false
 
 	tabBarStyle := tabBar.BackgroundStyle
 	_, tabBarBg, _ := tabBarStyle.Decompose()
@@ -103,6 +142,9 @@ func (tabBar *TabBar) Draw(screen tcell.Screen) {
 	tabCornerStyle := tcell.Style{}.Foreground(tabBg).Background(tabBarBg)
 	tabCornerInactiveStyle := tcell.Style{}.Foreground(tabInactiveBg).Background(tabBarBg)
 
+	isOverflow := tabBar.isOverflow()
+
+	clipWidth := width
 	draw := func(r rune, n int, style tcell.Style) {
 		for range n {
 			rw := runewidth.RuneWidth(r)
@@ -111,13 +153,7 @@ func (tabBar *TabBar) Draw(screen tcell.Screen) {
 				if j > 0 {
 					c = ' '
 				}
-				if x == width-1 && !done {
-					screen.SetContent(width-1, y, '>', nil, tabBarStyle)
-					x++
-					break
-				} else if x == 0 && tabBar.hscroll > 0 {
-					screen.SetContent(0, y, '<', nil, tabBarStyle)
-				} else if x >= 0 && x < width {
+				if x >= 0 && x < clipWidth {
 					screen.SetContent(x, y, c, nil, style)
 				}
 				x++
@@ -144,11 +180,6 @@ func (tabBar *TabBar) Draw(screen tcell.Screen) {
 		}
 		draw(' ', 1, currentTabTextStyle)
 		draw('\u2715', 1, currentTabTextStyle)
-
-		if i == len(tabBar.tabs)-1 {
-			done = true
-		}
-
 		draw('◣', 1, currentTabCornerStyle)
 		draw(' ', 2, tabBarStyle)
 
@@ -159,6 +190,22 @@ func (tabBar *TabBar) Draw(screen tcell.Screen) {
 
 	if x < width {
 		draw(' ', width-x, tabBarStyle)
+	}
+
+	if isOverflow {
+		screen.SetContent(width-2, y, '\u2BC7', nil, tabBarStyle)
+		screen.SetContent(width-1, y, '\u2BC8', nil, tabBarStyle)
+	}
+}
+
+func (tabBar *TabBar) clampHScroll() {
+	_, _, width, _ := tabBar.GetInnerRect()
+	if tabBar.hscroll < 0 {
+		tabBar.hscroll = 0
+	}
+	overflowWidth := width - tabBar.totalBarWidth()
+	if overflowWidth < 0 && tabBar.hscroll > -overflowWidth {
+		tabBar.hscroll = -overflowWidth
 	}
 }
 
@@ -180,6 +227,30 @@ func (tabBar *TabBar) MouseHandler() func(action tview.MouseAction, event *tcell
 					}
 					return true, nil
 				}
+
+				if tabBar.isOverflow() {
+					relX := x - rx
+					_, _, width, _ := tabBar.GetInnerRect()
+					if relX == width-2 {
+						// Clicked on left overflow indicator
+						tabBar.hscroll -= tabScrollStep
+						tabBar.clampHScroll()
+						return true, nil
+					} else if relX == width-1 {
+						// Clicked on right overflow indicator
+						tabBar.hscroll += tabScrollStep
+						tabBar.clampHScroll()
+						return true, nil
+					}
+
+				}
+			} else if action == tview.MouseScrollUp {
+				tabBar.hscroll -= tabScrollStep
+				tabBar.clampHScroll()
+				return true, nil
+			} else if action == tview.MouseScrollDown {
+				tabBar.hscroll += tabScrollStep
+				tabBar.clampHScroll()
 			}
 			return true, nil
 		}
@@ -188,25 +259,30 @@ func (tabBar *TabBar) MouseHandler() func(action tview.MouseAction, event *tcell
 	})
 }
 
-func (tabBar *TabBar) tabIndexAtX(posX int) (index int, leftX int, closeClick bool) {
+func (tabBar *TabBar) tabIndexAtX(relativeX int) (index int, leftX int, closeClick bool) {
+	posX := relativeX + tabBar.hscroll
+
+	overflowLeftPos := math.MaxInt
+	if tabBar.isOverflow() {
+		_, _, width, _ := tabBar.GetInnerRect()
+		overflowLeftPos = width - 2 + tabBar.hscroll
+	}
+
 	x := 0
 	for i, tab := range tabBar.tabs {
 		if posX < x {
 			return -1, -1, false
 		}
 
-		left := x
-		x += 1 // '◢'
-		x += tabNamePadding
-		x += runewidth.StringWidth(tab.Title)
-		x += 1 // ' '
-		x += 1 // '✕'
-		x += 1 // '◣'
-		if posX < x {
-			closeClick = posX == x-2
-			return i, left, closeClick
+		if posX >= overflowLeftPos {
+			return -1, -1, false
 		}
-		x += 2 // gap
+
+		if posX < x+tab.width {
+			closeClick := posX == x+tab.width-4
+			return i, x, closeClick
+		}
+		x += tab.width
 	}
 
 	return -1, -1, false
