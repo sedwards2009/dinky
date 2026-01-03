@@ -81,6 +81,7 @@ func initKeyBindings() {
 
 		"Ctrl-b": smidgen.ActionSetManualSelectionStart,
 		"Ctrl-e": smidgen.ActionSetManualSelectionEnd,
+		"Alt-b":  smidgen.ActionToggleBookmark,
 	}
 
 	// Copy smidgenSimpleKeyToActionMapping into smidgenKeyToActionMapping
@@ -123,25 +124,28 @@ func initKeyBindings() {
 	smidgenKeyToActionMapping["Ctrl-j"] = smidgen.ActionJumpToMatchingBrace
 
 	dinkyKeyToActionMapping = map[string]string{
-		"Ctrl-n": ACTION_NEW,
-		"Ctrl-w": ACTION_CLOSE_FILE,
-		"Ctrl-o": ACTION_OPEN_FILE,
-		"Ctrl-s": ACTION_SAVE_FILE,
-		"Ctrl-g": ACTION_GO_TO_LINE,
-		"F12":    ACTION_OPEN_FILE_MENU,
-		"Alt-f":  ACTION_OPEN_FILE_MENU,
-		"Alt-e":  ACTION_OPEN_EDIT_MENU,
-		"Alt-s":  ACTION_OPEN_SELECTION_MENU,
-		"Alt-t":  ACTION_OPEN_TRANSFORM_MENU,
-		"Alt-v":  ACTION_OPEN_VIEW_MENU,
-		"Alt-h":  ACTION_OPEN_HELP_MENU,
-		"Ctrl-q": ACTION_QUIT,
-		"Ctrl-f": ACTION_FIND,
-		"F3":     ACTION_FIND_NEXT,
-		"F2":     ACTION_FIND_PREVIOUS,
-		"F9":     ACTION_NEXT_EDITOR,
-		"F10":    ACTION_PREVIOUS_EDITOR,
-		"Ctrl-r": ACTION_FIND_AND_REPLACE,
+		"Ctrl-n":     ACTION_NEW,
+		"Ctrl-w":     ACTION_CLOSE_FILE,
+		"Ctrl-o":     ACTION_OPEN_FILE,
+		"Ctrl-s":     ACTION_SAVE_FILE,
+		"Ctrl-g":     ACTION_GO_TO_LINE,
+		"F12":        ACTION_OPEN_FILE_MENU,
+		"Alt-f":      ACTION_OPEN_FILE_MENU,
+		"Alt-e":      ACTION_OPEN_EDIT_MENU,
+		"Alt-s":      ACTION_OPEN_SELECTION_MENU,
+		"Alt-g":      ACTION_OPEN_GO_MENU,
+		"Alt-t":      ACTION_OPEN_TRANSFORM_MENU,
+		"Alt-v":      ACTION_OPEN_VIEW_MENU,
+		"Alt-h":      ACTION_OPEN_HELP_MENU,
+		"Ctrl-q":     ACTION_QUIT,
+		"Ctrl-f":     ACTION_FIND,
+		"F3":         ACTION_FIND_NEXT,
+		"F2":         ACTION_FIND_PREVIOUS,
+		"F9":         ACTION_NEXT_EDITOR,
+		"F10":        ACTION_PREVIOUS_EDITOR,
+		"Ctrl-r":     ACTION_FIND_AND_REPLACE,
+		"Alt-PgDown": ACTION_NEXT_BOOKMARK,
+		"Alt-PgUp":   ACTION_PREVIOUS_BOOKMARK,
 	}
 
 	actionToKeyMapping = make(map[string]string)

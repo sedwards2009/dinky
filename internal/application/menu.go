@@ -46,17 +46,23 @@ func createMenus() []*menu.Menu {
 			{ID: smidgen.ActionSetManualSelectionStart, Title: "Set Selection Start", Callback: handleSmidgenAction},
 			{ID: smidgen.ActionSetManualSelectionEnd, Title: "Set Selection End", Callback: handleSmidgenAction},
 			{Title: "", Callback: nil}, // Separator
+			{ID: smidgen.ActionSpawnMultiCursor, Title: "Add Next Occurrence", Callback: handleSmidgenAction},
+			{ID: smidgen.ActionSpawnMultiCursorSelect, Title: "Add Cursors to Selection", Callback: handleSmidgenAction},
+			{ID: smidgen.ActionRemoveMultiCursor, Title: "Remove Last Cursor", Callback: handleSmidgenAction},
+			{ID: smidgen.ActionRemoveAllMultiCursors, Title: "Remove All Cursors", Callback: handleSmidgenAction},
+		}},
+		{Title: "[::u]G[::U]o", Shortcut: 'g', Items: []*menu.MenuItem{
 			{ID: ACTION_GO_TO_LINE, Title: "Go to Line…", Callback: handleDinkyAction},
+			{Title: "", Callback: nil}, // Separator
 			{ID: smidgen.ActionJumpToMatchingBrace, Title: "Go to Bracket", Callback: handleSmidgenAction},
 			{ID: smidgen.ActionParagraphPrevious, Title: "Previous Paragraph", Callback: handleSmidgenAction},
 			{ID: smidgen.ActionParagraphNext, Title: "Next Paragraph", Callback: handleSmidgenAction},
 			{ID: ACTION_NEXT_EDITOR, Title: "Next Editor", Callback: handleDinkyAction},
 			{ID: ACTION_PREVIOUS_EDITOR, Title: "Previous Editor", Callback: handleDinkyAction},
 			{Title: "", Callback: nil}, // Separator
-			{ID: smidgen.ActionSpawnMultiCursor, Title: "Add Next Occurrence", Callback: handleSmidgenAction},
-			{ID: smidgen.ActionSpawnMultiCursorSelect, Title: "Add Cursors to Selection", Callback: handleSmidgenAction},
-			{ID: smidgen.ActionRemoveMultiCursor, Title: "Remove Last Cursor", Callback: handleSmidgenAction},
-			{ID: smidgen.ActionRemoveAllMultiCursors, Title: "Remove All Cursors", Callback: handleSmidgenAction},
+			{ID: smidgen.ActionToggleBookmark, Title: "Toggle Bookmark", Callback: handleSmidgenAction},
+			{ID: ACTION_NEXT_BOOKMARK, Title: "Next Bookmark", Callback: handleDinkyAction},
+			{ID: ACTION_PREVIOUS_BOOKMARK, Title: "Previous Bookmark", Callback: handleDinkyAction},
 		}},
 		{Title: "[::u]T[::U]ransform", Shortcut: 't', Items: []*menu.MenuItem{
 			{ID: ACTION_TO_UPPERCASE, Title: "To Uppercase", Callback: handleDinkyAction},

@@ -38,7 +38,7 @@ type MenuItem struct {
 }
 
 const (
-	MENU_BAR_SPACING = 2
+	MENU_BAR_SPACING = 1
 	MENU_BAR_PADDING = 1
 )
 

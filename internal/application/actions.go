@@ -30,6 +30,7 @@ const (
 	ACTION_OPEN_FILE_MENU             = "OpenFileMenu"
 	ACTION_OPEN_EDIT_MENU             = "OpenEditMenu"
 	ACTION_OPEN_SELECTION_MENU        = "OpenSelectionMenu"
+	ACTION_OPEN_GO_MENU               = "OpenGoMenu"
 	ACTION_OPEN_TRANSFORM_MENU        = "OpenTransformMenu"
 	ACTION_OPEN_VIEW_MENU             = "OpenViewMenu"
 	ACTION_OPEN_HELP_MENU             = "OpenHelpMenu"
@@ -61,6 +62,8 @@ const (
 	ACTION_SORT_LINES                 = "SortLines"
 	ACTION_REVERSE_LINES              = "ReverseLines"
 	ACTION_FORMAT_JSON                = "FormatJSON"
+	ACTION_NEXT_BOOKMARK              = "NextBookmark"
+	ACTION_PREVIOUS_BOOKMARK          = "PreviousBookmark"
 )
 
 var dinkyActionMapping map[string]func() tview.Primitive
@@ -73,6 +76,7 @@ func init() {
 		ACTION_OPEN_FILE_MENU:             handleOpenFileMenu,
 		ACTION_OPEN_EDIT_MENU:             handleOpenEditMenu,
 		ACTION_OPEN_SELECTION_MENU:        handleOpenSelectionMenu,
+		ACTION_OPEN_GO_MENU:               handleOpenGoMenu,
 		ACTION_OPEN_TRANSFORM_MENU:        handleOpenTransformMenu,
 		ACTION_OPEN_VIEW_MENU:             handleOpenViewMenu,
 		ACTION_OPEN_HELP_MENU:             handleOpenHelpMenu,
@@ -106,6 +110,8 @@ func init() {
 		ACTION_SORT_LINES:                 handleSortLines,
 		ACTION_REVERSE_LINES:              handleReverseLines,
 		ACTION_FORMAT_JSON:                handleFormatJSON,
+		ACTION_NEXT_BOOKMARK:              handleNextBookmark,
+		ACTION_PREVIOUS_BOOKMARK:          handlePreviousBookmark,
 	}
 }
 
@@ -289,20 +295,26 @@ func handleOpenSelectionMenu() tview.Primitive {
 	return nil
 }
 
-func handleOpenTransformMenu() tview.Primitive {
+func handleOpenGoMenu() tview.Primitive {
 	menuBar.Open(3)
 	app.SetFocus(menuBar)
 	return nil
 }
 
-func handleOpenViewMenu() tview.Primitive {
+func handleOpenTransformMenu() tview.Primitive {
 	menuBar.Open(4)
 	app.SetFocus(menuBar)
 	return nil
 }
 
-func handleOpenHelpMenu() tview.Primitive {
+func handleOpenViewMenu() tview.Primitive {
 	menuBar.Open(5)
+	app.SetFocus(menuBar)
+	return nil
+}
+
+func handleOpenHelpMenu() tview.Primitive {
+	menuBar.Open(6)
 	app.SetFocus(menuBar)
 	return nil
 }
@@ -790,5 +802,35 @@ func handleFormatJSON() tview.Primitive {
 		// Split back into lines
 		return strings.Split(string(formattedJSON), "\n")
 	})
+	return nil
+}
+
+func bookmarkMove(down bool) {
+	buf := currentFileBuffer.buffer
+	cursor := currentFileBuffer.editor.Cursor()
+	var row int
+	var result int
+	if down {
+		row, result = buf.NextBookmark(cursor.Y)
+	} else {
+		row, result = buf.PreviousBookmark(cursor.Y)
+	}
+	if result != buffer.BookmarkResultNotFound {
+		currentFileBuffer.editor.ActionController().GotoLoc(buffer.Loc{X: 0, Y: row})
+		if result == buffer.BookmarkResultWrap {
+			statusBar.ShowMessage("Next bookmark wrapped around")
+		}
+	} else {
+		statusBar.ShowWarning("No bookmarks found")
+	}
+}
+
+func handleNextBookmark() tview.Primitive {
+	bookmarkMove(true)
+	return nil
+}
+
+func handlePreviousBookmark() tview.Primitive {
+	bookmarkMove(false)
 	return nil
 }
