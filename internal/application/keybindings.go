@@ -81,7 +81,6 @@ func initKeyBindings() {
 
 		"Ctrl-b": smidgen.ActionSetManualSelectionStart,
 		"Ctrl-e": smidgen.ActionSetManualSelectionEnd,
-		"Alt-b":  smidgen.ActionToggleBookmark,
 	}
 
 	// Copy smidgenSimpleKeyToActionMapping into smidgenKeyToActionMapping
@@ -122,6 +121,7 @@ func initKeyBindings() {
 	smidgenKeyToActionMapping["Alt-c"] = smidgen.ActionRemoveAllMultiCursors
 	smidgenKeyToActionMapping["Alt-x"] = smidgen.ActionSkipMultiCursor
 	smidgenKeyToActionMapping["Ctrl-j"] = smidgen.ActionJumpToMatchingBrace
+	smidgenKeyToActionMapping["F11"] = smidgen.ActionToggleBookmark
 
 	dinkyKeyToActionMapping = map[string]string{
 		"Ctrl-n":     ACTION_NEW,
