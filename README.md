@@ -19,11 +19,16 @@ Now you can edit that git commit or random config file in the terminal and then 
 
 ![File menu screenshot](screenshot.png)
 
-Cutting edge graphical technology from 1985 is now available to you in the year 2025! Wow! 🤩
+Cutting edge graphical technology from 1985 is now available to you in the year 2026! Wow! 🤩
 
 ![File dialog screenshot](screenshot2.png)
 
 Yes! We can have nice things in a terminal application. 💎
+
+![Settings dialog screenshot](screenshot3.png)
+
+Settings but without having to hack some obscure config file. Folks, we're living in the future!
+
 
 ## Features
 
@@ -39,13 +44,14 @@ Yes! We can have nice things in a terminal application. 💎
 - **Find**: Find that needle in the haystack
 - **Find & Replace**: Replace said needle in haystack
 - **Line numbers**: Toggle line number display
+- **Bookmarks**: Keep track of positions in large files
 - **Bracket matching**: Navigate between matching brackets
 - **Soft wrap**: Wrap long lines to window width
 - **Show whitespace**: You need this for Makefiles, sorry
 - **Syntax highlighting**: Support for multiple programming languages, looks pretty ✨
 - **Vertical Ruler**: Keep those long lines under control
 - **Sort & reverse lines**: Order those lines too
-- **URL encode/decode, upper/lower case, format JSON**
+- **URL encode/decode, upper/lower case, format JSON**: Sometimes you just have to
 
 
 ## Installation
