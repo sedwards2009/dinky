@@ -73,6 +73,8 @@ func createMenus() []*menu.Menu {
 			{ID: ACTION_SORT_LINES, Title: "Sort Lines", Callback: handleDinkyAction},
 			{ID: ACTION_REVERSE_LINES, Title: "Reverse Lines", Callback: handleDinkyAction},
 			{Title: "", Callback: nil}, // Separator
+			{ID: ACTION_HARD_WORD_WRAP, Title: "Hard Word Wrap", Callback: handleDinkyAction},
+			{Title: "", Callback: nil}, // Separator
 			{ID: ACTION_FORMAT_JSON, Title: "Format JSON", Callback: handleDinkyAction},
 		}},
 		{Title: "[::u]V[::U]iew", Shortcut: 'v', Items: []*menu.MenuItem{

@@ -6,6 +6,7 @@ import (
 	"dinky/internal/tui/filedialog"
 	"dinky/internal/tui/settingsdialog"
 	"dinky/internal/tui/style"
+	"dinky/internal/tui/table2"
 	"encoding/json"
 	"net/url"
 	"os"
@@ -62,6 +63,7 @@ const (
 	ACTION_SORT_LINES                 = "SortLines"
 	ACTION_REVERSE_LINES              = "ReverseLines"
 	ACTION_FORMAT_JSON                = "FormatJSON"
+	ACTION_HARD_WORD_WRAP             = "HardWordWrap"
 	ACTION_NEXT_BOOKMARK              = "NextBookmark"
 	ACTION_PREVIOUS_BOOKMARK          = "PreviousBookmark"
 )
@@ -110,6 +112,7 @@ func init() {
 		ACTION_SORT_LINES:                 handleSortLines,
 		ACTION_REVERSE_LINES:              handleReverseLines,
 		ACTION_FORMAT_JSON:                handleFormatJSON,
+		ACTION_HARD_WORD_WRAP:             handleHardWordWrap,
 		ACTION_NEXT_BOOKMARK:              handleNextBookmark,
 		ACTION_PREVIOUS_BOOKMARK:          handlePreviousBookmark,
 	}
@@ -803,6 +806,84 @@ func handleFormatJSON() tview.Primitive {
 		return strings.Split(string(formattedJSON), "\n")
 	})
 	return nil
+}
+
+func handleHardWordWrap() tview.Primitive {
+	if !currentFileBuffer.editor.Cursor().HasSelection() {
+		statusBar.ShowWarning("No text selected")
+		return nil
+	}
+
+	// Determine the wrap width
+	wrapWidth := 0
+	verticalRuler := int(currentFileBuffer.buffer.Settings["colorcolumn"].(float64))
+	if verticalRuler > 0 {
+		wrapWidth = verticalRuler
+	} else {
+		// Use editor width as fallback
+		_, _, width, _ := currentFileBuffer.editor.GetRect()
+		// Account for line numbers if they're visible
+		if currentFileBuffer.buffer.Settings["ruler"].(bool) {
+			// Line numbers typically take ~6 characters
+			width -= 6
+		}
+		wrapWidth = width
+	}
+
+	if wrapWidth <= 0 {
+		statusBar.ShowWarning("Invalid wrap width")
+		return nil
+	}
+
+	currentFileBuffer.editor.ActionController().TransformSelection(func(lines []string) []string {
+		if len(lines) == 0 {
+			return lines
+		}
+
+		var result []string
+		var paragraphLines []string
+
+		// Process lines, grouping consecutive non-blank lines into paragraphs
+		for _, line := range lines {
+			trimmedLine := strings.TrimSpace(line)
+			if trimmedLine == "" {
+				// Blank line: wrap accumulated paragraph and add blank line
+				if len(paragraphLines) > 0 {
+					wrappedParagraph := wrapParagraph(paragraphLines, wrapWidth)
+					result = append(result, wrappedParagraph...)
+					paragraphLines = nil
+				}
+				result = append(result, line)
+			} else {
+				// Non-blank line: accumulate for paragraph
+				paragraphLines = append(paragraphLines, line)
+			}
+		}
+
+		// Wrap any remaining paragraph
+		if len(paragraphLines) > 0 {
+			wrappedParagraph := wrapParagraph(paragraphLines, wrapWidth)
+			result = append(result, wrappedParagraph...)
+		}
+
+		return result
+	})
+	return nil
+}
+
+// wrapParagraph takes a slice of lines that form a logical paragraph
+// and wraps them to the specified width
+func wrapParagraph(lines []string, width int) []string {
+	// Join all lines into a single paragraph with spaces
+	paragraph := strings.Join(lines, " ")
+
+	// Normalize whitespace: replace multiple spaces with single space
+	paragraph = strings.Join(strings.Fields(paragraph), " ")
+
+	// Use the WordWrap function from table2/strings
+	wrapped := table2.WordWrap(paragraph, width)
+
+	return wrapped
 }
 
 func bookmarkMove(down bool) {
