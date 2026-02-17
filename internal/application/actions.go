@@ -1,6 +1,7 @@
 package application
 
 import (
+	"bytes"
 	"dinky/internal/application/settingstype"
 	"dinky/internal/tui/dialog"
 	"dinky/internal/tui/filedialog"
@@ -10,6 +11,7 @@ import (
 	"encoding/json"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -66,6 +68,7 @@ const (
 	ACTION_HARD_WORD_WRAP             = "HardWordWrap"
 	ACTION_NEXT_BOOKMARK              = "NextBookmark"
 	ACTION_PREVIOUS_BOOKMARK          = "PreviousBookmark"
+	ACTION_FILTER_EXTERNAL_COMMAND    = "FilterExternalCommands"
 )
 
 var dinkyActionMapping map[string]func() tview.Primitive
@@ -115,6 +118,7 @@ func init() {
 		ACTION_HARD_WORD_WRAP:             handleHardWordWrap,
 		ACTION_NEXT_BOOKMARK:              handleNextBookmark,
 		ACTION_PREVIOUS_BOOKMARK:          handlePreviousBookmark,
+		ACTION_FILTER_EXTERNAL_COMMAND:    handleFilterExternalCommand,
 	}
 }
 
@@ -887,4 +891,41 @@ func handleNextBookmark() tview.Primitive {
 func handlePreviousBookmark() tview.Primitive {
 	bookmarkMove(false)
 	return nil
+}
+
+func handleFilterExternalCommand() tview.Primitive {
+	if currentFileBuffer.editor.Cursor().HasSelection() {
+		selectionBytes := currentFileBuffer.editor.Cursor().GetSelection()
+		// Run external command with selection as stdin
+		output, err := runExternalCommandWithInput("grep foo", selectionBytes)
+		if err != nil {
+			statusBar.ShowError("Error running external command: " + err.Error())
+			return nil
+		}
+
+		currentFileBuffer.editor.ActionController().TransformSelection(func(lines []string) []string {
+			stringOutput := string(output)
+			return strings.Split(strings.TrimRight(stringOutput, "\n"), "\n")
+		})
+	}
+	return nil
+}
+
+func runExternalCommandWithInput(command string, input []byte) ([]byte, error) {
+	// Split command into name and args
+	parts := strings.Fields(command)
+	if len(parts) == 0 {
+		return nil, nil
+	}
+	cmdName := parts[0]
+	cmdArgs := parts[1:]
+
+	cmd := exec.Command(cmdName, cmdArgs...)
+	cmd.Stdin = bytes.NewReader(input)
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	return out.Bytes(), err
 }

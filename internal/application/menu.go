@@ -75,6 +75,7 @@ func createMenus() []*menu.Menu {
 			{ID: ACTION_REVERSE_LINES, Title: "Reverse Lines", Callback: handleDinkyAction},
 			{Title: "", Callback: nil}, // Separator
 			{ID: ACTION_FORMAT_JSON, Title: "Format JSON", Callback: handleDinkyAction},
+			{ID: ACTION_FILTER_EXTERNAL_COMMAND, Title: "Filter External Commands", Callback: handleDinkyAction},
 		}},
 		{Title: "[::u]V[::U]iew", Shortcut: 'v', Items: []*menu.MenuItem{
 			{ID: smidgen.ActionToggleRuler, Title: "Line Numbers", Callback: handleSmidgenAction},
