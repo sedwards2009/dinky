@@ -6,7 +6,7 @@ import (
 	"dinky/internal/tui/filedialog"
 	"dinky/internal/tui/settingsdialog"
 	"dinky/internal/tui/style"
-	"dinky/internal/tui/table2"
+	"dinky/internal/utility"
 	"encoding/json"
 	"net/url"
 	"os"
@@ -817,24 +817,12 @@ func handleHardWordWrap() tview.Primitive {
 	// Determine the wrap width
 	wrapWidth := 0
 	verticalRuler := int(currentFileBuffer.buffer.Settings["colorcolumn"].(float64))
-	if verticalRuler > 0 {
-		wrapWidth = verticalRuler
-	} else {
-		// Use editor width as fallback
-		_, _, width, _ := currentFileBuffer.editor.GetRect()
-		// Account for line numbers if they're visible
-		if currentFileBuffer.buffer.Settings["ruler"].(bool) {
-			// Line numbers typically take ~6 characters
-			width -= 6
-		}
-		wrapWidth = width
-	}
-
-	if wrapWidth <= 0 {
-		statusBar.ShowWarning("Invalid wrap width")
+	if verticalRuler <= 0 {
+		statusBar.ShowWarning("No vertical ruler set")
 		return nil
 	}
 
+	wrapWidth = verticalRuler
 	currentFileBuffer.editor.ActionController().TransformSelection(func(lines []string) []string {
 		if len(lines) == 0 {
 			return lines
@@ -849,7 +837,7 @@ func handleHardWordWrap() tview.Primitive {
 			if trimmedLine == "" {
 				// Blank line: wrap accumulated paragraph and add blank line
 				if len(paragraphLines) > 0 {
-					wrappedParagraph := wrapParagraph(paragraphLines, wrapWidth)
+					wrappedParagraph := utility.WrapParagraph(paragraphLines, wrapWidth)
 					result = append(result, wrappedParagraph...)
 					paragraphLines = nil
 				}
@@ -862,28 +850,13 @@ func handleHardWordWrap() tview.Primitive {
 
 		// Wrap any remaining paragraph
 		if len(paragraphLines) > 0 {
-			wrappedParagraph := wrapParagraph(paragraphLines, wrapWidth)
+			wrappedParagraph := utility.WrapParagraph(paragraphLines, wrapWidth)
 			result = append(result, wrappedParagraph...)
 		}
 
 		return result
 	})
 	return nil
-}
-
-// wrapParagraph takes a slice of lines that form a logical paragraph
-// and wraps them to the specified width
-func wrapParagraph(lines []string, width int) []string {
-	// Join all lines into a single paragraph with spaces
-	paragraph := strings.Join(lines, " ")
-
-	// Normalize whitespace: replace multiple spaces with single space
-	paragraph = strings.Join(strings.Fields(paragraph), " ")
-
-	// Use the WordWrap function from table2/strings
-	wrapped := table2.WordWrap(paragraph, width)
-
-	return wrapped
 }
 
 func bookmarkMove(down bool) {
