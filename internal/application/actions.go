@@ -5,6 +5,7 @@ import (
 	"dinky/internal/application/settingstype"
 	"dinky/internal/tui/dialog"
 	"dinky/internal/tui/filedialog"
+	"dinky/internal/tui/filterdialog"
 	"dinky/internal/tui/settingsdialog"
 	"dinky/internal/tui/style"
 	"dinky/internal/utility"
@@ -894,21 +895,62 @@ func handlePreviousBookmark() tview.Primitive {
 }
 
 func handleFilterExternalCommand() tview.Primitive {
-	if currentFileBuffer.editor.Cursor().HasSelection() {
-		selectionBytes := currentFileBuffer.editor.Cursor().GetSelection()
-		// Run external command with selection as stdin
-		output, err := runExternalCommandWithInput("grep foo", selectionBytes)
-		if err != nil {
-			statusBar.ShowError("Error running external command: " + err.Error())
-			return nil
-		}
-
-		currentFileBuffer.editor.ActionController().TransformSelection(func(lines []string) []string {
-			stringOutput := string(output)
-			return strings.Split(strings.TrimRight(stringOutput, "\n"), "\n")
-		})
+	if !currentFileBuffer.editor.Cursor().HasSelection() {
+		statusBar.ShowWarning("No text selected")
+		return nil
 	}
-	return nil
+
+	return showFilterDialog(
+		func() {
+			// On cancel
+			closeFilterDialog()
+		},
+		func(value string, index int) {
+			closeFilterDialog()
+			if index == 1 {
+				return
+			}
+
+			selectionBytes := currentFileBuffer.editor.Cursor().GetSelection()
+			// Run external command with selection as stdin
+			output, err := runExternalCommandWithInput(value, selectionBytes)
+			if err != nil {
+				statusBar.ShowError("Error running shell command: " + err.Error())
+				return
+			}
+
+			currentFileBuffer.editor.ActionController().TransformSelection(func(lines []string) []string {
+				stringOutput := string(output)
+				return strings.Split(strings.TrimRight(stringOutput, "\n"), "\n")
+			})
+		})
+}
+
+var filterDialog *filterdialog.FilterDialog
+
+const filterDialogName = "filterDialog"
+
+func showFilterDialog(onCancel func(), onAccept func(value string, index int)) tview.Primitive {
+	if filterDialog == nil {
+		filterDialog = filterdialog.NewFilterDialog(app)
+		filterDialog.SetSmidgenKeybindings(smidgenSingleLineKeyBindings)
+	}
+	modalPages.AddPage(filterDialogName, filterDialog, true, true)
+
+	options := filterdialog.FilterDialogOptions{
+		OnCancel: onCancel,
+		OnAccept: onAccept,
+	}
+	filterDialog.Open(options)
+	style.StyleFilterDialog(filterDialog)
+	return filterDialog
+}
+
+func closeFilterDialog() {
+	if filterDialog != nil {
+		filterDialog.Close()
+		modalPages.RemovePage(filterDialogName)
+	}
 }
 
 func runExternalCommandWithInput(command string, input []byte) ([]byte, error) {

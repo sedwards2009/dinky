@@ -157,7 +157,7 @@ func (d *ListDialog) Open(options ListDialogOptions) {
 		}
 	}
 
-	d.Buttons = createButtonsRow(d.buttonsFlex, options.Buttons, onButtonClick)
+	d.Buttons = CreateButtonsRow(d.buttonsFlex, options.Buttons, onButtonClick)
 	d.ResizeItem(d.innerFlex, options.Height, 0)
 	d.innerFlex.ResizeItem(d.verticalContentsFlex, options.Width, 0)
 

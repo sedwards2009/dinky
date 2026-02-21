@@ -67,7 +67,7 @@ func (d *MessageDialog) Open(title string, message string, buttons []string, wid
 	d.verticalContentsFlex.SetTitle(title)
 	d.messageView.SetText(message)
 
-	d.Buttons = createButtonsRow(d.buttonsFlex, buttons, d.OnButtonClick)
+	d.Buttons = CreateButtonsRow(d.buttonsFlex, buttons, d.OnButtonClick)
 	for _, btn := range d.Buttons {
 		btn.SetInputCapture(d.inputFilter)
 	}

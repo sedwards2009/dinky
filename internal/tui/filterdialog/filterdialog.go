@@ -1,6 +1,7 @@
-package dialog
+package filterdialog
 
 import (
+	"dinky/internal/tui/dialog"
 	"dinky/internal/tui/smidgeninputfield"
 
 	"github.com/gdamore/tcell/v2"
@@ -8,7 +9,7 @@ import (
 	"github.com/sedwards2009/smidgen"
 )
 
-type InputDialog struct {
+type FilterDialog struct {
 	*tview.Flex
 	app *tview.Application
 
@@ -17,24 +18,21 @@ type InputDialog struct {
 	InputField           *smidgeninputfield.SmidgenInputField
 	innerFlex            *tview.Flex
 	inputFieldFlex       *tview.Flex
-	Buttons              []*tview.Button
-	options              InputDialogOptions
-	InputLabel           *tview.TextView
+
+	Buttons    []*tview.Button
+	options    FilterDialogOptions
+	InputLabel *tview.TextView
 }
 
-type InputDialogOptions struct {
-	Title          string
-	Message        string
-	DefaultValue   string
-	Buttons        []string
-	Width          int
-	Height         int
-	OnCancel       func()
-	OnAccept       func(value string, index int)
-	FieldKeyFilter func(event *tcell.EventKey) bool // Returns true if the key permitted
+type FilterDialogOptions struct {
+	OnCancel func()
+	OnAccept func(value string, index int)
 }
 
-func NewInputDialog(app *tview.Application) *InputDialog {
+const FilterDialogWidth = 50
+const FilterDialogHeight = 9
+
+func NewFilterDialog(app *tview.Application) *FilterDialog {
 	topLayout := tview.NewFlex()
 
 	topLayout.AddItem(nil, 0, 1, false)
@@ -51,6 +49,7 @@ func NewInputDialog(app *tview.Application) *InputDialog {
 	verticalContentsFlex.SetBorderPadding(1, 1, 1, 1)
 	verticalContentsFlex.SetBorder(true)
 	verticalContentsFlex.SetTitleAlign(tview.AlignLeft)
+	verticalContentsFlex.SetTitle("Filter via Shell")
 
 	inputField := smidgeninputfield.NewSmidgenInputField(app)
 
@@ -59,10 +58,16 @@ func NewInputDialog(app *tview.Application) *InputDialog {
 	inputFieldFlex.SetBorder(false)
 
 	inputLabel := tview.NewTextView()
-	inputFieldFlex.AddItem(inputLabel, 0, 1, false)
+	inputLabel.SetText("Shell command: ")
+	inputFieldFlex.AddItem(inputLabel, 15, 0, false)
 	inputFieldFlex.AddItem(inputField, 0, 1, true)
 	verticalContentsFlex.AddItem(inputFieldFlex, 1, 0, false)
 
+	verticalContentsFlex.AddItem(nil, 1, 0, false)
+
+	explanationLabel := tview.NewTextView()
+	explanationLabel.SetText("The selection is piping into the shell command and replaced.")
+	verticalContentsFlex.AddItem(explanationLabel, 1, 0, false)
 	verticalContentsFlex.AddItem(nil, 1, 0, false)
 
 	buttonsFlex := tview.NewFlex()
@@ -70,15 +75,15 @@ func NewInputDialog(app *tview.Application) *InputDialog {
 	buttonsFlex.SetBorder(false)
 	verticalContentsFlex.AddItem(buttonsFlex, 1, 0, false)
 
-	innerFlex.AddItem(verticalContentsFlex, 80, 0, true)
+	innerFlex.AddItem(verticalContentsFlex, FilterDialogWidth, 0, true)
 	innerFlex.AddItem(nil, 0, 1, false)
 	innerFlex.SetDirection(tview.FlexColumn)
 
-	topLayout.AddItem(innerFlex, 20, 0, true)
+	topLayout.AddItem(innerFlex, FilterDialogHeight, 0, true)
 	topLayout.AddItem(nil, 0, 1, false)
 	topLayout.SetDirection(tview.FlexRow)
 
-	result := &InputDialog{
+	result := &FilterDialog{
 		Flex:                 topLayout,
 		app:                  app,
 		verticalContentsFlex: verticalContentsFlex,
@@ -91,21 +96,14 @@ func NewInputDialog(app *tview.Application) *InputDialog {
 	return result
 }
 
-func (d *InputDialog) Open(options InputDialogOptions) {
+func (d *FilterDialog) Open(options FilterDialogOptions) {
 	d.options = options
-	d.verticalContentsFlex.SetTitle(options.Title)
-	d.InputLabel.SetText(options.Message)
-	d.inputFieldFlex.ResizeItem(d.InputLabel, len([]rune(options.Message))+1, 0)
-	d.InputField.SetText(options.DefaultValue)
 
 	onButtonClick := func(button string, index int) {
 		d.options.OnAccept(d.InputField.GetText(), index)
 	}
 
-	d.Buttons = CreateButtonsRow(d.buttonsFlex, options.Buttons, onButtonClick)
-	d.ResizeItem(d.innerFlex, options.Height, 0)
-	d.innerFlex.ResizeItem(d.verticalContentsFlex, options.Width, 0)
-
+	d.Buttons = dialog.CreateButtonsRow(d.buttonsFlex, []string{"OK", "Cancel"}, onButtonClick)
 	for _, btn := range d.Buttons {
 		btn.SetInputCapture(d.inputFilter)
 	}
@@ -114,10 +112,10 @@ func (d *InputDialog) Open(options InputDialogOptions) {
 	d.app.SetFocus(d.InputField)
 }
 
-func (d *InputDialog) Close() {
+func (d *FilterDialog) Close() {
 }
 
-func (d *InputDialog) inputFilter(event *tcell.EventKey) *tcell.EventKey {
+func (d *FilterDialog) inputFilter(event *tcell.EventKey) *tcell.EventKey {
 	switch event.Key() {
 	case tcell.KeyEscape:
 		if d.options.OnCancel != nil {
@@ -157,16 +155,16 @@ func (d *InputDialog) inputFilter(event *tcell.EventKey) *tcell.EventKey {
 		return nil
 	}
 
-	if d.InputField.HasFocus() && d.options.FieldKeyFilter != nil {
-		if !d.options.FieldKeyFilter(event) {
-			return nil
-		}
-	}
+	// if d.InputField.HasFocus() && d.options.FieldKeyFilter != nil {
+	// 	if !d.options.FieldKeyFilter(event) {
+	// 		return nil
+	// 	}
+	// }
 
 	return event
 }
 
-func (d *InputDialog) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
+func (d *FilterDialog) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
 	return d.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
 		d.verticalContentsFlex.MouseHandler()(action, event, setFocus)
 		return true, nil
@@ -174,11 +172,11 @@ func (d *InputDialog) MouseHandler() func(action tview.MouseAction, event *tcell
 }
 
 // Focus is called when this primitive receives focus.
-func (d *InputDialog) Focus(delegate func(p tview.Primitive)) {
+func (d *FilterDialog) Focus(delegate func(p tview.Primitive)) {
 	delegate(d.InputField)
 }
 
-func (d *InputDialog) handleTabKey(direction int) {
+func (d *FilterDialog) handleTabKey(direction int) {
 	widgets := []tview.Primitive{}
 	for _, btn := range d.Buttons {
 		widgets = append(widgets, btn)
@@ -193,6 +191,6 @@ func (d *InputDialog) handleTabKey(direction int) {
 	}
 }
 
-func (d *InputDialog) SetSmidgenKeybindings(keybindings smidgen.Keybindings) {
+func (d *FilterDialog) SetSmidgenKeybindings(keybindings smidgen.Keybindings) {
 	d.InputField.SetKeybindings(keybindings)
 }

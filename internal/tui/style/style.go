@@ -4,6 +4,7 @@ import (
 	"dinky/internal/tui/dialog"
 	"dinky/internal/tui/filedialog"
 	"dinky/internal/tui/filelist"
+	"dinky/internal/tui/filterdialog"
 	"dinky/internal/tui/findbar"
 	"dinky/internal/tui/menu"
 	"dinky/internal/tui/scrollbar"
@@ -58,6 +59,14 @@ func StyleFileList(fileList *filelist.FileList) {
 func StyleInputField(inputField *tview.InputField) {
 	inputField.SetFieldStyle(tcell.StyleDefault.Background(stylecolor.InputFieldFieldBackgroundColor).Foreground(stylecolor.InputFieldFieldTextColor))
 	inputField.SetLabelStyle(tcell.StyleDefault.Foreground(stylecolor.InputFieldLabelColor))
+}
+
+func StyleFilterDialog(filterDialog *filterdialog.FilterDialog) {
+	filterDialog.SetBackgroundColor(stylecolor.LightGray)
+	for _, button := range filterDialog.Buttons {
+		StyleButton(button)
+	}
+	StyleSmidgenInputField(filterDialog.InputField)
 }
 
 func StyleDropDown(dropDown *tview.DropDown) {

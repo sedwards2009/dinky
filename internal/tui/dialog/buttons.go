@@ -4,8 +4,8 @@ import (
 	"github.com/rivo/tview"
 )
 
-// createButtonsRow creates and configures the buttons for the message dialog
-func createButtonsRow(buttonsFlex *tview.Flex, buttons []string, onButtonClick func(button string, index int)) []*tview.Button {
+// CreateButtonsRow creates and configures the buttons for the message dialog
+func CreateButtonsRow(buttonsFlex *tview.Flex, buttons []string, onButtonClick func(button string, index int)) []*tview.Button {
 	buttonsFlex.Clear()
 	tviewButtons := make([]*tview.Button, len(buttons))
 
