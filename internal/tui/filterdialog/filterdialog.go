@@ -29,8 +29,8 @@ type FilterDialogOptions struct {
 	OnAccept func(value string, index int)
 }
 
-const FilterDialogWidth = 50
-const FilterDialogHeight = 9
+const FilterDialogWidth = 60
+const FilterDialogHeight = 10
 
 func NewFilterDialog(app *tview.Application) *FilterDialog {
 	topLayout := tview.NewFlex()
@@ -66,8 +66,8 @@ func NewFilterDialog(app *tview.Application) *FilterDialog {
 	verticalContentsFlex.AddItem(nil, 1, 0, false)
 
 	explanationLabel := tview.NewTextView()
-	explanationLabel.SetText("The selection is piping into the shell command and replaced.")
-	verticalContentsFlex.AddItem(explanationLabel, 1, 0, false)
+	explanationLabel.SetText("The command is run via `sh`. The selection\nis piped in and replaced with the output.")
+	verticalContentsFlex.AddItem(explanationLabel, 2, 0, false)
 	verticalContentsFlex.AddItem(nil, 1, 0, false)
 
 	buttonsFlex := tview.NewFlex()
