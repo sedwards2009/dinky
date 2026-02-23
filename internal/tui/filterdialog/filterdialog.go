@@ -3,6 +3,7 @@ package filterdialog
 import (
 	"dinky/internal/tui/dialog"
 	"dinky/internal/tui/smidgeninputfield"
+	"os"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -15,22 +16,25 @@ type FilterDialog struct {
 
 	verticalContentsFlex *tview.Flex
 	buttonsFlex          *tview.Flex
-	InputField           *smidgeninputfield.SmidgenInputField
+	CommandInputField    *smidgeninputfield.SmidgenInputField
+	DirectoryInputField  *smidgeninputfield.SmidgenInputField
 	innerFlex            *tview.Flex
 	inputFieldFlex       *tview.Flex
+	directoryFieldFlex   *tview.Flex
 
-	Buttons    []*tview.Button
-	options    FilterDialogOptions
-	InputLabel *tview.TextView
+	Buttons        []*tview.Button
+	options        FilterDialogOptions
+	InputLabel     *tview.TextView
+	DirectoryLabel *tview.TextView
 }
 
 type FilterDialogOptions struct {
 	OnCancel func()
-	OnAccept func(value string, index int)
+	OnAccept func(command string, directory string, buttonIndex int)
 }
 
 const FilterDialogWidth = 60
-const FilterDialogHeight = 10
+const FilterDialogHeight = 11
 
 func NewFilterDialog(app *tview.Application) *FilterDialog {
 	topLayout := tview.NewFlex()
@@ -63,6 +67,22 @@ func NewFilterDialog(app *tview.Application) *FilterDialog {
 	inputFieldFlex.AddItem(inputField, 0, 1, true)
 	verticalContentsFlex.AddItem(inputFieldFlex, 1, 0, false)
 
+	directoryField := smidgeninputfield.NewSmidgenInputField(app)
+	dir, err := os.Getwd()
+	if err == nil {
+		directoryField.SetText(dir)
+	}
+
+	directoryFieldFlex := tview.NewFlex()
+	directoryFieldFlex.SetDirection(tview.FlexColumn)
+	directoryFieldFlex.SetBorder(false)
+
+	directoryLabel := tview.NewTextView()
+	directoryLabel.SetText("Directory: ")
+	directoryFieldFlex.AddItem(directoryLabel, 15, 0, false)
+	directoryFieldFlex.AddItem(directoryField, 0, 1, true)
+	verticalContentsFlex.AddItem(directoryFieldFlex, 1, 0, false)
+
 	verticalContentsFlex.AddItem(nil, 1, 0, false)
 
 	explanationLabel := tview.NewTextView()
@@ -90,8 +110,11 @@ func NewFilterDialog(app *tview.Application) *FilterDialog {
 		innerFlex:            innerFlex,
 		buttonsFlex:          buttonsFlex,
 		inputFieldFlex:       inputFieldFlex,
-		InputField:           inputField,
+		directoryFieldFlex:   directoryFieldFlex,
+		CommandInputField:    inputField,
+		DirectoryInputField:  directoryField,
 		InputLabel:           inputLabel,
+		DirectoryLabel:       directoryLabel,
 	}
 	return result
 }
@@ -100,16 +123,17 @@ func (d *FilterDialog) Open(options FilterDialogOptions) {
 	d.options = options
 
 	onButtonClick := func(button string, index int) {
-		d.options.OnAccept(d.InputField.GetText(), index)
+		d.options.OnAccept(d.CommandInputField.GetText(), d.DirectoryInputField.GetText(), index)
 	}
 
 	d.Buttons = dialog.CreateButtonsRow(d.buttonsFlex, []string{"OK", "Cancel"}, onButtonClick)
 	for _, btn := range d.Buttons {
 		btn.SetInputCapture(d.inputFilter)
 	}
-	d.InputField.SetInputCapture(d.inputFilter)
+	d.CommandInputField.SetInputCapture(d.inputFilter)
+	d.DirectoryInputField.SetInputCapture(d.inputFilter)
 
-	d.app.SetFocus(d.InputField)
+	d.app.SetFocus(d.CommandInputField)
 }
 
 func (d *FilterDialog) Close() {
@@ -147,9 +171,9 @@ func (d *FilterDialog) inputFilter(event *tcell.EventKey) *tcell.EventKey {
 		}
 
 	case tcell.KeyEnter:
-		if d.InputField.HasFocus() {
+		if d.CommandInputField.HasFocus() || d.DirectoryInputField.HasFocus() {
 			if d.options.OnAccept != nil {
-				d.options.OnAccept(d.InputField.GetText(), -1)
+				d.options.OnAccept(d.CommandInputField.GetText(), d.DirectoryInputField.GetText(), -1)
 			}
 		}
 		return nil
@@ -173,7 +197,7 @@ func (d *FilterDialog) MouseHandler() func(action tview.MouseAction, event *tcel
 
 // Focus is called when this primitive receives focus.
 func (d *FilterDialog) Focus(delegate func(p tview.Primitive)) {
-	delegate(d.InputField)
+	delegate(d.CommandInputField)
 }
 
 func (d *FilterDialog) handleTabKey(direction int) {
@@ -181,7 +205,8 @@ func (d *FilterDialog) handleTabKey(direction int) {
 	for _, btn := range d.Buttons {
 		widgets = append(widgets, btn)
 	}
-	widgets = append(widgets, d.InputField)
+	widgets = append(widgets, d.CommandInputField)
+	widgets = append(widgets, d.DirectoryInputField)
 
 	for i := 0; i < len(widgets); i++ {
 		if widgets[i].HasFocus() {
@@ -192,5 +217,6 @@ func (d *FilterDialog) handleTabKey(direction int) {
 }
 
 func (d *FilterDialog) SetSmidgenKeybindings(keybindings smidgen.Keybindings) {
-	d.InputField.SetKeybindings(keybindings)
+	d.CommandInputField.SetKeybindings(keybindings)
+	d.DirectoryInputField.SetKeybindings(keybindings)
 }

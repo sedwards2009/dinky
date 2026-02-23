@@ -29,7 +29,7 @@ func HandleFilterExternalCommand(app *tview.Application, modalPages *tview.Pages
 			// On cancel
 			closeFilterDialog(modalPages)
 		},
-		func(value string, index int) {
+		func(command string, directory string, index int) {
 			closeFilterDialog(modalPages)
 			if index == 1 {
 				return
@@ -37,7 +37,7 @@ func HandleFilterExternalCommand(app *tview.Application, modalPages *tview.Pages
 
 			selectionBytes := editor.Cursor().GetSelection()
 			// Run external command with selection as stdin
-			output, err := runExternalShellCommandWithInput(value, selectionBytes)
+			output, err := runExternalShellCommandWithInput(command, directory, selectionBytes)
 			if err != nil {
 				statusBar.ShowError("Error running shell command: " + err.Error())
 				return
@@ -52,7 +52,7 @@ func HandleFilterExternalCommand(app *tview.Application, modalPages *tview.Pages
 
 func showFilterDialog(app *tview.Application, modalPages *tview.Pages,
 	smidgenSingleLineKeyBindings smidgen.Keybindings,
-	onCancel func(), onAccept func(value string, index int)) tview.Primitive {
+	onCancel func(), onAccept func(command string, directory string, index int)) tview.Primitive {
 
 	if filterDialog == nil {
 		filterDialog = filterdialog.NewFilterDialog(app)
@@ -76,9 +76,12 @@ func closeFilterDialog(modalPages *tview.Pages) {
 	}
 }
 
-func runExternalShellCommandWithInput(command string, input []byte) ([]byte, error) {
+func runExternalShellCommandWithInput(command string, directory string, input []byte) ([]byte, error) {
 	// Run the command via `sh` -c to allow for shell features like pipes and redirection
 	cmd := exec.Command("sh", "-c", command)
+	if directory != "" {
+		cmd.Dir = directory
+	}
 
 	cmd.Stdin = bytes.NewReader(input)
 	var out bytes.Buffer

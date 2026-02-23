@@ -66,7 +66,8 @@ func StyleFilterDialog(filterDialog *filterdialog.FilterDialog) {
 	for _, button := range filterDialog.Buttons {
 		StyleButton(button)
 	}
-	StyleSmidgenInputField(filterDialog.InputField)
+	StyleSmidgenInputField(filterDialog.CommandInputField)
+	StyleSmidgenInputField(filterDialog.DirectoryInputField)
 }
 
 func StyleDropDown(dropDown *tview.DropDown) {
