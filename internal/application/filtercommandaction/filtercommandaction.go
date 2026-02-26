@@ -5,7 +5,9 @@ import (
 	"dinky/internal/tui/filterdialog"
 	"dinky/internal/tui/statusbar"
 	"dinky/internal/tui/style"
+	"os"
 	"os/exec"
+	"slices"
 	"strings"
 
 	"github.com/rivo/tview"
@@ -16,6 +18,9 @@ var filterDialog *filterdialog.FilterDialog
 
 const filterDialogName = "filterDialog"
 
+var recentFilterCommands []string
+var recentFilterDirectories []string
+
 func HandleFilterExternalCommand(app *tview.Application, modalPages *tview.Pages, editor *smidgen.View,
 	smidgenSingleLineKeyBindings smidgen.Keybindings, statusBar *statusbar.StatusBar) tview.Primitive {
 
@@ -24,7 +29,7 @@ func HandleFilterExternalCommand(app *tview.Application, modalPages *tview.Pages
 		return nil
 	}
 
-	return showFilterDialog(app, modalPages, smidgenSingleLineKeyBindings,
+	return showFilterDialog(app, modalPages, smidgenSingleLineKeyBindings, recentFilterCommands,
 		func() {
 			// On cancel
 			closeFilterDialog(modalPages)
@@ -35,7 +40,36 @@ func HandleFilterExternalCommand(app *tview.Application, modalPages *tview.Pages
 				return
 			}
 
+			if !slices.Contains(recentFilterCommands, command) {
+				recentFilterCommands = append(recentFilterCommands, command)
+				if len(recentFilterCommands) > 10 {
+					recentFilterCommands = recentFilterCommands[1:]
+				}
+			}
+
+			if !slices.Contains(recentFilterDirectories, directory) {
+				recentFilterDirectories = append(recentFilterDirectories, directory)
+				if len(recentFilterDirectories) > 10 {
+					recentFilterDirectories = recentFilterDirectories[1:]
+				}
+			}
+
 			selectionBytes := editor.Cursor().GetSelection()
+
+			// Check if the directory is ok before trying to run the command.
+			if directory != "" {
+				info, err := os.Stat(directory)
+				if err != nil {
+					statusBar.ShowError("Directory '" + directory + "'isn't valid: " + err.Error())
+					return
+				} else {
+					if !info.IsDir() {
+						statusBar.ShowError("Directory '" + directory + "' isn't valid: not a directory")
+						return
+					}
+				}
+			}
+
 			// Run external command with selection as stdin
 			output, err := runExternalShellCommandWithInput(command, directory, selectionBytes)
 			if err != nil {
@@ -51,13 +85,15 @@ func HandleFilterExternalCommand(app *tview.Application, modalPages *tview.Pages
 }
 
 func showFilterDialog(app *tview.Application, modalPages *tview.Pages,
-	smidgenSingleLineKeyBindings smidgen.Keybindings,
+	smidgenSingleLineKeyBindings smidgen.Keybindings, recentFilterCommands []string,
 	onCancel func(), onAccept func(command string, directory string, index int)) tview.Primitive {
 
 	if filterDialog == nil {
 		filterDialog = filterdialog.NewFilterDialog(app)
 		filterDialog.SetSmidgenKeybindings(smidgenSingleLineKeyBindings)
 	}
+	filterDialog.SetRecentCommands(recentFilterCommands)
+	filterDialog.SetRecentDirectories(recentFilterDirectories)
 	modalPages.AddPage(filterDialogName, filterDialog, true, true)
 
 	options := filterdialog.FilterDialogOptions{

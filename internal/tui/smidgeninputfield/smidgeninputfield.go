@@ -8,6 +8,10 @@ import (
 
 type SmidgenInputField struct {
 	*smidgen.View
+	userText       string
+	history        []string
+	historyPointer int
+
 	done    func(tcell.Key)
 	changed func(text string)
 }
@@ -19,8 +23,14 @@ func NewSmidgenInputField(app *tview.Application) *SmidgenInputField {
 	buffer.Settings["hidecursoronblur"] = true
 
 	return &SmidgenInputField{
-		View: editor,
+		View:           editor,
+		historyPointer: -1,
 	}
+}
+
+func (f *SmidgenInputField) SetHistory(historyText []string) {
+	f.history = historyText
+	f.historyPointer = len(historyText)
 }
 
 func (f *SmidgenInputField) SetKeybindings(keybindings smidgen.Keybindings) {
@@ -38,6 +48,11 @@ func (f *SmidgenInputField) GetText() string {
 }
 
 func (f *SmidgenInputField) SetText(text string) {
+	f.userText = text
+	f.internalSetText(text)
+}
+
+func (f *SmidgenInputField) internalSetText(text string) {
 	f.View.ActionController().DeleteLine()
 	f.View.Buffer().Insert(f.View.Buffer().Start(), text)
 	f.View.ActionController().StartOfLine()
@@ -52,12 +67,41 @@ func (f *SmidgenInputField) InputHandler() func(event *tcell.EventKey, setFocus 
 				f.done(event.Key())
 			}
 			return
+		case tcell.KeyUp:
+			if len(f.history) != 0 && f.historyPointer > 0 {
+				f.historyPointer--
+				f.internalSetText(f.history[f.historyPointer])
+				if f.changed != nil {
+					f.changed(f.GetText())
+				}
+				return
+			}
+		case tcell.KeyDown:
+			if len(f.history) != 0 {
+				if f.historyPointer < len(f.history)-1 {
+					f.historyPointer++
+					f.internalSetText(f.history[f.historyPointer])
+				} else {
+					f.internalSetText(f.userText)
+					f.historyPointer = len(f.history)
+					// Set to one past the end of history, so pressing up goes to the most recent entry
+				}
+				if f.changed != nil {
+					f.changed(f.GetText())
+				}
+				return
+			}
 		}
 
 		f.View.Buffer().ClearModified()
 		f.View.InputHandler()(event, setFocus)
 		if f.View.Buffer().Modified() {
 			f.View.Buffer().ClearModified()
+			f.userText = f.GetText()
+			if len(f.history) != 0 {
+				f.historyPointer = len(f.history)
+				// Reset history pointer to end of history, so pressing up goes to the most recent entry
+			}
 			if f.changed != nil {
 				f.changed(f.GetText())
 			}

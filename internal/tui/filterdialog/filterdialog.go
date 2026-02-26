@@ -55,7 +55,7 @@ func NewFilterDialog(app *tview.Application) *FilterDialog {
 	verticalContentsFlex.SetTitleAlign(tview.AlignLeft)
 	verticalContentsFlex.SetTitle("Filter via Shell")
 
-	inputField := smidgeninputfield.NewSmidgenInputField(app)
+	commandInputField := smidgeninputfield.NewSmidgenInputField(app)
 
 	inputFieldFlex := tview.NewFlex()
 	inputFieldFlex.SetDirection(tview.FlexColumn)
@@ -64,7 +64,7 @@ func NewFilterDialog(app *tview.Application) *FilterDialog {
 	inputLabel := tview.NewTextView()
 	inputLabel.SetText("Shell command: ")
 	inputFieldFlex.AddItem(inputLabel, 15, 0, false)
-	inputFieldFlex.AddItem(inputField, 0, 1, true)
+	inputFieldFlex.AddItem(commandInputField, 0, 1, true)
 	verticalContentsFlex.AddItem(inputFieldFlex, 1, 0, false)
 
 	directoryField := smidgeninputfield.NewSmidgenInputField(app)
@@ -111,7 +111,7 @@ func NewFilterDialog(app *tview.Application) *FilterDialog {
 		buttonsFlex:          buttonsFlex,
 		inputFieldFlex:       inputFieldFlex,
 		directoryFieldFlex:   directoryFieldFlex,
-		CommandInputField:    inputField,
+		CommandInputField:    commandInputField,
 		DirectoryInputField:  directoryField,
 		InputLabel:           inputLabel,
 		DirectoryLabel:       directoryLabel,
@@ -137,6 +137,14 @@ func (d *FilterDialog) Open(options FilterDialogOptions) {
 }
 
 func (d *FilterDialog) Close() {
+}
+
+func (d *FilterDialog) SetRecentCommands(commands []string) {
+	d.CommandInputField.SetHistory(commands)
+}
+
+func (d *FilterDialog) SetRecentDirectories(directories []string) {
+	d.DirectoryInputField.SetHistory(directories)
 }
 
 func (d *FilterDialog) inputFilter(event *tcell.EventKey) *tcell.EventKey {
