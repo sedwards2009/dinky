@@ -3,6 +3,7 @@ package findbar
 import (
 	"dinky/internal/tui/smidgeninputfield"
 	"fmt"
+	"slices"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -12,24 +13,30 @@ import (
 
 type Findbar struct {
 	*tview.Flex
-	app                   *tview.Application
-	editor                *smidgen.View
-	SearchStringField     *smidgeninputfield.SmidgenInputField
-	SearchUpButton        *tview.Button
-	SearchDownButton      *tview.Button
-	CloseButton           *tview.Button
-	ReplaceButton         *tview.Button
-	ReplaceAllButton      *tview.Button
-	ExpanderCheckbox      *tview.Checkbox
-	RegexCheckbox         *tview.Checkbox
-	CaseSensitiveCheckbox *tview.Checkbox
-	OnClose               func()
-	OnError               func(err error)
-	OnExpand              func(expanded bool)
-	OnMessage             func(message string)
-	isExpanded            bool
+	app                        *tview.Application
+	editor                     *smidgen.View
+	SearchStringField          *smidgeninputfield.SmidgenInputField
+	SearchUpButton             *tview.Button
+	SearchDownButton           *tview.Button
+	CloseButton                *tview.Button
+	ReplaceStringField         *smidgeninputfield.SmidgenInputField
+	ReplaceButton              *tview.Button
+	ReplaceAllButton           *tview.Button
+	ExpanderCheckbox           *tview.Checkbox
+	RegexCheckbox              *tview.Checkbox
+	CaseSensitiveCheckbox      *tview.Checkbox
+	OnClose                    func()
+	OnError                    func(err error)
+	OnExpand                   func(expanded bool)
+	OnMessage                  func(message string)
+	OnSearchTextHistoryChange  func(history []string)
+	OnReplaceTextHistoryChange func(history []string)
+	isExpanded                 bool
 
 	hFlex2 *tview.Flex
+
+	recentSearchTextHistory  []string
+	recentReplaceTextHistory []string
 }
 
 func NewFindbar(app *tview.Application, editor *smidgen.View) *Findbar {
@@ -128,6 +135,7 @@ func NewFindbar(app *tview.Application, editor *smidgen.View) *Findbar {
 			f.SearchDown()
 		}
 	})
+	f.ReplaceStringField = replaceStringField
 	hFlex2.AddItem(replaceStringField, 0, 1, false)
 
 	hFlex2.AddItem(nil, 1, 0, false)
@@ -184,6 +192,18 @@ func (f *Findbar) SetSearchText(text string) {
 	f.SearchStringField.SetText(text)
 }
 
+func (f *Findbar) SetSearchTextHistory(history []string) {
+	f.recentSearchTextHistory = make([]string, len(history))
+	copy(f.recentSearchTextHistory, history)
+	f.SearchStringField.SetHistory(history)
+}
+
+func (f *Findbar) SetReplaceTextHistory(history []string) {
+	f.recentReplaceTextHistory = make([]string, len(history))
+	copy(f.recentReplaceTextHistory, history)
+	f.ReplaceStringField.SetHistory(history)
+}
+
 func (f *Findbar) search(directionDown bool) bool {
 	searchText := f.SearchStringField.GetText()
 	if searchText == "" {
@@ -191,6 +211,8 @@ func (f *Findbar) search(directionDown bool) bool {
 	}
 	regex := f.RegexCheckbox.IsChecked()
 	caseSensitive := f.CaseSensitiveCheckbox.IsChecked()
+
+	f.updateSearchTextHistory(searchText)
 
 	found, err := f.editor.ActionController().Search(searchText, regex, caseSensitive, directionDown)
 	if err != nil {
@@ -229,6 +251,20 @@ func (f *Findbar) search(directionDown bool) bool {
 	return true
 }
 
+func (f *Findbar) updateSearchTextHistory(searchText string) {
+	// Add to search history if not already present
+	if !slices.Contains(f.recentSearchTextHistory, searchText) {
+		f.recentSearchTextHistory = append(f.recentSearchTextHistory, searchText)
+		if len(f.recentSearchTextHistory) > 10 {
+			f.recentSearchTextHistory = f.recentSearchTextHistory[1:]
+		}
+		f.SearchStringField.SetHistory(f.recentSearchTextHistory)
+	}
+	if f.OnSearchTextHistoryChange != nil {
+		f.OnSearchTextHistoryChange(f.recentSearchTextHistory)
+	}
+}
+
 func (f *Findbar) SearchUp() {
 	f.search(false)
 }
@@ -238,6 +274,9 @@ func (f *Findbar) SearchDown() {
 }
 
 func (f *Findbar) Replace() {
+	replaceText := f.ReplaceStringField.GetText()
+	f.updateReplaceTextHistory(replaceText)
+
 	// Collapse the selection if there is one
 	if f.editor.Cursor().HasSelection() {
 		f.editor.Cursor().Loc = f.editor.Cursor().CurSelection[0]
@@ -248,7 +287,6 @@ func (f *Findbar) Replace() {
 	if !found {
 		return
 	}
-	replaceText := f.hFlex2.GetItem(1).(*smidgeninputfield.SmidgenInputField).GetText()
 
 	if f.editor.Cursor().HasSelection() {
 		f.editor.Cursor().DeleteSelection()
@@ -262,10 +300,13 @@ func (f *Findbar) Replace() {
 }
 
 func (f *Findbar) ReplaceAll() {
+	replaceText := f.ReplaceStringField.GetText()
+	f.updateReplaceTextHistory(replaceText)
+
 	regex := f.RegexCheckbox.IsChecked()
 	caseSensitive := f.CaseSensitiveCheckbox.IsChecked()
 	count, err := f.editor.ActionController().ReplaceAll(f.SearchStringField.GetText(), regex, caseSensitive,
-		f.hFlex2.GetItem(1).(*smidgeninputfield.SmidgenInputField).GetText())
+		replaceText)
 	if err != nil {
 		if f.OnError != nil {
 			f.OnError(err)
@@ -274,6 +315,20 @@ func (f *Findbar) ReplaceAll() {
 	}
 	if f.OnMessage != nil {
 		f.OnMessage(fmt.Sprintf("Replaced %d occurrences", count))
+	}
+}
+
+func (f *Findbar) updateReplaceTextHistory(replaceText string) {
+	// Add to replace text history if not already present
+	if !slices.Contains(f.recentReplaceTextHistory, replaceText) {
+		f.recentReplaceTextHistory = append(f.recentReplaceTextHistory, replaceText)
+		if len(f.recentReplaceTextHistory) > 10 {
+			f.recentReplaceTextHistory = f.recentReplaceTextHistory[1:]
+		}
+		f.ReplaceStringField.SetHistory(f.recentReplaceTextHistory)
+	}
+	if f.OnReplaceTextHistoryChange != nil {
+		f.OnReplaceTextHistoryChange(f.recentReplaceTextHistory)
 	}
 }
 

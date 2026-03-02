@@ -57,6 +57,9 @@ type FileBuffer struct {
 var fileBuffers []*FileBuffer
 var currentFileBuffer *FileBuffer
 
+var findbarRecentSearchTextHistory []string
+var findbarRecentReplaceTextHistory []string
+
 // -----------------------------------------------------------------
 func loadEditorColorScheme(colorSchemeName string) {
 	var ok bool
@@ -104,6 +107,15 @@ func newFile(contents string, filename string) {
 	bufferFindbar := findbar.NewFindbar(app, editor)
 	style.StyleFindbar(bufferFindbar)
 	bufferFindbar.SetSmidgenKeybindings(smidgenSingleLineKeyBindings)
+	bufferFindbar.SetSearchTextHistory(findbarRecentSearchTextHistory)
+	bufferFindbar.SetReplaceTextHistory(findbarRecentReplaceTextHistory)
+	bufferFindbar.OnSearchTextHistoryChange = func(history []string) {
+		syncFindbarSearchTextHistory(history, bufferFindbar)
+	}
+	bufferFindbar.OnReplaceTextHistoryChange = func(history []string) {
+		syncFindbarReplaceTextHistory(history, bufferFindbar)
+	}
+
 	bufferFindbar.SetOnError(func(err error) {
 		statusBar.ShowMessage(err.Error())
 	})
@@ -181,6 +193,26 @@ func newFile(contents string, filename string) {
 
 	selectTab(fileBuffer.uuid)
 	app.SetFocus(editor)
+}
+
+func syncFindbarSearchTextHistory(history []string, originalFindbar *findbar.Findbar) {
+	findbarRecentSearchTextHistory = history
+	for _, fileBuffer := range fileBuffers {
+		if fileBuffer.findbar == originalFindbar {
+			continue
+		}
+		fileBuffer.findbar.SetSearchTextHistory(history)
+	}
+}
+
+func syncFindbarReplaceTextHistory(history []string, originalFindbar *findbar.Findbar) {
+	findbarRecentReplaceTextHistory = history
+	for _, fileBuffer := range fileBuffers {
+		if fileBuffer.findbar == originalFindbar {
+			continue
+		}
+		fileBuffer.findbar.SetReplaceTextHistory(history)
+	}
 }
 
 func loadFile(filename string) string {

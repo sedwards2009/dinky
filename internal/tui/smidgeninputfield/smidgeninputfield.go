@@ -29,7 +29,8 @@ func NewSmidgenInputField(app *tview.Application) *SmidgenInputField {
 }
 
 func (f *SmidgenInputField) SetHistory(historyText []string) {
-	f.history = historyText
+	f.history = make([]string, len(historyText))
+	copy(f.history, historyText)
 	f.historyPointer = len(historyText)
 }
 

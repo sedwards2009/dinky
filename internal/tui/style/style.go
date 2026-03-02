@@ -152,6 +152,8 @@ func StyleFileDialog(fileDialog *filedialog.FileDialog) {
 func StyleFindbar(findBar *findbar.Findbar) {
 	findBar.SetBackgroundColor(stylecolor.LightGray)
 	StyleSmidgenInputField(findBar.SearchStringField)
+	StyleSmidgenInputField(findBar.ReplaceStringField)
+
 	StyleButton(findBar.SearchUpButton)
 	StyleButton(findBar.SearchDownButton)
 	StyleButton(findBar.CloseButton)
