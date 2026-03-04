@@ -74,7 +74,6 @@ func HandleFilterExternalCommand(app *tview.Application, modalPages *tview.Pages
 			output, err := runExternalShellCommandWithInput(command, directory, selectionBytes)
 			if err != nil {
 				statusBar.ShowError("Error running shell command: " + err.Error())
-				return
 			}
 
 			editor.ActionController().TransformSelection(func(lines []string) []string {
@@ -125,5 +124,8 @@ func runExternalShellCommandWithInput(command string, directory string, input []
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	err := cmd.Run()
+	if err != nil {
+		return append(out.Bytes(), stderr.Bytes()...), err
+	}
 	return out.Bytes(), err
 }
