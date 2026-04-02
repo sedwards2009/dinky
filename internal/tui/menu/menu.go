@@ -2,6 +2,9 @@ package menu
 
 import (
 	"dinky/internal/tui/utils"
+	"fmt"
+	"os"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/mattn/go-runewidth"
@@ -80,20 +83,31 @@ func (menuBar *MenuBar) Draw(screen tcell.Screen) {
 	reverse := menuBar.MenuBarStyle.Foreground(bg).Background(fg)
 
 	dx := 0
+	isLinuxTerm := os.Getenv("TERM") == "linux"
 	for i, menu := range menuBar.menus {
 		title := menu.Title
 		style := menuBar.MenuBarStyle
-		if i == menuBar.selectedPath[0] {
+		isSelected := i == menuBar.selectedPath[0]
+		if isSelected {
 			style = reverse
+		} else if isLinuxTerm {
+			// In bare Linux TTYs, underline is often emulated by color 4 (Blue).
+			// If the menu bar background is Blue, underlined mnemonics become invisible.
+			// We fix this by using a different color (Yellow) and removing the underline attribute.
+			title = strings.ReplaceAll(title, "[::u]", "[yellow]")
+			title = strings.ReplaceAll(title, "[::U]", "[-]")
 		}
 		utils.DrawText(screen, dx, y, padding, style)
 		dx += MENU_BAR_PADDING
 
-		color, _, _ := style.Decompose()
+		color, bg, _ := style.Decompose()
+		r, g, b := bg.RGB()
+		taggedTitle := fmt.Sprintf("[:#%02x%02x%02x:]%s", r, g, b, title)
+
 		// First measure the width
-		_, titleWidth := tview.Print(screen, title, dx, y, width, tview.AlignLeft, color)
+		_, titleWidth := tview.Print(screen, taggedTitle, dx, y, width, tview.AlignLeft, color)
 		utils.DrawSpace(screen, dx, y, titleWidth, style)
-		tview.Print(screen, title, dx, y, width, tview.AlignLeft, color)
+		tview.Print(screen, taggedTitle, dx, y, width, tview.AlignLeft, color)
 		dx += titleWidth
 		menu.charWidth = titleWidth
 
