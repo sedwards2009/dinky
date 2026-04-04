@@ -29,6 +29,7 @@ type Findbar struct {
 	OnError                    func(err error)
 	OnExpand                   func(expanded bool)
 	OnMessage                  func(message string)
+	OnWarning                  func(message string)
 	OnSearchTextHistoryChange  func(history []string)
 	OnReplaceTextHistoryChange func(history []string)
 	isExpanded                 bool
@@ -188,6 +189,10 @@ func (f *Findbar) SetOnMessage(onMessage func(message string)) {
 	f.OnMessage = onMessage
 }
 
+func (f *Findbar) SetOnWarning(onWarning func(message string)) {
+	f.OnWarning = onWarning
+}
+
 func (f *Findbar) SetSearchText(text string) {
 	f.SearchStringField.SetText(text)
 }
@@ -244,7 +249,13 @@ func (f *Findbar) search(directionDown bool) bool {
 			f.editor.Cursor().GotoLoc(prevLoc)
 			f.editor.Cursor().SetSelectionStart(prevStartSelection)
 			f.editor.Cursor().SetSelectionEnd(prevEndSelection)
+			if f.OnWarning != nil {
+				f.OnWarning("No matches found")
+			}
 			return false
+		}
+		if f.OnMessage != nil {
+			f.OnMessage("Search wrapped around")
 		}
 	}
 	f.editor.Relocate()

@@ -125,6 +125,9 @@ func newFile(contents string, filename string) {
 	bufferFindbar.SetOnMessage(func(message string) {
 		statusBar.ShowMessage(message)
 	})
+	bufferFindbar.SetOnWarning(func(message string) {
+		statusBar.ShowWarning(message)
+	})
 
 	fileBuffer := &FileBuffer{
 		panelVFlex:    panelVFlex,
