@@ -332,6 +332,7 @@ func handleSoftWrap() tview.Primitive {
 	buffer := currentFileBuffer.buffer
 	on := buffer.Settings["softwrap"].(bool)
 	buffer.Settings["softwrap"] = !on
+	currentFileBuffer.editor.ActionController().GetView().StartCol = 0
 	syncSoftWrap(menus, !on)
 	return nil
 }
