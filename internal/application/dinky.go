@@ -413,7 +413,7 @@ func Main() {
 	app = tview.NewApplication()
 	tview.DoubleClickInterval = 0 // Disable tview's double-click handling
 	app.EnableMouse(true)
-
+	app.EnablePaste(true)
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		// Disable Ctrl-C quitting the app
 		if event.Key() == tcell.KeyCtrlC {
