@@ -65,14 +65,16 @@ func createMenus() []*menu.Menu {
 			{ID: ACTION_PREVIOUS_BOOKMARK, Title: "Previous Bookmark", Callback: handleDinkyAction},
 		}},
 		{Title: "[::u]T[::U]ransform", Shortcut: 't', Items: []*menu.MenuItem{
+			{ID: smidgen.ActionIndentSelection, Title: "Indent", Callback: handleSmidgenAction},
+			{ID: smidgen.ActionOutdentSelection, Title: "Outdent", Callback: handleSmidgenAction},
+			{ID: ACTION_HARD_WORD_WRAP, Title: "Hard Word Wrap", Callback: handleDinkyAction},
+			{ID: ACTION_SORT_LINES, Title: "Sort Lines", Callback: handleDinkyAction},
+			{ID: ACTION_REVERSE_LINES, Title: "Reverse Lines", Callback: handleDinkyAction},
+			{Title: "", Callback: nil}, // Separator
 			{ID: ACTION_TO_UPPERCASE, Title: "To Uppercase", Callback: handleDinkyAction},
 			{ID: ACTION_TO_LOWERCASE, Title: "To Lowercase", Callback: handleDinkyAction},
 			{ID: ACTION_URL_ENCODE, Title: "URL Encode", Callback: handleDinkyAction},
 			{ID: ACTION_URL_DECODE, Title: "URL Decode", Callback: handleDinkyAction},
-			{Title: "", Callback: nil}, // Separator
-			{ID: ACTION_HARD_WORD_WRAP, Title: "Hard Word Wrap", Callback: handleDinkyAction},
-			{ID: ACTION_SORT_LINES, Title: "Sort Lines", Callback: handleDinkyAction},
-			{ID: ACTION_REVERSE_LINES, Title: "Reverse Lines", Callback: handleDinkyAction},
 			{Title: "", Callback: nil}, // Separator
 			{ID: ACTION_FORMAT_JSON, Title: "Format JSON", Callback: handleDinkyAction},
 			{ID: ACTION_FILTER_EXTERNAL_COMMAND, Title: "Filter via Shell", Callback: handleDinkyAction},
