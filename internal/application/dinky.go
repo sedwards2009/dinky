@@ -222,13 +222,22 @@ func syncFindbarReplaceTextHistory(history []string, originalFindbar *findbar.Fi
 }
 
 func loadFile(filename string) string {
-	// Read the file contents
 	contents, err := os.ReadFile(filename)
 	if err != nil {
 		newFile("", filename)
 		return fmt.Sprintf("Failed to read file '%s':\n%v", filename, err)
 	}
 	newFile(string(contents), filename)
+	return ""
+}
+
+func loadStdin() string {
+	contents, err := io.ReadAll(os.Stdin)
+	if err != nil {
+		newFile("", "")
+		return fmt.Sprintf("Failed to read from stdin:\n%v", err)
+	}
+	newFile(string(contents), "")
 	return ""
 }
 
@@ -307,8 +316,9 @@ func showHelp() {
 	fmt.Printf("  -v, --version  Show version information and exit\n")
 	fmt.Printf("  --log          Enable logging to app.log file\n\n")
 	fmt.Printf("Arguments:\n")
-	fmt.Printf("  file1, file2, ...  Files to open in the editor\n\n")
-	fmt.Printf("If no files are specified, a new empty file will be created.\n")
+	fmt.Printf("  file1, file2, ...  Files to open in the editor\n")
+	fmt.Printf("  -                  Use dash to read from standard input\n\n")
+	fmt.Printf("Use the option `--` to terminate option parsing.\n\n")
 }
 
 func showVersion() {
@@ -361,9 +371,16 @@ func getDinkyVersionTime() string {
 func parseCommandLine() bool {
 	args := os.Args[1:]
 	fileArgs := []string{}
+	endOfOptions := false
 
 	for _, arg := range args {
+		if endOfOptions {
+			fileArgs = append(fileArgs, arg)
+			continue
+		}
 		switch arg {
+		case "--":
+			endOfOptions = true
 		case "-h", "--help":
 			showHelp()
 			return false
@@ -374,13 +391,18 @@ func parseCommandLine() bool {
 			enableLogging = true
 		default:
 			// If it starts with a dash, it's an unknown option
-			if len(arg) > 0 && arg[0] == '-' {
+			if len(arg) > 1 && arg[0] == '-' {
 				fmt.Fprintf(os.Stderr, "Error: Unknown option '%s'\n", arg)
 				fmt.Fprintf(os.Stderr, "Use 'dinky --help' for usage information.\n")
 				return false
 			}
-			// Otherwise, it's a file to open
-			fileArgs = append(fileArgs, arg)
+			if arg == "-" {
+				fileArgs = append(fileArgs, "")
+				// Use empty string to indicate stdin. Empty string isn't a valid
+				// filename, so it won't conflict with any real file.
+			} else {
+				fileArgs = append(fileArgs, arg)
+			}
 		}
 	}
 
@@ -469,8 +491,18 @@ func Main() {
 	})
 
 	errorMessages := []string{}
+	readFromStdin := false
 	for _, arg := range os.Args[1:] {
-		resultString := loadFile(arg)
+		var resultString string
+		if arg == "" { // Empty string indicates stdin (see parseCommandLine).
+			if !readFromStdin {
+				fmt.Println("Reading from stdin... (press Ctrl-D to finish input)")
+				resultString = loadStdin()
+				readFromStdin = true
+			}
+		} else {
+			resultString = loadFile(arg)
+		}
 		if resultString != "" {
 			errorMessages = append(errorMessages, resultString)
 		}
