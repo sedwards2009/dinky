@@ -26,6 +26,7 @@ type ScrollbarTrack struct {
 
 	isHorizontal bool // Indicates if the scrollbar is horizontal instead of vertical
 	thin         bool // When true (horizontal only), draw at half-cell height
+	dragging     bool // True while the thumb is being dragged with the left button held
 }
 
 func NewScrollbarTrack() *ScrollbarTrack {
@@ -202,6 +203,21 @@ func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action tview.MouseActi
 			eventMajorAxis = eventX
 		}
 
+		// While a drag is in progress we capture every mouse event (by returning
+		// the track as the capturing primitive) so scrolling continues even if the
+		// pointer drifts off the track, and the underlying editor never sees the
+		// drag as a text selection. The drag ends when the left button is released.
+		if scrollbarTrack.dragging {
+			if action == tview.MouseLeftUp || event.Buttons()&tcell.Button1 == 0 {
+				scrollbarTrack.dragging = false
+				return true, nil // Release the capture
+			}
+			if action == tview.MouseMove {
+				scrollbarTrack.setPositionFromMajor(eventMajorAxis, majorLength)
+			}
+			return true, scrollbarTrack // Keep capturing
+		}
+
 		if eventMinorAxis < 0 || eventMinorAxis >= scrollbarTrack.width || eventMajorAxis < 0 || eventMajorAxis >= majorLength {
 			return false, nil // Click outside the scrollbar
 		}
@@ -210,20 +226,11 @@ func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action tview.MouseActi
 			return false, nil
 		}
 
-		if action == tview.MouseLeftDown || (action == tview.MouseMove && event.Buttons() == tcell.Button1) {
-			// Calculate the new position based on the click
-			// Assuming the scrollbar is vertical, we calculate the position based on the y coordinate
-			newPosition := eventMajorAxis*scrollbarTrack.max/majorLength - scrollbarTrack.thumbSize/2
-			if newPosition < 0 {
-				newPosition = 0
-			} else if newPosition > scrollbarTrack.max-scrollbarTrack.thumbSize {
-				newPosition = scrollbarTrack.max - scrollbarTrack.thumbSize
-			}
-			scrollbarTrack.position = newPosition
-			if scrollbarTrack.changedFunc != nil {
-				scrollbarTrack.changedFunc(newPosition)
-			}
-			return true, nil // Consumed the event
+		if action == tview.MouseLeftDown {
+			// Begin dragging: jump the thumb to the click and capture further events.
+			scrollbarTrack.dragging = true
+			scrollbarTrack.setPositionFromMajor(eventMajorAxis, majorLength)
+			return true, scrollbarTrack // Consume and start capturing
 		}
 
 		// Handle scroll events
@@ -246,6 +253,27 @@ func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action tview.MouseActi
 
 		return false, nil // Not consumed
 	})
+}
+
+// setPositionFromMajor sets the thumb position from a coordinate along the
+// scrollbar's major axis (relative to the track's inner rect), centering the
+// thumb on the pointer and clamping to the valid range. The pointer may be
+// outside the track during a drag; the clamping handles that. The changed
+// callback is fired with the resulting position.
+func (scrollbarTrack *ScrollbarTrack) setPositionFromMajor(eventMajorAxis, majorLength int) {
+	if majorLength < 1 {
+		return
+	}
+	newPosition := eventMajorAxis*scrollbarTrack.max/majorLength - scrollbarTrack.thumbSize/2
+	if newPosition < 0 {
+		newPosition = 0
+	} else if newPosition > scrollbarTrack.max-scrollbarTrack.thumbSize {
+		newPosition = scrollbarTrack.max - scrollbarTrack.thumbSize
+	}
+	scrollbarTrack.position = newPosition
+	if scrollbarTrack.changedFunc != nil {
+		scrollbarTrack.changedFunc(newPosition)
+	}
 }
 
 // SetPosition sets the position of the scrollbar thumb. It returns the actual new position.
