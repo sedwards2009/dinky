@@ -467,6 +467,9 @@ func Main() {
 		fileBufferID = id
 		handleCloseFile()
 	}
+	tabBarLine.QueueUpdateDraw = func(f func()) {
+		app.QueueUpdateDraw(f)
+	}
 	tabBarLine.OnReorder = func(id string, newIndex int) {
 		// Keep the fileBuffers order in sync with the tab order so that
 		// next/previous tab navigation follows the on-screen layout.
