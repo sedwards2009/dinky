@@ -15,6 +15,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"slices"
 
 	"runtime/debug"
 
@@ -465,6 +466,17 @@ func Main() {
 	tabBarLine.OnTabCloseClick = func(id string, index int) {
 		fileBufferID = id
 		handleCloseFile()
+	}
+	tabBarLine.OnReorder = func(id string, newIndex int) {
+		// Keep the fileBuffers order in sync with the tab order so that
+		// next/previous tab navigation follows the on-screen layout.
+		for i, fileBuffer := range fileBuffers {
+			if fileBuffer.uuid == id {
+				fileBuffers = slices.Delete(fileBuffers, i, i+1)
+				fileBuffers = slices.Insert(fileBuffers, newIndex, fileBuffer)
+				break
+			}
+		}
 	}
 
 	loadEditorColorScheme(settings.ColorScheme)

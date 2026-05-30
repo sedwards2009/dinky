@@ -21,8 +21,11 @@ type TabBar struct {
 	tabs             []Tab
 	active           int
 	hscroll          int
+	dragging         bool
+	dragIndex        int
 	OnActive         func(id string, index int)
 	OnTabCloseClick  func(id string, index int)
+	OnReorder        func(id string, newIndex int)
 }
 
 type Tab struct {
@@ -214,6 +217,30 @@ func (tabBar *TabBar) MouseHandler() func(action tview.MouseAction, event *tcell
 		rx, ry, _, _ := tabBar.GetRect()
 		x, y := event.Position()
 
+		// While a drag is in progress we capture all mouse events so the tab
+		// keeps following the pointer even if it strays off the tab bar row.
+		if tabBar.dragging {
+			switch action {
+			case tview.MouseMove:
+				target := tabBar.dragTargetIndex(x - rx)
+				if target != tabBar.dragIndex && target != -1 {
+					tabBar.moveTab(tabBar.dragIndex, target)
+					tabBar.dragIndex = target
+					tabBar.active = target
+					if tabBar.OnReorder != nil {
+						tabBar.OnReorder(tabBar.tabs[target].ID, target)
+					}
+				}
+				return true, tabBar
+			case tview.MouseLeftUp:
+				tabBar.dragging = false
+				tabBar.dragIndex = -1
+				return true, nil
+			default:
+				return true, tabBar
+			}
+		}
+
 		if y == ry {
 			if action == tview.MouseLeftDown {
 				index, _, closeClick := tabBar.tabIndexAtX(x - rx)
@@ -224,6 +251,12 @@ func (tabBar *TabBar) MouseHandler() func(action tview.MouseAction, event *tcell
 					}
 					if closeClick && tabBar.OnTabCloseClick != nil {
 						tabBar.OnTabCloseClick(tabBar.tabs[index].ID, index)
+					} else {
+						// Begin a potential drag-to-reorder. Capture future
+						// mouse events until the button is released.
+						tabBar.dragging = true
+						tabBar.dragIndex = index
+						return true, tabBar
 					}
 					return true, nil
 				}
@@ -257,6 +290,38 @@ func (tabBar *TabBar) MouseHandler() func(action tview.MouseAction, event *tcell
 
 		return false, nil
 	})
+}
+
+// dragTargetIndex returns the index at which a dragged tab should be inserted
+// for the given pointer position. Unlike tabIndexAtX it never returns -1 (the
+// pointer is clamped to the first/last tab) so dragging stays responsive even
+// past the ends of the bar.
+func (tabBar *TabBar) dragTargetIndex(relativeX int) int {
+	if len(tabBar.tabs) == 0 {
+		return -1
+	}
+	posX := relativeX + tabBar.hscroll
+	if posX < 0 {
+		return 0
+	}
+	x := 0
+	for i, tab := range tabBar.tabs {
+		if posX < x+tab.width/2 {
+			return i
+		}
+		x += tab.width
+	}
+	return len(tabBar.tabs) - 1
+}
+
+// moveTab moves the tab at index from to index to, shifting the others.
+func (tabBar *TabBar) moveTab(from, to int) {
+	if from == to || from < 0 || to < 0 || from >= len(tabBar.tabs) || to >= len(tabBar.tabs) {
+		return
+	}
+	tab := tabBar.tabs[from]
+	tabBar.tabs = slices.Delete(tabBar.tabs, from, from+1)
+	tabBar.tabs = slices.Insert(tabBar.tabs, to, tab)
 }
 
 func (tabBar *TabBar) tabIndexAtX(relativeX int) (index int, leftX int, closeClick bool) {
