@@ -25,6 +25,7 @@ type ScrollbarTrack struct {
 	changedFunc    func(position int)
 
 	isHorizontal bool // Indicates if the scrollbar is horizontal instead of vertical
+	thin         bool // When true (horizontal only), draw at half-cell height
 }
 
 func NewScrollbarTrack() *ScrollbarTrack {
@@ -47,6 +48,14 @@ func (scrollbarTrack *ScrollbarTrack) SetHorizontal(isHorizontal bool) {
 	scrollbarTrack.isHorizontal = isHorizontal
 }
 
+// SetThin enables a half-height rendering for horizontal scrollbars so they
+// appear about as thin as a vertical scrollbar. The bar is drawn in the upper
+// half of its row using a half-block glyph, with the thumb snapped to whole
+// columns. Has no effect on vertical scrollbars.
+func (scrollbarTrack *ScrollbarTrack) SetThin(thin bool) {
+	scrollbarTrack.thin = thin
+}
+
 func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
 	if scrollbarTrack.beforeDrawFunc != nil {
 		scrollbarTrack.beforeDrawFunc(screen)
@@ -54,6 +63,11 @@ func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
 
 	innerX, innerY, width, height := scrollbarTrack.GetInnerRect()
 	if width < 1 || height < 1 {
+		return
+	}
+
+	if scrollbarTrack.isHorizontal && scrollbarTrack.thin {
+		scrollbarTrack.drawThinHorizontal(screen, innerX, innerY, width)
 		return
 	}
 
@@ -126,6 +140,49 @@ func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
 		if thumbPos+i < majorLength {
 			setContent(majorPos+thumbPos+i, ' ', thumbStyle)
 		}
+	}
+}
+
+// drawThinHorizontal draws the horizontal track and thumb in the upper half of
+// a single row, using a half-block glyph so the bar appears about as thin as a
+// vertical scrollbar. The empty lower half uses the track's background color so
+// it blends with the surrounding content. The thumb is snapped to whole columns.
+func (scrollbarTrack *ScrollbarTrack) drawThinHorizontal(screen tcell.Screen, x, y, width int) {
+	const upperHalfRune = '▀'
+
+	bg := scrollbarTrack.GetBackgroundColor()
+	trackStyle := tcell.StyleDefault.Foreground(scrollbarTrack.trackColor).Background(bg)
+	thumbStyle := tcell.StyleDefault.Foreground(scrollbarTrack.thumbColor).Background(bg)
+
+	position := scrollbarTrack.position
+	thumbSize := scrollbarTrack.thumbSize
+	if thumbSize > scrollbarTrack.max {
+		thumbSize = scrollbarTrack.max
+		position = 0
+	}
+
+	thumbCells := (width*thumbSize + scrollbarTrack.max/2) / scrollbarTrack.max
+	if thumbCells < 1 {
+		thumbCells = 1
+	}
+	if thumbCells > width {
+		thumbCells = width
+	}
+
+	thumbStart := (width*position + scrollbarTrack.max/2) / scrollbarTrack.max
+	if thumbStart > width-thumbCells {
+		thumbStart = width - thumbCells
+	}
+	if thumbStart < 0 {
+		thumbStart = 0
+	}
+
+	for i := 0; i < width; i++ {
+		style := trackStyle
+		if i >= thumbStart && i < thumbStart+thumbCells {
+			style = thumbStyle
+		}
+		screen.SetContent(x+i, y, upperHalfRune, nil, style)
 	}
 }
 

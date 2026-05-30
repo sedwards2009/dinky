@@ -70,6 +70,13 @@ func (scrollbar *Scrollbar) SetHorizontal(isHorizontal bool) {
 	}
 }
 
+// SetThin enables a half-height rendering for a horizontal scrollbar's track so
+// it appears about as thin as a vertical scrollbar. The arrow buttons are left
+// in place. Only meaningful for horizontal scrollbars.
+func (scrollbar *Scrollbar) SetThin(thin bool) {
+	scrollbar.Track.SetThin(thin)
+}
+
 func (scrollbar *Scrollbar) SetChangedFunc(changedFunc func(position int)) {
 	scrollbar.changedFunc = changedFunc
 	scrollbar.Track.SetChangedFunc(changedFunc)
