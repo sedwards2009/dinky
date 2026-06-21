@@ -25,6 +25,8 @@ type ScrollbarTrack struct {
 	changedFunc    func(position int)
 
 	isHorizontal bool // Indicates if the scrollbar is horizontal instead of vertical
+	thin         bool // When true (horizontal only), draw at half-cell height
+	dragging     bool // True while the thumb is being dragged with the left button held
 }
 
 func NewScrollbarTrack() *ScrollbarTrack {
@@ -47,6 +49,14 @@ func (scrollbarTrack *ScrollbarTrack) SetHorizontal(isHorizontal bool) {
 	scrollbarTrack.isHorizontal = isHorizontal
 }
 
+// SetThin enables a half-height rendering for horizontal scrollbars so they
+// appear about as thin as a vertical scrollbar. The bar is drawn in the upper
+// half of its row using a half-block glyph, with the thumb snapped to whole
+// columns. Has no effect on vertical scrollbars.
+func (scrollbarTrack *ScrollbarTrack) SetThin(thin bool) {
+	scrollbarTrack.thin = thin
+}
+
 func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
 	if scrollbarTrack.beforeDrawFunc != nil {
 		scrollbarTrack.beforeDrawFunc(screen)
@@ -54,6 +64,11 @@ func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
 
 	innerX, innerY, width, height := scrollbarTrack.GetInnerRect()
 	if width < 1 || height < 1 {
+		return
+	}
+
+	if scrollbarTrack.isHorizontal && scrollbarTrack.thin {
+		scrollbarTrack.drawThinHorizontal(screen, innerX, innerY, width)
 		return
 	}
 
@@ -129,6 +144,49 @@ func (scrollbarTrack *ScrollbarTrack) Draw(screen tcell.Screen) {
 	}
 }
 
+// drawThinHorizontal draws the horizontal track and thumb in the upper half of
+// a single row, using a half-block glyph so the bar appears about as thin as a
+// vertical scrollbar. The empty lower half uses the track's background color so
+// it blends with the surrounding content. The thumb is snapped to whole columns.
+func (scrollbarTrack *ScrollbarTrack) drawThinHorizontal(screen tcell.Screen, x, y, width int) {
+	const upperHalfRune = '▀'
+
+	bg := scrollbarTrack.GetBackgroundColor()
+	trackStyle := tcell.StyleDefault.Foreground(scrollbarTrack.trackColor).Background(bg)
+	thumbStyle := tcell.StyleDefault.Foreground(scrollbarTrack.thumbColor).Background(bg)
+
+	position := scrollbarTrack.position
+	thumbSize := scrollbarTrack.thumbSize
+	if thumbSize > scrollbarTrack.max {
+		thumbSize = scrollbarTrack.max
+		position = 0
+	}
+
+	thumbCells := (width*thumbSize + scrollbarTrack.max/2) / scrollbarTrack.max
+	if thumbCells < 1 {
+		thumbCells = 1
+	}
+	if thumbCells > width {
+		thumbCells = width
+	}
+
+	thumbStart := (width*position + scrollbarTrack.max/2) / scrollbarTrack.max
+	if thumbStart > width-thumbCells {
+		thumbStart = width - thumbCells
+	}
+	if thumbStart < 0 {
+		thumbStart = 0
+	}
+
+	for i := 0; i < width; i++ {
+		style := trackStyle
+		if i >= thumbStart && i < thumbStart+thumbCells {
+			style = thumbStyle
+		}
+		screen.SetContent(x+i, y, upperHalfRune, nil, style)
+	}
+}
+
 func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
 	return scrollbarTrack.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (consumed bool, capture tview.Primitive) {
 		rx, ry, width, height := scrollbarTrack.GetInnerRect()
@@ -145,6 +203,21 @@ func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action tview.MouseActi
 			eventMajorAxis = eventX
 		}
 
+		// While a drag is in progress we capture every mouse event (by returning
+		// the track as the capturing primitive) so scrolling continues even if the
+		// pointer drifts off the track, and the underlying editor never sees the
+		// drag as a text selection. The drag ends when the left button is released.
+		if scrollbarTrack.dragging {
+			if action == tview.MouseLeftUp || event.Buttons()&tcell.Button1 == 0 {
+				scrollbarTrack.dragging = false
+				return true, nil // Release the capture
+			}
+			if action == tview.MouseMove {
+				scrollbarTrack.setPositionFromMajor(eventMajorAxis, majorLength)
+			}
+			return true, scrollbarTrack // Keep capturing
+		}
+
 		if eventMinorAxis < 0 || eventMinorAxis >= scrollbarTrack.width || eventMajorAxis < 0 || eventMajorAxis >= majorLength {
 			return false, nil // Click outside the scrollbar
 		}
@@ -153,20 +226,11 @@ func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action tview.MouseActi
 			return false, nil
 		}
 
-		if action == tview.MouseLeftDown || (action == tview.MouseMove && event.Buttons() == tcell.Button1) {
-			// Calculate the new position based on the click
-			// Assuming the scrollbar is vertical, we calculate the position based on the y coordinate
-			newPosition := eventMajorAxis*scrollbarTrack.max/majorLength - scrollbarTrack.thumbSize/2
-			if newPosition < 0 {
-				newPosition = 0
-			} else if newPosition > scrollbarTrack.max-scrollbarTrack.thumbSize {
-				newPosition = scrollbarTrack.max - scrollbarTrack.thumbSize
-			}
-			scrollbarTrack.position = newPosition
-			if scrollbarTrack.changedFunc != nil {
-				scrollbarTrack.changedFunc(newPosition)
-			}
-			return true, nil // Consumed the event
+		if action == tview.MouseLeftDown {
+			// Begin dragging: jump the thumb to the click and capture further events.
+			scrollbarTrack.dragging = true
+			scrollbarTrack.setPositionFromMajor(eventMajorAxis, majorLength)
+			return true, scrollbarTrack // Consume and start capturing
 		}
 
 		// Handle scroll events
@@ -189,6 +253,27 @@ func (scrollbarTrack *ScrollbarTrack) MouseHandler() func(action tview.MouseActi
 
 		return false, nil // Not consumed
 	})
+}
+
+// setPositionFromMajor sets the thumb position from a coordinate along the
+// scrollbar's major axis (relative to the track's inner rect), centering the
+// thumb on the pointer and clamping to the valid range. The pointer may be
+// outside the track during a drag; the clamping handles that. The changed
+// callback is fired with the resulting position.
+func (scrollbarTrack *ScrollbarTrack) setPositionFromMajor(eventMajorAxis, majorLength int) {
+	if majorLength < 1 {
+		return
+	}
+	newPosition := eventMajorAxis*scrollbarTrack.max/majorLength - scrollbarTrack.thumbSize/2
+	if newPosition < 0 {
+		newPosition = 0
+	} else if newPosition > scrollbarTrack.max-scrollbarTrack.thumbSize {
+		newPosition = scrollbarTrack.max - scrollbarTrack.thumbSize
+	}
+	scrollbarTrack.position = newPosition
+	if scrollbarTrack.changedFunc != nil {
+		scrollbarTrack.changedFunc(newPosition)
+	}
 }
 
 // SetPosition sets the position of the scrollbar thumb. It returns the actual new position.

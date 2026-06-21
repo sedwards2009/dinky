@@ -24,6 +24,7 @@ import (
 	"github.com/sedwards2009/smidgen"
 	"github.com/sedwards2009/smidgen/micro/buffer"
 	"github.com/sedwards2009/smidgen/micro/display"
+	"github.com/sedwards2009/smidgen/micro/util"
 )
 
 // -----------------------------------------------------------------
@@ -46,7 +47,9 @@ var colorscheme smidgen.Colorscheme
 type FileBuffer struct {
 	panelVFlex    *tview.Flex
 	panelHFlex    *tview.Flex
+	editorVFlex   *tview.Flex
 	scrollbar     *scrollbar.Scrollbar
+	hScrollbar    *scrollbar.Scrollbar
 	findbar       *findbar.Findbar
 	isFindbarOpen bool
 	openFindbar   func()
@@ -55,6 +58,12 @@ type FileBuffer struct {
 	editor   *smidgen.View
 	uuid     string
 	filename string
+
+	// Cached visual width of the longest line, used to size the horizontal
+	// scrollbar. Recomputed when the buffer is modified or the tab size changes.
+	maxLineWidth        int
+	maxLineWidthValid   bool
+	maxLineWidthTabSize int
 }
 
 var fileBuffers []*FileBuffer
@@ -71,12 +80,16 @@ func loadEditorColorScheme(colorSchemeName string) {
 		colorscheme, _ = smidgen.LoadInternalColorscheme("monokai")
 	}
 
-	for _, fileBuffer := range fileBuffers {
-		fileBuffer.editor.SetColorscheme(colorscheme)
-	}
-
 	defaultStyle := colorscheme.GetColor("default")
 	_, bg, _ := defaultStyle.Decompose()
+
+	for _, fileBuffer := range fileBuffers {
+		fileBuffer.editor.SetColorscheme(colorscheme)
+		// Keep the thin horizontal scrollbar's empty half blending with the
+		// editor background.
+		fileBuffer.hScrollbar.Track.SetBackgroundColor(bg)
+	}
+
 	tabBarLine.SetTabBackgroundColor(bg)
 }
 
@@ -96,9 +109,23 @@ func newFile(contents string, filename string) {
 	buffer.Settings["hltrailingws"] = settings.ShowTrailingWhitespace
 	buffer.Settings["colorcolumn"] = settings.VerticalRuler
 
+	// The editor and the horizontal scrollbar are stacked vertically so that
+	// the horizontal scrollbar spans only the editor's width (not the column
+	// occupied by the vertical scrollbar).
+	editorVFlex := tview.NewFlex()
+	editorVFlex.SetDirection(tview.FlexRow)
+	editorVFlex.AddItem(editor, 0, 1, true)
+	hScrollbar := scrollbar.NewScrollbar()
+	hScrollbar.SetHorizontal(true)
+	style.StyleScrollbar(hScrollbar)
+	hScrollbar.SetThin(true)
+	_, editorBg, _ := colorscheme.GetColor("default").Decompose()
+	hScrollbar.Track.SetBackgroundColor(editorBg)
+	editorVFlex.AddItem(hScrollbar, 1, 0, false)
+
 	panelHFlex := tview.NewFlex()
 	panelHFlex.SetDirection(tview.FlexColumn)
-	panelHFlex.AddItem(editor, 0, 1, true)
+	panelHFlex.AddItem(editorVFlex, 0, 1, true)
 	vScrollbar := scrollbar.NewScrollbar()
 	style.StyleScrollbar(vScrollbar)
 	panelHFlex.AddItem(vScrollbar, 1, 0, false)
@@ -132,7 +159,9 @@ func newFile(contents string, filename string) {
 	fileBuffer := &FileBuffer{
 		panelVFlex:    panelVFlex,
 		panelHFlex:    panelHFlex,
+		editorVFlex:   editorVFlex,
 		scrollbar:     vScrollbar,
+		hScrollbar:    hScrollbar,
 		buffer:        buffer,
 		findbar:       bufferFindbar,
 		isFindbarOpen: false,
@@ -187,6 +216,25 @@ func newFile(contents string, filename string) {
 		editor.ActionController().SetStartLine(display.SLoc{Line: position, Row: 0})
 	})
 
+	hScrollbar.UpdateHook = func(sb *scrollbar.Scrollbar) {
+		// Size the thumb to the visible text width and position it at the
+		// current horizontal scroll offset.
+		bufWidth := editor.ActionController().BufView().Width
+		sb.Track.SetMax(max(fileBuffer.contentWidth(), 1))
+		sb.Track.SetThumbSize(bufWidth)
+		sb.Track.SetPosition(editor.ActionController().GetView().StartCol)
+	}
+	hScrollbar.SetChangedFunc(func(position int) {
+		editor.ActionController().GetView().StartCol = position
+	})
+
+	// Decide which scrollbars are visible just before the panel lays out its
+	// children, so they only appear when the content overflows the viewport.
+	panelHFlex.SetDrawFunc(func(screen tcell.Screen, x, y, width, height int) (int, int, int, int) {
+		fileBuffer.updateScrollbarVisibility()
+		return x, y, width, height
+	})
+
 	fileBuffers = append(fileBuffers, fileBuffer)
 
 	editorPages.AddPage(fileBuffer.uuid, panelVFlex, true, false)
@@ -239,6 +287,96 @@ func loadStdin() string {
 	}
 	newFile(string(contents), "")
 	return ""
+}
+
+// contentWidth returns the visual width of the longest line in the buffer.
+// The result is cached and only recomputed when the buffer has been modified
+// or the tab size changed, so it is cheap to call every frame.
+func (fb *FileBuffer) contentWidth() int {
+	tabSize := int(fb.buffer.Settings["tabsize"].(float64))
+	if fb.maxLineWidthValid && !fb.buffer.ModifiedThisFrame && fb.maxLineWidthTabSize == tabSize {
+		return fb.maxLineWidth
+	}
+
+	maxWidth := 0
+	for i := 0; i < fb.buffer.LinesNum(); i++ {
+		line := fb.buffer.LineBytes(i)
+		w := util.StringWidth(line, util.CharacterCount(line), tabSize)
+		if w > maxWidth {
+			maxWidth = w
+		}
+	}
+
+	fb.maxLineWidth = maxWidth
+	fb.maxLineWidthValid = true
+	fb.maxLineWidthTabSize = tabSize
+	return maxWidth
+}
+
+// updateScrollbarVisibility shows each scrollbar only when its content
+// overflows the viewport, and hides it otherwise.
+func (fb *FileBuffer) updateScrollbarVisibility() {
+	_, _, _, editorHeight := fb.editor.GetRect()
+
+	// The vertical scrollbar is only needed when there are more lines than fit
+	// on screen.
+	vNeeded := fb.buffer.LinesNum() > editorHeight
+	fb.panelHFlex.ResizeItem(fb.scrollbar, boolToInt(vNeeded), 0)
+
+	// The horizontal scrollbar is only needed when soft wrap is off and the
+	// longest line is wider than the visible text area (excluding the gutter).
+	softWrap := fb.buffer.Settings["softwrap"].(bool)
+	bufWidth := fb.editor.ActionController().BufView().Width
+	hNeeded := !softWrap && fb.contentWidth() > bufWidth
+	fb.editorVFlex.ResizeItem(fb.hScrollbar, boolToInt(hNeeded), 0)
+}
+
+func boolToInt(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
+}
+
+// handleHorizontalWheelScroll scrolls the editor horizontally in response to a
+// horizontal mouse wheel event. It returns true if the event was handled.
+func handleHorizontalWheelScroll(action tview.MouseAction, event *tcell.EventMouse) bool {
+	fb := currentFileBuffer
+	if fb == nil {
+		return false
+	}
+	if fb.buffer.Settings["softwrap"].(bool) {
+		return false
+	}
+
+	x, y := event.Position()
+	if !fb.editor.InRect(x, y) {
+		return false
+	}
+
+	view := fb.editor.ActionController().GetView()
+	bufWidth := fb.editor.ActionController().BufView().Width
+
+	scrollSpeed := util.IntOpt(fb.buffer.Settings["scrollspeed"])
+	if scrollSpeed < 1 {
+		scrollSpeed = 1
+	}
+
+	newStartCol := view.StartCol
+	if action == tview.MouseScrollLeft {
+		newStartCol -= scrollSpeed
+	} else {
+		newStartCol += scrollSpeed
+	}
+
+	if maxStartCol := fb.contentWidth() - bufWidth; newStartCol > maxStartCol {
+		newStartCol = maxStartCol
+	}
+	if newStartCol < 0 {
+		newStartCol = 0
+	}
+	view.StartCol = newStartCol
+	return true
 }
 
 func getFileBufferByID(id string) *FileBuffer {
@@ -524,6 +662,38 @@ func Main() {
 	}
 	selectTab(fileBuffers[0].uuid)
 
+	// Track the mouse position (used by the GPM cursor renderer) and turn
+	// horizontal wheel events into horizontal scrolling of the editor. The
+	// capture is always called from the main loop, so mouseX/mouseY are safe to
+	// read in afterDraw.
+	app.SetMouseCapture(func(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
+		if event == nil {
+			return event, action
+		}
+		mouseX, mouseY = event.Position()
+
+		switch {
+		case action == tview.MouseScrollLeft || action == tview.MouseScrollRight:
+			// Dedicated horizontal wheel events: scroll as a side effect and let
+			// the event continue to the editor, which ignores them. (Returning a
+			// nil event here would leave the shared event nil for any follow-up
+			// action fired from the same mouse event.)
+			handleHorizontalWheelScroll(action, event)
+		case (action == tview.MouseScrollUp || action == tview.MouseScrollDown) && event.Modifiers()&tcell.ModShift != 0:
+			// Many terminals report horizontal scrolling as Shift + vertical
+			// wheel. Translate it and swallow the event so the editor does not
+			// also scroll vertically.
+			horiz := tview.MouseScrollLeft
+			if action == tview.MouseScrollDown {
+				horiz = tview.MouseScrollRight
+			}
+			if handleHorizontalWheelScroll(horiz, event) {
+				return nil, action
+			}
+		}
+		return event, action
+	})
+
 	// Connect to GPM before Run() (handshake happens now; events injected via QueueEvent).
 	if client, err := gpm.Connect(func(ev tcell.Event) {
 		app.QueueEvent(ev)
@@ -537,13 +707,6 @@ func Main() {
 	} else if client != nil {
 		gpmClient = client
 		gpmClient.Start()
-
-		// Track mouse position in the main goroutine (SetMouseCapture is always
-		// called from the main loop, so mouseX/mouseY are safe to read in afterDraw).
-		app.SetMouseCapture(func(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
-			mouseX, mouseY = event.Position()
-			return event, action
-		})
 
 		// Chain afterDraw to render a cursor by inverting the cell under the pointer.
 		existingAfterDraw := app.GetAfterDrawFunc()

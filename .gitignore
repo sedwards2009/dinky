@@ -28,3 +28,6 @@ dist/
 
 # Built binary
 dinky
+
+# Log
+app.log
