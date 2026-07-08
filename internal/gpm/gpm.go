@@ -201,11 +201,16 @@ func convertEvent(ev *gpmEvent) *tcell.EventMouse {
 		mod |= tcell.ModAlt
 	}
 
-	// Wheel events: prefer the explicit wdy delta field, fall back to button flags.
+	// Wheel events: prefer the explicit wheel delta fields, fall back to button
+	// flags. Vertical takes priority over horizontal when both are present.
 	if ev.Wdy > 0 {
 		btn = tcell.WheelUp
 	} else if ev.Wdy < 0 {
 		btn = tcell.WheelDown
+	} else if ev.Wdx > 0 {
+		btn = tcell.WheelRight
+	} else if ev.Wdx < 0 {
+		btn = tcell.WheelLeft
 	} else if ev.Buttons&gpmBDown != 0 {
 		btn = tcell.WheelDown
 	} else if ev.Buttons&gpmBUp != 0 {
