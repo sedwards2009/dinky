@@ -71,6 +71,9 @@ func ShowMessageDialog(title string, message string, buttons []string, OnClose f
 	messageDialog.OnButtonClick = OnButtonClick
 	messageDialog.Open(title, message, buttons, width, height)
 	style.StyleMessageDialog(messageDialog)
+	// AddPage focuses the dialog before Open() has created the buttons, so focus
+	// the first button explicitly now that they exist.
+	app.SetFocus(messageDialog)
 
 	return messageDialog
 }
