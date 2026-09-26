@@ -670,12 +670,13 @@ func Main() {
 			ShowOkDialog("Error loading file", errorMessage, showLoadingError)
 		}
 	}
-	showLoadingError()
-
 	if len(fileBuffers) == 0 {
 		newFile("", "")
 	}
 	selectTab(fileBuffers[0].uuid)
+
+	// Shown after the tabs are set up so the dialog keeps focus.
+	showLoadingError()
 
 	// Track the mouse position (used by the GPM cursor renderer) and turn
 	// horizontal wheel events into horizontal scrolling of the editor. The
