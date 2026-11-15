@@ -7,7 +7,7 @@ require (
 	github.com/google/renameio/v2 v2.0.0
 	github.com/google/uuid v1.6.0
 	github.com/mattn/go-runewidth v0.0.19
-	github.com/rivo/tview v0.42.1-0.20250927122039-2cde1d24230c
+	github.com/rivo/tview v0.42.1-0.20260302132726-2a2df46fea4e
 	github.com/rivo/uniseg v0.4.7
 	github.com/sedwards2009/smidgen v0.0.0-20260512194805-3853ae73a7f9
 )
