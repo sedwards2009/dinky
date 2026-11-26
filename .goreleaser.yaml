@@ -12,6 +12,8 @@ builds:
     flags:
       - -buildvcs=true
       - -v
+    ldflags:
+      - -s -w -X dinky/internal/application.version={{.Version}}
     env:
       - CGO_ENABLED=0
     goos:

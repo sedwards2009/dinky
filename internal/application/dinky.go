@@ -465,7 +465,13 @@ func showVersion() {
 	fmt.Printf("Version time: %s\n", getDinkyVersionTime())
 }
 
+// version is set at build time via -ldflags (e.g. by GoReleaser).
+var version = ""
+
 func getDinkyVersion() string {
+	if version != "" {
+		return version
+	}
 	info, ok := debug.ReadBuildInfo()
 	if !ok || info == nil {
 		return "unknown"
